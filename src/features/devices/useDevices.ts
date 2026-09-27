@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/features/auth/AuthProvider";
 
@@ -19,26 +19,27 @@ export function useDevices() {
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const refresh = useCallback(async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from("ovbridge_devices")
+      .select("*")
+      .order("created_at", { ascending: true });
+    if (error) {
+      console.error("[useDevices]", error);
+      return;
+    }
+    setDevices((data ?? []) as Device[]);
+  }, [user]);
+
   useEffect(() => {
     if (!user) return;
     let active = true;
 
-    async function load() {
-      const { data, error } = await supabase
-        .from("ovbridge_devices")
-        .select("*")
-        .order("created_at", { ascending: true });
-      if (error) {
-        console.error("[useDevices]", error);
-        return;
-      }
-      if (active) {
-        setDevices((data ?? []) as Device[]);
-        setLoading(false);
-      }
-    }
-
-    load();
+    (async () => {
+      await refresh();
+      if (active) setLoading(false);
+    })();
 
     const channel = supabase
       .channel("ovbridge_devices_rt")
@@ -50,7 +51,7 @@ export function useDevices() {
           table: "ovbridge_devices",
           filter: `user_id=eq.${user.id}`,
         },
-        () => load()
+        () => refresh()
       )
       .subscribe();
 
@@ -58,7 +59,7 @@ export function useDevices() {
       active = false;
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, refresh]);
 
-  return { devices, loading };
+  return { devices, loading, refresh };
 }

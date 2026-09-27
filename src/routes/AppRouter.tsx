@@ -9,6 +9,9 @@ const PairingPage = lazy(() => import("@/features/pairing/PairingPage"));
 const JoinPage = lazy(() => import("@/features/pairing/JoinPage"));
 const SendPage = lazy(() => import("@/features/transfers/SendPage"));
 const InboxPage = lazy(() => import("@/features/transfers/InboxPage"));
+const ProfilePage = lazy(() => import("@/features/profile/ProfilePage"));
+const ScanPage = lazy(() => import("@/features/pairing/ScanPage"));
+
 
 function Loading() {
   return (
@@ -32,6 +35,8 @@ export default function AppRouter() {
             <Route path="/pair" element={<PairingPage />} />
             <Route path="/send" element={<SendPage />} />
             <Route path="/inbox" element={<InboxPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/scan" element={<ScanPage />} />
           </Route>
 
           <Route path="/" element={<Navigate to="/devices" replace />} />

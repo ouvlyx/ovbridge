@@ -1,12 +1,12 @@
 import { useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Copy, Check, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { usePairing } from "./usePairing";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ArrowLeft, Copy, Check, RefreshCw, Camera } from "lucide-react";
 
 export default function PairingPage() {
   const { user } = useAuth();
@@ -83,6 +83,14 @@ export default function PairingPage() {
               </Button>
               <Button onClick={copy} disabled={!code} className="flex-1">
                 <Copy className="w-4 h-4 mr-2" /> Copier
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full text-ov-muted"
+                onClick={() => navigate("/scan")}
+              >
+                <Camera className="w-4 h-4 mr-2" /> Scanner un QR depuis cet appareil
               </Button>
             </div>
           </Card>

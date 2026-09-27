@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { Camera } from "lucide-react";
 
 export default function JoinPage() {
   const { user, signIn, loading: authLoading } = useAuth();
@@ -126,6 +127,15 @@ export default function JoinPage() {
               </>
             )}
 
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => navigate("/scan")}
+              className="w-full"
+            >
+              <Camera className="w-4 h-4 mr-2" /> Scanner avec la caméra
+            </Button>
+            
             <Button
               type="submit"
               disabled={busy || authLoading}
