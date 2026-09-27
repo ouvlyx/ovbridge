@@ -84,15 +84,16 @@ export default function PairingPage() {
               <Button onClick={copy} disabled={!code} className="flex-1">
                 <Copy className="w-4 h-4 mr-2" /> Copier
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full text-ov-muted"
-                onClick={() => navigate("/scan")}
-              >
-                <Camera className="w-4 h-4 mr-2" /> Scanner un QR depuis cet appareil
-              </Button>
             </div>
+
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => navigate("/scan")}
+            >
+              <Camera className="w-4 h-4 mr-2" />
+              Scanner un QR depuis cet appareil
+            </Button>
           </Card>
 
           <p className="text-xs text-ov-muted text-center leading-relaxed">

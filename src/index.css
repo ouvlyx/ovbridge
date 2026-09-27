@@ -30,3 +30,8 @@ html, body, #root {
 body {
   font-family: var(--font-sans);
 }
+
+@keyframes ov-pulse-ring {
+  0% { transform: scale(0.8); opacity: 0.7; }
+  80%, 100% { transform: scale(2.2); opacity: 0; }
+}

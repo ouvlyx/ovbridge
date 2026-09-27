@@ -109,7 +109,13 @@ export default function DevicesPage() {
   return (
     <div className="min-h-screen p-6 space-y-6 max-w-2xl mx-auto">
       <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-ov-primary">OvBridge</h1>
+        <div className="flex items-center gap-2">
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ov-success opacity-60" />
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-ov-success" />
+          </span>
+          <h1 className="text-2xl font-bold text-ov-primary">OvBridge</h1>
+        </div>
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"
@@ -126,7 +132,14 @@ export default function DevicesPage() {
       </header>
 
       <section className="space-y-1">
-        <h2 className="text-lg font-semibold">Mes appareils</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Mes appareils</h2>
+          {!loading && devices.length > 0 && (
+            <Badge className="bg-ov-primary/15 text-ov-primary border-0">
+              {devices.length} appareil{devices.length > 1 ? "s" : ""}
+            </Badge>
+          )}
+        </div>
         <p className="text-sm text-ov-muted">{user?.email}</p>
       </section>
 
@@ -146,23 +159,36 @@ export default function DevicesPage() {
               <li key={d.id}>
                 <Card
                   className={cn(
-                    "p-4 flex items-center gap-3 border-ov-border",
-                    isMe && "ring-2 ring-ov-primary/40",
-                    d.revoked && "opacity-60"
+                    "relative p-4 flex items-center gap-3 border transition-all",
+                    isMe
+                      ? "border-ov-success/70 bg-gradient-to-br from-ov-success/[0.08] to-transparent shadow-[0_0_0_1px_rgba(34,197,94,0.15),0_8px_24px_-12px_rgba(34,197,94,0.4)]"
+                      : "border-ov-border bg-ov-surface hover:border-ov-border/80",
+                    d.revoked && "opacity-50 border-ov-danger/30"
                   )}
                 >
-                  <div className="w-10 h-10 rounded-xl bg-ov-bg flex items-center justify-center text-ov-accent shrink-0">
+                  {isMe && (
+                    <span className="absolute top-0 left-0 h-full w-1 rounded-l-2xl bg-ov-success" />
+                  )}
+
+                  <div
+                    className={cn(
+                      "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
+                      isMe
+                        ? "bg-ov-success/15 text-ov-success"
+                        : "bg-ov-bg text-ov-accent"
+                    )}
+                  >
                     <PlatformIcon platform={d.platform} />
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="font-medium truncate">
-                        {d.name}
-                        {isMe && (
-                          <span className="text-ov-muted"> (cet appareil)</span>
-                        )}
-                      </p>
+                      <p className="font-medium truncate">{d.name}</p>
+                      {isMe && (
+                        <Badge className="bg-ov-success/20 text-ov-success border-0 text-[10px] px-1.5 py-0">
+                          actif
+                        </Badge>
+                      )}
                       {d.revoked && (
                         <Badge variant="destructive">révoqué</Badge>
                       )}
@@ -219,19 +245,23 @@ export default function DevicesPage() {
 
       <div className="grid grid-cols-2 gap-3">
         <Button
-          className="bg-ov-primary hover:bg-ov-primaryHover"
+          className="bg-ov-primary hover:bg-ov-primaryHover shadow-lg shadow-ov-primary/20"
           onClick={() => navigate("/send")}
         >
           <Send className="w-4 h-4 mr-2" /> Envoyer
         </Button>
-        <Button variant="outline" onClick={() => navigate("/inbox")}>
+        <Button
+          variant="outline"
+          className="border-ov-border hover:bg-ov-surface"
+          onClick={() => navigate("/inbox")}
+        >
           <Inbox className="w-4 h-4 mr-2" /> Réception
         </Button>
       </div>
 
       <Button
         variant="outline"
-        className="w-full"
+        className="w-full border-dashed border-ov-border text-ov-muted hover:text-ov-text hover:border-ov-primary/50 hover:bg-ov-primary/5 transition-colors"
         onClick={() => navigate("/pair")}
       >
         <QrCode className="w-4 h-4 mr-2" /> Lier un nouvel appareil
