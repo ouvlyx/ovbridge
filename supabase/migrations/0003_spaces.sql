@@ -232,4 +232,4 @@ create policy "profiles: select own or co-members"
 -- ---------- 12. REALTIME ----------
 alter publication supabase_realtime add table public.ovbridge_spaces;
 alter publication supabase_realtime add table public.ovbridge_space_members;
-alter publication supabase_realtime add table public.ovbridge_space_inv
+alter publication supabase_realtime add table public.ovbridge_space_invites;
