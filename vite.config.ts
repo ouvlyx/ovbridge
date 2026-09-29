@@ -28,14 +28,17 @@ export default defineConfig({
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
         navigateFallbackDenylist: [/^\/api/],
       },
+      devOptions: {
+        enabled: false,   // ← AJOUTE ÇA
+      },
     }),
   ],
   resolve: {
     alias: { "@": path.resolve(import.meta.dirname, "./src") },
   },
   server: {
-    host: "127.0.0.1",
+    host: "0.0.0.0",
     port: 5173,
-    strictPort: false,
+    strictPort: true,
   },
 });
