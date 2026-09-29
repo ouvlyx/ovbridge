@@ -27,8 +27,33 @@ html, body, #root {
   color-scheme: dark;
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
+  min-width: 0;
+  margin: 0;
   font-family: var(--font-sans);
+}
+
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: clip;
+}
+
+.min-h-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+@media (max-width: 360px) {
+  .min-h-screen.p-6 {
+    padding: 1rem;
+  }
 }
 
 @keyframes ov-pulse-ring {

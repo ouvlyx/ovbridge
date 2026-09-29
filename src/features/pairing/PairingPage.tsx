@@ -108,11 +108,16 @@ export default function PairingPage() {
             <>
               <Card className="p-6 border-ov-border flex flex-col items-center gap-4">
                 {code ? (
-                  <div className="bg-white p-3 rounded-xl">
-                    <QRCodeSVG value={joinUrl} size={220} level="M" />
+                  <div className="w-full max-w-[220px] aspect-square bg-white p-3 rounded-xl">
+                    <QRCodeSVG
+                      value={joinUrl}
+                      size={220}
+                      level="M"
+                      className="block w-full h-full"
+                    />
                   </div>
                 ) : (
-                  <div className="w-[220px] h-[220px] bg-ov-bg rounded-xl flex items-center justify-center text-ov-muted text-sm">
+                  <div className="w-full max-w-[220px] aspect-square bg-ov-bg rounded-xl flex items-center justify-center text-ov-muted text-sm">
                     {loading ? "Génération…" : "—"}
                   </div>
                 )}

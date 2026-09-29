@@ -27,14 +27,22 @@ export default function JoinPage() {
   }, [user, step]);
 
   const finalize = async (userId: string) => {
+    // Normalise : "abcd2345" → "ABCD-2345"
+    const clean = token.replace(/[^A-Z0-9]/gi, "").toUpperCase();
+    const normalized =
+      clean.length === 8
+        ? `${clean.slice(0, 4)}-${clean.slice(4)}`
+        : token.trim().toUpperCase();
+
     // 1. Vérifier le token
     const { data: tok, error: tokErr } = await supabase
       .from("ovbridge_pairing_tokens")
       .select("id, expires_at, used_at")
-      .eq("token", token)
+      .eq("token", normalized)
       .maybeSingle();
 
-    if (tokErr || !tok) throw new Error("Code introuvable");
+    if (tokErr) throw new Error("Erreur de vérification : " + tokErr.message);
+    if (!tok) throw new Error("Code introuvable");
     if (tok.used_at) throw new Error("Code déjà utilisé");
     if (new Date(tok.expires_at) < new Date()) throw new Error("Code expiré");
 
@@ -42,10 +50,11 @@ export default function JoinPage() {
     await ensureDeviceRegistered(userId);
 
     // 3. Marquer le token comme utilisé
-    await supabase
+    const { error: upErr } = await supabase
       .from("ovbridge_pairing_tokens")
       .update({ used_at: new Date().toISOString() })
       .eq("id", tok.id);
+    if (upErr) throw new Error("Impossible de marquer le code : " + upErr.message);
 
     setStep("done");
   };
