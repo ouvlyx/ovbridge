@@ -372,17 +372,32 @@ export async function getConversationSummaries(params: {
 
   // Devices directs
   const directDeviceIds = new Set<string>();
-  const { data: directMsgs } = await supabase
+  const directQuery = supabase
     .from("ovbridge_transfers")
     .select(
       "from_device_id, to_device_id, content, file_name, kind, created_at, read_at"
     )
     .or(`from_device_id.eq.${myDeviceId},to_device_id.eq.${myDeviceId}`)
     .is("to_space_id", null)
-    .order("created_at", { ascending: false })
-    .limit(200);
+    .order("created_at", { ascending: false });
 
-  directMsgs?.forEach((m: any) => {
+  const directMsgs: {
+    from_device_id: string;
+    to_device_id: string | null;
+    content: string | null;
+    file_name: string | null;
+    kind: "text" | "file";
+    created_at: string;
+    read_at: string | null;
+  }[] = [];
+  for (let offset = 0; ; offset += 1000) {
+    const { data, error } = await directQuery.range(offset, offset + 999);
+    if (error) throw error;
+    directMsgs.push(...(data ?? []));
+    if (!data || data.length < 1000) break;
+  }
+
+  directMsgs.forEach((m) => {
     if (m.from_device_id !== myDeviceId) directDeviceIds.add(m.from_device_id);
     if (m.to_device_id && m.to_device_id !== myDeviceId)
       directDeviceIds.add(m.to_device_id);
