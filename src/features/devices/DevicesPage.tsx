@@ -8,13 +8,15 @@ import {
   QrCode,
   LogOut,
   Send,
-  Inbox,
   Pencil,
   User,
   Ban,
   Trash2,
   MoreVertical,
+  Users,
+  MessageSquare,
 } from "lucide-react";
+import SpacesPage from "@/features/spaces/SpacesPage";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { ensureDeviceRegistered } from "@/lib/device";
@@ -58,6 +60,8 @@ export default function DevicesPage() {
   const navigate = useNavigate();
   const [myDeviceId, setMyDeviceId] = useState<string | null>(null);
   const [registering, setRegistering] = useState(true);
+
+  const [tab, setTab] = useState<"devices" | "spaces">("devices");
 
   const [renaming, setRenaming] = useState<Device | null>(null);
   const [revoking, setRevoking] = useState<Device | null>(null);
@@ -130,143 +134,173 @@ export default function DevicesPage() {
           </Button>
         </div>
       </header>
-
-      <section className="space-y-1">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Mes appareils</h2>
-          {!loading && devices.length > 0 && (
-            <Badge className="bg-ov-primary/15 text-ov-primary border-0">
-              {devices.length} appareil{devices.length > 1 ? "s" : ""}
-            </Badge>
+  
+      {/* TABS */}
+      <div className="flex gap-2 p-1 rounded-xl bg-ov-surface border border-ov-border">
+        <button
+          onClick={() => setTab("devices")}
+          className={cn(
+            "flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2",
+            tab === "devices"
+              ? "bg-ov-primary text-white"
+              : "text-ov-muted hover:text-ov-text"
           )}
-        </div>
-        <p className="text-sm text-ov-muted">{user?.email}</p>
-      </section>
-
-      {registering && (
-        <p className="text-sm text-ov-muted">
-          Enregistrement de cet appareil…
-        </p>
-      )}
-
-      {loading ? (
-        <p className="text-sm text-ov-muted">Chargement…</p>
-      ) : (
-        <ul className="space-y-3">
-          {devices.map((d: Device) => {
-            const isMe = d.id === myDeviceId;
-            return (
-              <li key={d.id}>
-                <Card
-                  className={cn(
-                    "relative p-4 flex items-center gap-3 border transition-all",
-                    isMe
-                      ? "border-ov-success/70 bg-gradient-to-br from-ov-success/[0.08] to-transparent shadow-[0_0_0_1px_rgba(34,197,94,0.15),0_8px_24px_-12px_rgba(34,197,94,0.4)]"
-                      : "border-ov-border bg-ov-surface hover:border-ov-border/80",
-                    d.revoked && "opacity-50 border-ov-danger/30"
-                  )}
-                >
-                  {isMe && (
-                    <span className="absolute top-0 left-0 h-full w-1 rounded-l-2xl bg-ov-success" />
-                  )}
-
-                  <div
-                    className={cn(
-                      "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
-                      isMe
-                        ? "bg-ov-success/15 text-ov-success"
-                        : "bg-ov-bg text-ov-accent"
-                    )}
-                  >
-                    <PlatformIcon platform={d.platform} />
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium truncate">{d.name}</p>
-                      {isMe && (
-                        <Badge className="bg-ov-success/20 text-ov-success border-0 text-[10px] px-1.5 py-0">
-                          actif
-                        </Badge>
-                      )}
-                      {d.revoked && (
-                        <Badge variant="destructive">révoqué</Badge>
-                      )}
-                    </div>
-                    <p className="text-xs text-ov-muted truncate">
-                      Vu {timeAgo(d.last_seen)} · empreinte{" "}
-                      {d.fingerprint?.slice(0, 8) ?? "—"}
-                    </p>
-                  </div>
-
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <MoreVertical className="w-5 h-5 text-ov-muted" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setRenaming(d)}>
-                        <Pencil className="w-4 h-4" />
-                        {isMe ? "Renommer cet appareil" : "Renommer"}
-                      </DropdownMenuItem>
-
-                      {!isMe && (
-                        <>
-                          <DropdownMenuSeparator />
-
-                          {!d.revoked && (
-                            <DropdownMenuItem
-                              onClick={() => setRevoking(d)}
-                              variant="danger"
-                            >
-                              <Ban className="w-4 h-4" />
-                              Révoquer l'accès
-                            </DropdownMenuItem>
-                          )}
-
-                          <DropdownMenuItem
-                            onClick={() => setDeleting(d)}
-                            variant="danger"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                            Supprimer
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </Card>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-
-      <div className="grid grid-cols-2 gap-3">
-        <Button
-          className="bg-ov-primary hover:bg-ov-primaryHover shadow-lg shadow-ov-primary/20"
-          onClick={() => navigate("/send")}
         >
-          <Send className="w-4 h-4 mr-2" /> Envoyer
-        </Button>
-        <Button
-          variant="outline"
-          className="border-ov-border hover:bg-ov-surface"
-          onClick={() => navigate("/inbox")}
+          <Laptop className="w-4 h-4" /> Mes appareils
+        </button>
+        <button
+          onClick={() => setTab("spaces")}
+          className={cn(
+            "flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2",
+            tab === "spaces"
+              ? "bg-ov-primary text-white"
+              : "text-ov-muted hover:text-ov-text"
+          )}
         >
-          <Inbox className="w-4 h-4 mr-2" /> Réception
-        </Button>
+          <Users className="w-4 h-4" /> Mes collaborateurs
+        </button>
       </div>
-
-      <Button
-        variant="outline"
-        className="w-full border-dashed border-ov-border text-ov-muted hover:text-ov-text hover:border-ov-primary/50 hover:bg-ov-primary/5 transition-colors"
-        onClick={() => navigate("/pair")}
-      >
-        <QrCode className="w-4 h-4 mr-2" /> Lier un nouvel appareil
-      </Button>
-
+  
+      {tab === "spaces" ? (
+        <SpacesPage />
+      ) : (
+        <>
+          <section className="space-y-1">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Mes appareils</h2>
+              {!loading && devices.length > 0 && (
+                <Badge className="bg-ov-primary/15 text-ov-primary border-0">
+                  {devices.length} appareil{devices.length > 1 ? "s" : ""}
+                </Badge>
+              )}
+            </div>
+            <p className="text-sm text-ov-muted">{user?.email}</p>
+          </section>
+  
+          {registering && (
+            <p className="text-sm text-ov-muted">
+              Enregistrement de cet appareil…
+            </p>
+          )}
+  
+          {loading ? (
+            <p className="text-sm text-ov-muted">Chargement…</p>
+          ) : (
+            <ul className="space-y-3">
+              {devices.map((d: Device) => {
+                const isMe = d.id === myDeviceId;
+                return (
+                  <li key={d.id}>
+                    <Card
+                      className={cn(
+                        "relative p-4 flex items-center gap-3 border transition-all",
+                        isMe
+                          ? "border-ov-success/70 bg-gradient-to-br from-ov-success/[0.08] to-transparent shadow-[0_0_0_1px_rgba(34,197,94,0.15),0_8px_24px_-12px_rgba(34,197,94,0.4)]"
+                          : "border-ov-border bg-ov-surface hover:border-ov-border/80",
+                        d.revoked && "opacity-50 border-ov-danger/30"
+                      )}
+                    >
+                      {isMe && (
+                        <span className="absolute top-0 left-0 h-full w-1 rounded-l-2xl bg-ov-success" />
+                      )}
+  
+                      <div
+                        className={cn(
+                          "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
+                          isMe
+                            ? "bg-ov-success/15 text-ov-success"
+                            : "bg-ov-bg text-ov-accent"
+                        )}
+                      >
+                        <PlatformIcon platform={d.platform} />
+                      </div>
+  
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium truncate">{d.name}</p>
+                          {isMe && (
+                            <Badge className="bg-ov-success/20 text-ov-success border-0 text-[10px] px-1.5 py-0">
+                              actif
+                            </Badge>
+                          )}
+                          {d.revoked && (
+                            <Badge variant="destructive">révoqué</Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-ov-muted truncate">
+                          Vu {timeAgo(d.last_seen)} · empreinte{" "}
+                          {d.fingerprint?.slice(0, 8) ?? "—"}
+                        </p>
+                      </div>
+  
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreVertical className="w-5 h-5 text-ov-muted" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => setRenaming(d)}>
+                            <Pencil className="w-4 h-4" />
+                            {isMe ? "Renommer cet appareil" : "Renommer"}
+                          </DropdownMenuItem>
+  
+                          {!isMe && (
+                            <>
+                              <DropdownMenuSeparator />
+                              {!d.revoked && (
+                                <DropdownMenuItem
+                                  onClick={() => setRevoking(d)}
+                                  variant="danger"
+                                >
+                                  <Ban className="w-4 h-4" />
+                                  Révoquer l'accès
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuItem
+                                onClick={() => setDeleting(d)}
+                                variant="danger"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                                Supprimer
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </Card>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+  
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              className="bg-ov-primary hover:bg-ov-primaryHover shadow-lg shadow-ov-primary/20"
+              onClick={() => navigate("/send")}
+            >
+              <Send className="w-4 h-4 mr-2" /> Envoyer
+            </Button>
+            <Button
+              variant="outline"
+              className="border-ov-border hover:bg-ov-surface"
+              onClick={() => navigate("/messages")}
+            >
+              <MessageSquare className="w-4 h-4 mr-2" /> Messages
+            </Button>
+          </div>
+  
+          <Button
+            variant="outline"
+            className="w-full border-dashed border-ov-border text-ov-muted hover:text-ov-text hover:border-ov-primary/50 hover:bg-ov-primary/5 transition-colors"
+            onClick={() => navigate("/pair")}
+          >
+            <QrCode className="w-4 h-4 mr-2" /> Lier un nouvel appareil
+          </Button>
+        </>
+      )}
+  
       {renaming && (
         <RenameDeviceDialog
           open={!!renaming}
@@ -276,7 +310,7 @@ export default function DevicesPage() {
           onRenamed={refresh}
         />
       )}
-
+  
       <ConfirmDialog
         open={!!revoking}
         onOpenChange={(v) => !v && setRevoking(null)}
@@ -287,7 +321,7 @@ export default function DevicesPage() {
         busy={busy}
         onConfirm={handleRevoke}
       />
-
+  
       <ConfirmDialog
         open={!!deleting}
         onOpenChange={(v) => !v && setDeleting(null)}

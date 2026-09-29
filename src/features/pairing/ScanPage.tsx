@@ -88,7 +88,17 @@ export default function ScanPage() {
   return (
     <div className="min-h-screen p-6 max-w-md mx-auto space-y-6">
       <header className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => {
+            if (window.history.length > 1) {
+              navigate(-1);
+            } else {
+              navigate("/pair", { replace: true });
+            }
+          }}
+        >
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <h1 className="text-lg font-semibold">Scanner un QR code</h1>
@@ -130,6 +140,14 @@ export default function ScanPage() {
       <p className="text-xs text-ov-muted text-center">
         Pointez la caméra vers le QR code affiché sur l'autre appareil.
       </p>
+
+      <Button
+        variant="ghost"
+        className="w-full text-ov-muted"
+        onClick={() => navigate("/pair", { replace: true })}
+      >
+        Annuler et revenir
+      </Button>
     </div>
   );
 }

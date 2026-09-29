@@ -1,29 +1,52 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { ArrowLeft, Send, FileUp, Type } from "lucide-react";
+import { ArrowLeft, Send, FileUp, Type, Users, Smartphone } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { getStoredIdentity } from "@/lib/device";
-import { sendText, sendFile } from "@/lib/transfers";
+import {
+  sendText,
+  sendFile,
+  sendTextToSpace,
+  sendFileToSpace,
+} from "@/lib/transfers";
+import { useSpaces } from "@/features/spaces/useSpaces";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-type Target = { id: string; name: string; public_key: string };
+type DeviceTarget = {
+  id: string;
+  name: string;
+  public_key: string;
+  kind: "device";
+};
+
+type SpaceTarget = {
+  id: string;
+  name: string;
+  members: number;
+  kind: "space";
+};
+
+type Target = DeviceTarget | SpaceTarget;
 
 export default function SendPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [targets, setTargets] = useState<Target[]>([]);
-  const [targetId, setTargetId] = useState<string | null>(null);
+  const { spaces } = useSpaces();
+
+  const [devices, setDevices] = useState<DeviceTarget[]>([]);
+  const [targetKey, setTargetKey] = useState<string | null>(null);
   const [mode, setMode] = useState<"text" | "file">("text");
   const [text, setText] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
 
+  // Charge mes autres appareils
   useEffect(() => {
     if (!user) return;
     (async () => {
@@ -32,34 +55,75 @@ export default function SendPage() {
       const { data } = await supabase
         .from("ovbridge_devices")
         .select("id, name, public_key, revoked")
+        .eq("user_id", user.id)
         .neq("id", me.deviceId)
         .eq("revoked", false);
-      setTargets((data ?? []) as Target[]);
-      if (data && data[0]) setTargetId(data[0].id);
+      setDevices((data ?? []) as DeviceTarget[]);
     })();
   }, [user]);
 
+  // Construit la liste unifiée des cibles
+  const targets: Target[] = [
+    ...devices.map((d) => ({ ...d, kind: "device" as const })),
+    ...spaces.map((s) => ({
+      id: s.id,
+      name: s.name,
+      members: s.members.length,
+      kind: "space" as const,
+    })),
+  ];
+
+  // Sélection par défaut
+  useEffect(() => {
+    if (!targetKey && targets.length > 0) {
+      setTargetKey(`${targets[0].kind}:${targets[0].id}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targets.length]);
+
+  const selected = targets.find(
+    (t) => `${t.kind}:${t.id}` === targetKey
+  );
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !targetId) return;
+    if (!user || !selected) return;
     const me = getStoredIdentity();
     if (!me) return;
 
-    const recipient = targets.find((t) => t.id === targetId);
-    if (!recipient) return;
-
     setBusy(true);
     try {
-      if (mode === "text") {
-        if (!text.trim()) throw new Error("Texte vide");
-        await sendText(user.id, me, recipient, text);
-        setText("");
+      if (selected.kind === "device") {
+        if (mode === "text") {
+          if (!text.trim()) throw new Error("Texte vide");
+          await sendText(user.id, me, selected, text);
+          setText("");
+        } else {
+          if (!file) throw new Error("Aucun fichier");
+          await sendFile(user.id, me, selected, file);
+          setFile(null);
+        }
+        toast.success("Envoyé ✅");
       } else {
-        if (!file) throw new Error("Aucun fichier");
-        await sendFile(user.id, me, recipient, file);
-        setFile(null);
+        // envoi vers espace
+        if (mode === "text") {
+          if (!text.trim()) throw new Error("Texte vide");
+          const r = await sendTextToSpace(user.id, me, selected.id, text);
+          toast.success(
+            `Envoyé à ${r.sent} appareil${r.sent > 1 ? "s" : ""}` +
+              (r.failed ? ` (${r.failed} échec)` : "")
+          );
+          setText("");
+        } else {
+          if (!file) throw new Error("Aucun fichier");
+          const r = await sendFileToSpace(user.id, me, selected.id, file);
+          toast.success(
+            `Envoyé à ${r.sent} appareil${r.sent > 1 ? "s" : ""}` +
+              (r.failed ? ` (${r.failed} échec)` : "")
+          );
+          setFile(null);
+        }
       }
-      toast.success("Envoyé ✅");
       navigate("/devices");
     } catch (err: any) {
       toast.error(err.message ?? "Erreur d'envoi");
@@ -81,17 +145,46 @@ export default function SendPage() {
         <div className="space-y-2">
           <Label>Destinataire</Label>
           <select
-            value={targetId ?? ""}
-            onChange={(e) => setTargetId(e.target.value)}
+            value={targetKey ?? ""}
+            onChange={(e) => setTargetKey(e.target.value)}
             className="w-full h-10 rounded-xl border border-ov-border bg-ov-bg px-3 text-sm text-ov-text"
           >
-            {targets.length === 0 && <option value="">Aucun appareil</option>}
-            {targets.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
+            {targets.length === 0 && <option value="">Aucune cible</option>}
+            {devices.length > 0 && (
+              <optgroup label="Mes appareils">
+                {devices.map((d) => (
+                  <option key={`device:${d.id}`} value={`device:${d.id}`}>
+                    {d.name}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+            {spaces.length > 0 && (
+              <optgroup label="Mes espaces">
+                {spaces.map((s) => (
+                  <option key={`space:${s.id}`} value={`space:${s.id}`}>
+                    {s.name} ({s.members.length})
+                  </option>
+                ))}
+              </optgroup>
+            )}
           </select>
+
+          {selected && (
+            <p className="text-xs text-ov-muted flex items-center gap-1.5">
+              {selected.kind === "space" ? (
+                <>
+                  <Users className="w-3.5 h-3.5" />
+                  Envoi à tous les appareils des membres de cet espace
+                </>
+              ) : (
+                <>
+                  <Smartphone className="w-3.5 h-3.5" />
+                  Envoi chiffré à cet appareil uniquement
+                </>
+              )}
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-2">
@@ -123,7 +216,9 @@ export default function SendPage() {
           <Card className="p-4 border-ov-border space-y-2">
             <Input
               type="file"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setFile(e.target.files?.[0] ?? null)
+              }
               className="bg-ov-bg"
             />
             {file && (
@@ -136,7 +231,7 @@ export default function SendPage() {
 
         <Button
           type="submit"
-          disabled={busy || !targetId}
+          disabled={busy || !selected}
           className={cn("w-full bg-ov-primary hover:bg-ov-primaryHover")}
         >
           <Send className="w-4 h-4 mr-2" />
