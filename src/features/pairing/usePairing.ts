@@ -28,11 +28,10 @@ export function usePairing(userId: string | undefined) {
     const newCode = generateCode();
     const exp = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
-    const { error } = await supabase.from("ovbridge_pairing_tokens").insert({
-      user_id: userId,
-      created_by_device: identity.deviceId,
-      token: newCode,
-      expires_at: exp,
+    const { error } = await supabase.rpc("ovbridge_create_pairing_token", {
+      p_device_id: identity.deviceId,
+      p_token: newCode,
+      p_expires_at: exp,
     });
 
     if (error) {

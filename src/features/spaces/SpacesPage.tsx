@@ -53,6 +53,11 @@ export default function SpacesPage() {
             <li key={s.id}>
               <Card
                 className="p-4 border-ov-border hover:border-ov-primary/50 transition-colors cursor-pointer"
+                role="link"
+                tabIndex={0}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") navigate(`/spaces/${s.id}`);
+                }}
                 onClick={() => navigate(`/spaces/${s.id}`)}
               >
                 <div className="flex items-center gap-3">

@@ -97,6 +97,17 @@ export default function MessagesPage() {
             <li key={`${c.kind}-${c.id}`}>
               <Card
                 className="p-4 border-ov-border hover:border-ov-primary/50 transition-colors cursor-pointer"
+                role="link"
+                tabIndex={0}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    navigate(
+                      c.kind === "space"
+                        ? `/messages/space/${c.id}`
+                        : `/messages/device/${c.id}`
+                    );
+                  }
+                }}
                 onClick={() =>
                   navigate(
                     c.kind === "space"

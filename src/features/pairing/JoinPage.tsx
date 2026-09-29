@@ -50,11 +50,14 @@ export default function JoinPage() {
     await ensureDeviceRegistered(userId);
 
     // 3. Marquer le token comme utilisé
-    const { error: upErr } = await supabase
-      .from("ovbridge_pairing_tokens")
-      .update({ used_at: new Date().toISOString() })
-      .eq("id", tok.id);
-    if (upErr) throw new Error("Impossible de marquer le code : " + upErr.message);
+    const { data: consumed, error: consumeErr } = await supabase.rpc(
+      "ovbridge_consume_pairing_token",
+      { p_token: normalized }
+    );
+    if (consumeErr) {
+      throw new Error("Impossible de marquer le code : " + consumeErr.message);
+    }
+    if (!consumed) throw new Error("Code déjà utilisé ou expiré");
 
     setStep("done");
   };

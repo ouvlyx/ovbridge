@@ -87,13 +87,6 @@ export default function ChatPage() {
     }
   }, [messages.length]);
 
-  useEffect(() => {
-    if (!me) return;
-    messages
-      .filter((m) => m.to_device_id === me.deviceId && !m.read_at)
-      .forEach((m) => markAsRead(m.id));
-  }, [messages, me?.deviceId]);
-
   const open = async (m: ConversationMessage) => {
     if (decrypted[m.id] || !me) return;
     const { data } = await supabase
@@ -114,6 +107,9 @@ export default function ChatPage() {
           ...d,
           [m.id]: { url, name: m.file_name ?? "fichier" },
         }));
+      }
+      if (m.to_device_id === me.deviceId && !m.read_at) {
+        await markAsRead(m.id);
       }
     } catch (e: any) {
       toast.error("Déchiffrement impossible");
@@ -315,6 +311,7 @@ export default function ChatPage() {
             <Paperclip className="w-3 h-3 text-ov-muted" />
             <span className="text-xs truncate flex-1">{file.name}</span>
             <button
+              aria-label="Retirer le fichier sélectionné"
               onClick={() => {
                 setFile(null);
                 if (fileInputRef.current) fileInputRef.current.value = "";
@@ -335,6 +332,7 @@ export default function ChatPage() {
           <Button
             variant="ghost"
             size="icon"
+            aria-label="Joindre un fichier"
             onClick={() => fileInputRef.current?.click()}
           >
             <Paperclip className="w-5 h-5" />
@@ -356,6 +354,7 @@ export default function ChatPage() {
 
           <Button
             size="icon"
+            aria-label="Envoyer le message"
             onClick={send}
             disabled={sending || (!input.trim() && !file)}
             className="bg-ov-primary hover:bg-ov-primaryHover shrink-0"

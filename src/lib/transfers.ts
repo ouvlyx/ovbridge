@@ -264,7 +264,7 @@ export async function getConversation(params: {
   let query = supabase
     .from("ovbridge_transfers")
     .select("*")
-    .order("created_at", { ascending: true })
+    .order("created_at", { ascending: false })
     .limit(limit);
 
   if (scope.kind === "space") {
@@ -314,7 +314,7 @@ export async function getConversation(params: {
       sender_user_id: sender?.user_id ?? t.user_id,
       is_mine: t.user_id === myUserId && t.from_device_id === myDeviceId,
     };
-  });
+  }).reverse();
 }
 
 export type ConversationSummary = {
@@ -348,9 +348,13 @@ export async function getConversationSummaries(params: {
       .limit(20);
 
     const last = msgs?.[0];
-    const unread = (msgs ?? []).filter(
-      (m: any) => m.to_device_id === myDeviceId && !m.read_at
-    ).length;
+    const { count } = await supabase
+      .from("ovbridge_transfers")
+      .select("id", { count: "exact", head: true })
+      .eq("to_space_id", sp.id)
+      .eq("to_device_id", myDeviceId)
+      .is("read_at", null);
+    const unread = count ?? 0;
 
     result.push({
       kind: "space",
@@ -396,9 +400,14 @@ export async function getConversationSummaries(params: {
         (m.to_device_id === d.id && m.from_device_id === myDeviceId)
     );
     const last = msgsForThis[0];
-    const unread = msgsForThis.filter(
-      (m: any) => m.to_device_id === myDeviceId && !m.read_at
-    ).length;
+    const { count } = await supabase
+      .from("ovbridge_transfers")
+      .select("id", { count: "exact", head: true })
+      .eq("from_device_id", d.id)
+      .eq("to_device_id", myDeviceId)
+      .is("to_space_id", null)
+      .is("read_at", null);
+    const unread = count ?? 0;
 
     result.push({
       kind: "device",
