@@ -90,7 +90,13 @@ export async function sendFile(
     encrypted_key: enc.encryptedKey,
     nonce: enc.nonce,
   });
-  if (error) throw error;
+  if (error) {
+    const { error: cleanupError } = await supabase.storage
+      .from(BUCKET)
+      .remove([path]);
+    if (cleanupError) console.error("[sendFile] cleanup failed", cleanupError);
+    throw error;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -231,7 +237,15 @@ export async function sendFileToSpace(
         encrypted_key: enc.encryptedKey,
         nonce: enc.nonce,
       });
-      if (error) throw error;
+      if (error) {
+        const { error: cleanupError } = await supabase.storage
+          .from(BUCKET)
+          .remove([path]);
+        if (cleanupError) {
+          console.error("[sendFileToSpace] cleanup failed", cleanupError);
+        }
+        throw error;
+      }
       sent++;
     } catch (e) {
       console.error("[sendFileToSpace] fail for device", d.id, e);
@@ -364,7 +378,7 @@ export async function getConversationSummaries(params: {
       lastMessagePreview: last
         ? last.kind === "file"
           ? `📄 ${last.file_name}`
-          : (last.content ?? "").slice(0, 60)
+          : "Message chiffré"
         : null,
       unreadCount: unread,
     });
@@ -432,7 +446,7 @@ export async function getConversationSummaries(params: {
       lastMessagePreview: last
         ? last.kind === "file"
           ? `📄 ${last.file_name}`
-          : (last.content ?? "").slice(0, 60)
+          : "Message chiffré"
         : null,
       unreadCount: unread,
     });
