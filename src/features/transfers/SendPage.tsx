@@ -58,13 +58,21 @@ export default function SendPage() {
         .eq("user_id", user.id)
         .neq("id", me.deviceId)
         .eq("revoked", false);
-      setDevices((data ?? []) as DeviceTarget[]);
+
+      setDevices(
+        (data ?? []).map((d: any) => ({
+          id: d.id,
+          name: d.name,
+          public_key: d.public_key,
+          kind: "device" as const,
+        }))
+      );
     })();
   }, [user]);
 
   // Construit la liste unifiée des cibles
   const targets: Target[] = [
-    ...devices.map((d) => ({ ...d, kind: "device" as const })),
+    ...devices,
     ...spaces.map((s) => ({
       id: s.id,
       name: s.name,
@@ -105,7 +113,6 @@ export default function SendPage() {
         }
         toast.success("Envoyé ✅");
       } else {
-        // envoi vers espace
         if (mode === "text") {
           if (!text.trim()) throw new Error("Texte vide");
           const r = await sendTextToSpace(user.id, me, selected.id, text);
@@ -135,7 +142,11 @@ export default function SendPage() {
   return (
     <div className="min-h-screen p-6 max-w-md mx-auto space-y-6">
       <header className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/devices")}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate("/devices")}
+        >
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <h1 className="text-lg font-semibold">Nouvel envoi</h1>
