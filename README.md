@@ -22,7 +22,7 @@ Pont sécurisé entre vos appareils. Transférez texte, fichiers et documents de
 npm install
 cp .env.example .env.local
 # Remplir avec tes clés Supabase
-npm run dev# ovbridge
+npm run dev
 
 ## Déploiement
 
