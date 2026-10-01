@@ -1,3 +1,4 @@
+import { friendlyError } from "@/lib/errors";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -33,7 +34,7 @@ export default function LoginPage() {
       toast.success("Connexion réussie");
       navigate("/devices");
     } catch (e: any) {
-      toast.error(e.message ?? "Erreur de connexion");
+      toast.error(friendlyError(e));
     } finally {
       setLoading(false);
     }

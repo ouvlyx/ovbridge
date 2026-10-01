@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, UserPlus, Shield, Trash2, LogOut } from "lucide-react";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/errors";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useSpaceDetail } from "./useSpaceDetail";
 import InviteToSpaceDialog from "./InviteToSpaceDialog";
@@ -35,7 +36,7 @@ export default function SpaceDetailPage() {
       setRemoving(null);
       await refresh();
     } catch (e: any) {
-      toast.error(e.message ?? "Erreur");
+      toast.error(friendlyError(e));
     } finally {
       setBusy(false);
     }
@@ -49,7 +50,7 @@ export default function SpaceDetailPage() {
       toast.success("Espace supprimé");
       navigate("/devices");
     } catch (e: any) {
-      toast.error(e.message ?? "Erreur");
+      toast.error(friendlyError(e));
     } finally {
       setBusy(false);
     }
@@ -63,7 +64,7 @@ export default function SpaceDetailPage() {
       toast.success("Vous avez quitté l'espace");
       navigate("/devices");
     } catch (e: any) {
-      toast.error(e.message ?? "Erreur");
+      toast.error(friendlyError(e));
     } finally {
       setBusy(false);
     }

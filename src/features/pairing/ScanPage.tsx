@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Camera, AlertCircle } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
+import { friendlyError } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -57,7 +58,7 @@ export default function ScanPage() {
           setError(
             e?.message?.includes("Permission")
               ? "Accès à la caméra refusé. Autorisez la caméra dans les réglages."
-              : e?.message ?? "Impossible d'ouvrir la caméra."
+              : friendlyError(e)
           );
         }
       }

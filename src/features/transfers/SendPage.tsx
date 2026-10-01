@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/errors";
 import { ArrowLeft, Send, FileUp, Type, Users, Smartphone } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/features/auth/AuthProvider";
@@ -133,7 +134,7 @@ export default function SendPage() {
       }
       navigate("/devices");
     } catch (err: any) {
-      toast.error(err.message ?? "Erreur d'envoi");
+      toast.error(friendlyError(err));
     } finally {
       setBusy(false);
     }

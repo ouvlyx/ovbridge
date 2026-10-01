@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { friendlyError } from "@/lib/errors";
 
 type Props = {
   open: boolean;
@@ -43,7 +44,7 @@ export default function RenameDeviceDialog({
       .eq("id", deviceId);
 
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(friendlyError(error));
     toast.success("Appareil renommé");
     onOpenChange(false);
     onRenamed?.();   // ← NOUVEAU

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { friendlyError } from "@/lib/errors";
 
 const schema = z.object({
   email: z.string().email("Email invalide"),
@@ -37,7 +38,7 @@ export default function SignupPage() {
       toast.success("Compte créé. Vérifie ta boîte mail si confirmation activée.");
       navigate("/devices");
     } catch (e: any) {
-      toast.error(e.message ?? "Erreur d'inscription");
+      toast.error(friendlyError(e));
     } finally {
       setLoading(false);
     }

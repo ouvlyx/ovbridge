@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Copy, Check, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/errors";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { inviteToSpace, type SpaceInvite } from "@/lib/spaces";
 import {
@@ -38,7 +39,7 @@ export default function InviteToSpaceDialog({
       const inv = await inviteToSpace(spaceId, user.id);
       setInvite(inv);
     } catch (e: any) {
-      toast.error(e.message ?? "Erreur");
+      toast.error(friendlyError(e));
     } finally {
       setLoading(false);
     }

@@ -1,3 +1,4 @@
+import { friendlyError } from "@/lib/errors";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -75,7 +76,7 @@ export default function DevicesPage() {
         const identity = await ensureDeviceRegistered(user.id);
         setMyDeviceId(identity.deviceId);
       } catch (e: any) {
-        toast.error("Impossible d'enregistrer cet appareil : " + e.message);
+        toast.error(friendlyError(e));
       } finally {
         setRegistering(false);
       }
@@ -90,7 +91,7 @@ export default function DevicesPage() {
       .update({ revoked: true })
       .eq("id", revoking.id);
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(friendlyError(error));
     toast.success("Appareil révoqué");
     setRevoking(null);
     await refresh();
@@ -104,7 +105,7 @@ export default function DevicesPage() {
       .delete()
       .eq("id", deleting.id);
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(friendlyError(error));
     toast.success("Appareil supprimé");
     setDeleting(null);
     await refresh();

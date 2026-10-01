@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Camera } from "lucide-react";
+import { friendlyError } from "@/lib/errors";
 
 export default function JoinPage() {
   const { user, signIn, loading: authLoading } = useAuth();
@@ -77,7 +78,7 @@ export default function JoinPage() {
       setStep("linking");
       await finalize(uid);
     } catch (err: any) {
-      toast.error(err.message ?? "Erreur");
+      toast.error(friendlyError(err));
       setStep("form");
     } finally {
       setBusy(false);

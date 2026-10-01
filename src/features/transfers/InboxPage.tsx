@@ -11,6 +11,7 @@ import {
   Smartphone,
 } from "lucide-react";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/errors";
 import { supabase } from "@/lib/supabase";
 import { getStoredIdentity } from "@/lib/device";
 import { decryptTransfer, markAsRead, type Transfer } from "@/lib/transfers";
@@ -98,7 +99,7 @@ export default function InboxPage() {
       }
       await markAsRead(tr.id);
     } catch (e: any) {
-      toast.error("Déchiffrement impossible : " + e.message);
+      toast.error(friendlyError(e));
     } finally {
       setBusyId(null);
     }

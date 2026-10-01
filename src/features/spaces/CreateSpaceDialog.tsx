@@ -1,3 +1,4 @@
+import { friendlyError } from "@/lib/errors";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/features/auth/AuthProvider";
@@ -42,7 +43,7 @@ export default function CreateSpaceDialog({
       onOpenChange(false);
       onCreated();
     } catch (e: any) {
-      toast.error(e.message ?? "Erreur");
+      toast.error(friendlyError(e));
     } finally {
       setBusy(false);
     }

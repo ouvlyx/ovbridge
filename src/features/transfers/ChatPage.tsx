@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/errors";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { getStoredIdentity } from "@/lib/device";
@@ -163,7 +164,7 @@ export default function ChatPage() {
       }
       await refresh();
     } catch (e: any) {
-      toast.error(e.message ?? "Erreur d'envoi");
+      toast.error(friendlyError(e));
     } finally {
       setSending(false);
     }

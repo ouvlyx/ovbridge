@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Users, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/errors";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { joinSpaceByCode } from "@/lib/spaces";
 import { Button } from "@/components/ui/button";
@@ -30,7 +31,7 @@ export default function JoinSpacePage() {
       toast.success("Vous avez rejoint l'espace");
       navigate(`/spaces/${spaceId}`);
     } catch (e: any) {
-      toast.error(e.message ?? "Code invalide");
+      toast.error(friendlyError(e));
     } finally {
       setBusy(false);
     }
