@@ -63,3 +63,14 @@ npm run build
 Vercel et Netlify détectent Vite. La commande de build est `npm run build` et le dossier généré est `dist`. Définir les deux variables `VITE_SUPABASE_*` dans les variables d'environnement du fournisseur.
 
 Le site de production doit être servi en HTTPS : l'accès caméra pour le scan QR exige un contexte sécurisé. Le mode invité dépend aussi de la disponibilité de Supabase Auth depuis l'origine HTTPS.
+
+### Avertissements statiques connus
+
+`npm run lint` ne signale actuellement aucune erreur, mais conserve les avertissements suivants :
+
+- Exports mixtes composants/valeurs pour Fast Refresh dans `src/components/ui/button.tsx` et `src/features/auth/AuthProvider.tsx`.
+- Dépendances `scope` signalées par `react-hooks/exhaustive-deps` dans `src/features/transfers/useConversation.ts` et `src/features/transfers/ChatPage.tsx`.
+- Mise à jour d'état dans un effet signalée dans `src/features/pairing/JoinPage.tsx` et `src/features/spaces/useSpaceDetail.ts`.
+- Paramètre d'exception inutilisé dans `src/features/transfers/ChatPage.tsx`.
+
+Ces avertissements sont suivis comme dette technique; ils ne sont pas désactivés par configuration.
