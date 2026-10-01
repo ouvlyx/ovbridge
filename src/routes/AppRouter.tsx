@@ -15,7 +15,7 @@ const SpaceDetailPage = lazy(() => import("@/features/spaces/SpaceDetailPage"));
 const JoinSpacePage = lazy(() => import("@/features/spaces/JoinSpacePage"));
 const MessagesPage = lazy(() => import("@/features/transfers/MessagesPage"));
 const ChatPage = lazy(() => import("@/features/transfers/ChatPage"));
-
+const ConfirmPage = lazy(() => import("@/features/auth/ConfirmPage"));
 
 function Loading() {
   return (
@@ -36,6 +36,7 @@ export default function AppRouter() {
           <Route path="/join" element={<JoinPage />} />
           <Route path="/join-space" element={<JoinSpacePage />} />
           <Route path="/scan" element={<ScanPage />} />
+          <Route path="/auth/confirm" element={<ConfirmPage />} />
 
           {/* --- Protégées --- */}
           <Route element={<ProtectedRoute />}>

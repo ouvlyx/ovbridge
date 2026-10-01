@@ -15,7 +15,8 @@ import {
   Trash2,
   MoreVertical,
   Users,
-  MessageSquare,
+  MessageSquare, 
+  Sparkles
 } from "lucide-react";
 import SpacesPage from "@/features/spaces/SpacesPage";
 import { supabase } from "@/lib/supabase";
@@ -35,6 +36,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { useDeviceAlerts } from "./useDeviceAlerts";
+import { useTransferAlerts } from "@/features/transfers/useTransferAlerts";
+import { useUnreadCount } from "@/features/transfers/useUnreadCount";
+
+
+
 
 function PlatformIcon({ platform }: { platform: string | null }) {
   if (platform === "android" || platform === "ios")
@@ -56,11 +63,20 @@ function timeAgo(iso: string | null): string {
 }
 
 export default function DevicesPage() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAnonymous } = useAuth();
   const { devices, loading, refresh } = useDevices();
   const navigate = useNavigate();
   const [myDeviceId, setMyDeviceId] = useState<string | null>(null);
   const [registering, setRegistering] = useState(true);
+
+  useDeviceAlerts(myDeviceId);
+  useTransferAlerts({ currentChat: null }); // pas de chat ouvert ici
+  const unread = useUnreadCount();
+  // dans DevicesPage, state
+  // const [newDeviceFlash, setNewDeviceFlash] = useState(false);
+
+  // afficher un badge temporaire pendant 5s après un nouveau device
+  // → à hooker sur l'event realtime si tu veux, mais le toast suffit pour l'instant
 
   const [tab, setTab] = useState<"devices" | "spaces">("devices");
 
@@ -119,8 +135,13 @@ export default function DevicesPage() {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ov-success opacity-60" />
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-ov-success" />
           </span>
-          <h1 className="text-2xl font-bold text-ov-primary">OvBridge</h1>
-        </div>
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ov-success opacity-60" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-ov-success" />
+            </span>
+            <h1 className="text-2xl font-bold text-ov-primary">OvBridge</h1>
+          </div>        </div>
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"
@@ -135,6 +156,26 @@ export default function DevicesPage() {
           </Button>
         </div>
       </header>
+
+      {isAnonymous && (
+        <Card className="p-3 border-ov-accent/40 bg-ov-accent/[0.05] flex items-center gap-3">
+          <Sparkles className="w-5 h-5 text-ov-accent shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-ov-text font-medium">Mode invité</p>
+            <p className="text-[10px] text-ov-muted">
+              Vos données seront perdues à la déconnexion.
+            </p>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            className="border-ov-accent/40 text-ov-accent hover:bg-ov-accent/10 text-xs h-7 px-2"
+            onClick={() => navigate("/profile")}
+          >
+            Sauvegarder
+          </Button>
+        </Card>
+      )}
   
       {/* TABS */}
       <div className="flex gap-2 p-1 rounded-xl bg-ov-surface border border-ov-border">
@@ -285,10 +326,15 @@ export default function DevicesPage() {
             </Button>
             <Button
               variant="outline"
-              className="border-ov-border hover:bg-ov-surface"
+              className="border-ov-border hover:bg-ov-surface relative"
               onClick={() => navigate("/messages")}
             >
               <MessageSquare className="w-4 h-4 mr-2" /> Messages
+              {unread > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-ov-primary text-white text-[10px] rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 font-semibold">
+                  {unread > 99 ? "99+" : unread}
+                </span>
+              )}
             </Button>
           </div>
   

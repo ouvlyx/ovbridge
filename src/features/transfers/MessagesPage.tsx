@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useTransferAlerts } from "./useTransferAlerts";
 
 function timeAgo(iso: string | null) {
   if (!iso) return "";
@@ -32,6 +33,8 @@ export default function MessagesPage() {
   const { user } = useAuth();
   const [convs, setConvs] = useState<ConversationSummary[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useTransferAlerts({ currentChat: null });
 
   useEffect(() => {
     if (!user) return;

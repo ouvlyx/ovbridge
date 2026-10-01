@@ -29,6 +29,7 @@ import {
 import { useConversation } from "./useConversation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useTransferAlerts } from "./useTransferAlerts";
 
 type Kind = "space" | "device";
 
@@ -61,6 +62,9 @@ export default function ChatPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const me = getStoredIdentity();
+
+  const currentChatKey = kind && id ? `${kind}:${id}` : null;
+  useTransferAlerts({ currentChat: currentChatKey });
 
   useEffect(() => {
     if (!scope) return;

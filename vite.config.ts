@@ -10,7 +10,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "icons/*.png"],
+      includeAssets: ["favicon.ico", "favicon.svg", "apple-touch-icon.png", "icons/*.png"],
       manifest: {
         name: "OvBridge",
         short_name: "OvBridge",
@@ -21,7 +21,9 @@ export default defineConfig({
         orientation: "portrait",
         start_url: "/",
         icons: [
-          { src: "/favicon.svg", sizes: "any", type: "image/svg+xml" },
+          { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+          { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+          { src: "/icons/icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
         ],
       },
       workbox: {

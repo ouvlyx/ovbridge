@@ -6,8 +6,11 @@ type AuthContextType = {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  isAnonymous: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
+  signInAnonymously: () => Promise<void>;
+  convertToEmail: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -40,13 +43,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   };
 
+  const signInAnonymously = async () => {
+    const { error } = await supabase.auth.signInAnonymously();
+    if (error) throw error;
+  };
+
+  const convertToEmail = async (email: string, password: string) => {
+    const { error } = await supabase.auth.updateUser({ email, password });
+    if (error) throw error;
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
   };
 
   return (
     <AuthContext.Provider
-      value={{ user: session?.user ?? null, session, loading, signIn, signUp, signOut }}
+      value={{
+        user: session?.user ?? null,
+        session,
+        loading,
+        isAnonymous: session?.user?.is_anonymous ?? false,
+        signIn,
+        signUp,
+        signInAnonymously,
+        convertToEmail,
+        signOut,
+      }}
     >
       {children}
     </AuthContext.Provider>
