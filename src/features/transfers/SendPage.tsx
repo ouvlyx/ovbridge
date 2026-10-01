@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/errors";
+import { MAX_FILE_SIZE_MB } from "@/lib/constants";
 import { ArrowLeft, Send, FileUp, Type, Users, Smartphone } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/features/auth/AuthProvider";
@@ -97,6 +98,11 @@ export default function SendPage() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !selected) return;
+    if (file && file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      return toast.error(
+        `Fichier trop volumineux. Taille maximale : ${MAX_FILE_SIZE_MB} Mo.`
+      );
+    }
     const me = getStoredIdentity();
     if (!me) return;
 
@@ -226,7 +232,11 @@ export default function SendPage() {
           />
         ) : (
           <Card className="p-4 border-ov-border space-y-2">
+            <Label htmlFor="send-file">
+              Fichier ({MAX_FILE_SIZE_MB} Mo maximum)
+            </Label>
             <Input
+              id="send-file"
               type="file"
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setFile(e.target.files?.[0] ?? null)

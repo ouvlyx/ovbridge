@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/errors";
+import { MAX_FILE_SIZE_MB } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { getStoredIdentity } from "@/lib/device";
@@ -131,6 +132,11 @@ export default function ChatPage() {
   const send = async () => {
     if (!user || !me || !scope) return;
     if (!input.trim() && !file) return;
+    if (file && file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      return toast.error(
+        `Fichier trop volumineux. Taille maximale : ${MAX_FILE_SIZE_MB} Mo.`
+      );
+    }
 
     setSending(true);
     try {
@@ -307,6 +313,9 @@ export default function ChatPage() {
       </div>
 
       <div className="p-3 border-t border-ov-border bg-ov-surface sticky bottom-0">
+        <p className="text-[10px] text-ov-muted mb-2">
+          Fichier : {MAX_FILE_SIZE_MB} Mo maximum
+        </p>
         {file && (
           <div className="flex items-center gap-2 mb-2 px-2 py-1 bg-ov-bg rounded-lg">
             <Paperclip className="w-3 h-3 text-ov-muted" />
