@@ -79,8 +79,9 @@ export async function ensureDeviceRegistered(
     if (existing) {
       const { data } = await supabase
         .from("ovbridge_devices")
-        .select("id, revoked")
+        .select("id, user_id, revoked")
         .eq("id", existing.deviceId)
+        .eq("user_id", userId)
         .maybeSingle();
 
       if (data && !data.revoked) {

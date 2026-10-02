@@ -24,6 +24,7 @@ import {
   sendFile,
   sendTextToSpace,
   sendFileToSpace,
+  getSentPlaintext,
   type ConversationMessage,
 } from "@/lib/transfers";
 import { useConversation } from "./useConversation";
@@ -57,6 +58,9 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [sending, setSending] = useState(false);
+
+  // Verrou SYNCHRONE anti-double-envoi
+  const sendLock = useRef(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -92,6 +96,38 @@ export default function ChatPage() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages.length]);
+
+  // Marque comme lu + déchiffre automatiquement les derniers messages reçus
+  useEffect(() => {
+    if (!me) return;
+
+    messages
+      .filter((m) => m.to_device_id === me.deviceId && !m.read_at)
+      .forEach((m) => markAsRead(m.id));
+
+    messages.slice(-20).forEach(async (m) => {
+      if (decrypted[m.id]) return;
+      if (m.kind === "file") return;
+      if (m.is_mine) return;
+
+      const { data } = await supabase
+        .from("ovbridge_devices")
+        .select("public_key")
+        .eq("id", m.from_device_id)
+        .maybeSingle();
+      if (!data) return;
+
+      try {
+        const res = await decryptTransfer(m, me, data.public_key);
+        if (res.text !== undefined) {
+          setDecrypted((prev) => ({ ...prev, [m.id]: { text: res.text } }));
+        }
+      } catch {
+        // silencieux
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages, me?.deviceId]);
 
   const open = async (m: ConversationMessage) => {
     if (decrypted[m.id] || !me) return;
@@ -134,19 +170,34 @@ export default function ChatPage() {
   };
 
   const send = async () => {
+    // 1. Verrou synchrone : bloque tout 2ᵉ appel immédiat
+    if (sendLock.current) return;
     if (!user || !me || !scope) return;
     if (!input.trim() && !file) return;
+
     if (file && file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
       return toast.error(
         `Fichier trop volumineux. Taille maximale : ${MAX_FILE_SIZE_MB} Mo.`
       );
     }
 
+    // 2. On verrouille TOUT DE SUITE
+    sendLock.current = true;
     setSending(true);
+
+    // 3. On capture les valeurs AVANT les await
+    const textToSend = input;
+    const fileToSend = file;
+
+    // 4. On vide les champs immédiatement (empêche un 2ᵉ envoi visuel)
+    if (!fileToSend) setInput("");
+    setFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+
     try {
-      if (file) {
+      if (fileToSend) {
         if (scope.kind === "space") {
-          await sendFileToSpace(user.id, me, scope.id, file);
+          await sendFileToSpace(user.id, me, scope.id, fileToSend);
         } else {
           const { data } = await supabase
             .from("ovbridge_devices")
@@ -154,13 +205,11 @@ export default function ChatPage() {
             .eq("id", scope.id)
             .maybeSingle();
           if (!data) throw new Error("Destinataire introuvable");
-          await sendFile(user.id, me, data, file);
+          await sendFile(user.id, me, data, fileToSend);
         }
-        setFile(null);
-        if (fileInputRef.current) fileInputRef.current.value = "";
       } else {
         if (scope.kind === "space") {
-          await sendTextToSpace(user.id, me, scope.id, input);
+          await sendTextToSpace(user.id, me, scope.id, textToSend);
         } else {
           const { data } = await supabase
             .from("ovbridge_devices")
@@ -168,14 +217,17 @@ export default function ChatPage() {
             .eq("id", scope.id)
             .maybeSingle();
           if (!data) throw new Error("Destinataire introuvable");
-          await sendText(user.id, me, data, input);
+          await sendText(user.id, me, data, textToSend);
         }
-        setInput("");
       }
       await refresh();
     } catch (e: any) {
+      // En cas d'erreur, on restaure le contenu perdu
+      if (!fileToSend) setInput(textToSend);
+      else setFile(fileToSend);
       toast.error(friendlyError(e));
     } finally {
+      sendLock.current = false;
       setSending(false);
     }
   };
@@ -220,6 +272,10 @@ export default function ChatPage() {
             const d = decrypted[m.id];
             const isFile = m.kind === "file";
             const mine = m.is_mine;
+
+            const myOwnText =
+              mine && m.kind === "text" ? getSentPlaintext(m.id) : null;
+            const displayText = d?.text ?? myOwnText;
 
             return (
               <div
@@ -273,8 +329,8 @@ export default function ChatPage() {
                         </button>
                       )}
                     </div>
-                  ) : d ? (
-                    <p className="whitespace-pre-wrap">{d.text}</p>
+                  ) : displayText ? (
+                    <p className="whitespace-pre-wrap">{displayText}</p>
                   ) : (
                     <button
                       onClick={() => open(m)}
@@ -358,7 +414,8 @@ export default function ChatPage() {
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                send();
+                e.stopPropagation();
+                if (!sendLock.current && !sending) send();
               }
             }}
             rows={1}
@@ -370,7 +427,7 @@ export default function ChatPage() {
             size="icon"
             aria-label="Envoyer le message"
             onClick={send}
-            disabled={sending || (!input.trim() && !file)}
+            disabled={sending || sendLock.current || (!input.trim() && !file)}
             className="bg-ov-primary hover:bg-ov-primaryHover shrink-0"
           >
             <Send className="w-4 h-4" />

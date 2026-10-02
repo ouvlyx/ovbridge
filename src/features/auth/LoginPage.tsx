@@ -10,7 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Link2, UserRound } from "lucide-react";
+import {
+  Link2,
+  // UserRound 
+} from "lucide-react";
 
 const schema = z.object({
   email: z.string().email("Email invalide"),
@@ -20,10 +23,13 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export default function LoginPage() {
-  const { signIn, signInAnonymously } = useAuth();
+  const { 
+    signIn, 
+    // signInAnonymously 
+  } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [anonLoading, setAnonLoading] = useState(false);
+  // const [anonLoading, setAnonLoading] = useState(false);
 
   const {
     register,
@@ -46,18 +52,18 @@ export default function LoginPage() {
     }
   };
 
-  const onAnonymous = async () => {
-    setAnonLoading(true);
-    try {
-      await signInAnonymously();
-      toast.success("Mode invité activé");
-      navigate("/devices");
-    } catch (e: any) {
-      toast.error(friendlyError(e));
-    } finally {
-      setAnonLoading(false);
-    }
-  };
+  // const onAnonymous = async () => {
+  //   setAnonLoading(true);
+  //   try {
+  //     await signInAnonymously();
+  //     toast.success("Mode invité activé");
+  //     navigate("/devices");
+  //   } catch (e: any) {
+  //     toast.error(friendlyError(e));
+  //   } finally {
+  //     setAnonLoading(false);
+  //   }
+  // };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
@@ -116,6 +122,7 @@ export default function LoginPage() {
         </div>
 
         {/* Mode invité */}
+        {/*        
         <Button
           type="button"
           variant="outline"
@@ -125,7 +132,7 @@ export default function LoginPage() {
         >
           <UserRound className="w-4 h-4 mr-2" />
           {anonLoading ? "Activation…" : "Utiliser sans compte"}
-        </Button>
+        </Button> */}
 
         {/* Rejoindre avec un code */}
         <Button

@@ -16,40 +16,55 @@ export type Device = {
 
 export function useDevices() {
   const { user } = useAuth();
-  const [devices, setDevices] = useState<Device[]>([]);
-  const [loading, setLoading] = useState(true);
+  const userId = user?.id;
+  const [deviceSnapshot, setDeviceSnapshot] = useState<{
+    userId: string;
+    devices: Device[];
+  } | null>(null);
+  const [loadedUserId, setLoadedUserId] = useState<string | null>(null);
+  const devices =
+    deviceSnapshot && deviceSnapshot.userId === userId
+      ? deviceSnapshot.devices
+      : [];
+  const loading = Boolean(userId && loadedUserId !== userId);
 
   const refresh = useCallback(async () => {
-    if (!user) return;
+    if (!userId) {
+      setDeviceSnapshot(null);
+      return;
+    }
     const { data, error } = await supabase
       .from("ovbridge_devices")
       .select("*")
+      .eq("user_id", userId)
       .order("created_at", { ascending: true });
     if (error) {
       console.error("[useDevices]", error);
       return;
     }
-    setDevices((data ?? []) as Device[]);
-  }, [user]);
+    setDeviceSnapshot({ userId, devices: (data ?? []) as Device[] });
+  }, [userId]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!userId) {
+      return;
+    }
     let active = true;
 
     (async () => {
       await refresh();
-      if (active) setLoading(false);
+      if (active) setLoadedUserId(userId);
     })();
 
     const channel = supabase
-      .channel("ovbridge_devices_rt")
+      .channel(`ovbridge_devices_rt_${userId}`)
       .on(
         "postgres_changes",
         {
           event: "*",
           schema: "public",
           table: "ovbridge_devices",
-          filter: `user_id=eq.${user.id}`,
+          filter: `user_id=eq.${userId}`,
         },
         () => refresh()
       )
@@ -59,7 +74,7 @@ export function useDevices() {
       active = false;
       supabase.removeChannel(channel);
     };
-  }, [user, refresh]);
+  }, [userId, refresh]);
 
   return { devices, loading, refresh };
 }

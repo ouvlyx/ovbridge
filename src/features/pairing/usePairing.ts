@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { getStoredIdentity } from "@/lib/device";
+import { ensureDeviceRegistered } from "@/lib/device";
+import { friendlyError } from "@/lib/errors";
 
-const CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // sans I, O, 0, 1 (ambigus)
+const CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
 function generateCode(): string {
   const bytes = new Uint8Array(8);
@@ -12,41 +13,84 @@ function generateCode(): string {
 }
 
 export function usePairing(userId: string | undefined) {
-  const [code, setCode] = useState<string | null>(null);
-  const [expiresAt, setExpiresAt] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [paired, setPaired] = useState(false);
+  const [pairingState, setPairingState] = useState<{
+    userId: string;
+    code: string | null;
+    expiresAt: string | null;
+    paired: boolean;
+    error: string | null;
+  } | null>(null);
+  const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
+
+  const currentState = pairingState?.userId === userId ? pairingState : null;
+  const code = currentState?.code ?? null;
+  const expiresAt = currentState?.expiresAt ?? null;
+  const paired = currentState?.paired ?? false;
+  const error = currentState?.error ?? null;
+  const loading = Boolean(userId && loadingUserId === userId);
 
   const start = async () => {
-    if (!userId) return;
-    const identity = getStoredIdentity();
-    if (!identity) return;
+    if (!userId || loadingUserId === userId) return;
 
-    setLoading(true);
-    setPaired(false);
+    const activeUserId = userId;
+    setLoadingUserId(activeUserId);
+    setPairingState((previous) =>
+      previous?.userId === activeUserId
+        ? { ...previous, paired: false, error: null }
+        : {
+            userId: activeUserId,
+            code: null,
+            expiresAt: null,
+            paired: false,
+            error: null,
+          }
+    );
 
-    const newCode = generateCode();
-    const exp = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+    try {
+      const identity = await ensureDeviceRegistered(activeUserId);
+      const newCode = generateCode();
+      const exp = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
-    const { error } = await supabase.rpc("ovbridge_create_pairing_token", {
-      p_device_id: identity.deviceId,
-      p_token: newCode,
-      p_expires_at: exp,
-    });
+      // Insert direct (plus de RPC)
+      const { error: createError } = await supabase
+        .from("ovbridge_pairing_tokens")
+        .insert({
+          user_id: activeUserId,
+          created_by_device: identity.deviceId,
+          token: newCode,
+          expires_at: exp,
+        });
 
-    if (error) {
-      console.error("[usePairing]", error);
-      setLoading(false);
-      return;
+      if (createError) throw createError;
+
+      setPairingState({
+        userId: activeUserId,
+        code: newCode,
+        expiresAt: exp,
+        paired: false,
+        error: null,
+      });
+    } catch (startError) {
+      setPairingState((previous) =>
+        previous?.userId === activeUserId
+          ? { ...previous, error: friendlyError(startError) }
+          : {
+              userId: activeUserId,
+              code: null,
+              expiresAt: null,
+              paired: false,
+              error: friendlyError(startError),
+            }
+      );
+    } finally {
+      setLoadingUserId((current) =>
+        current === activeUserId ? null : current
+      );
     }
-
-    setCode(newCode);
-    setExpiresAt(exp);
-    setLoading(false);
   };
 
   useEffect(() => {
-    if (!code) return;
+    if (!userId || !code) return;
     const channel = supabase
       .channel(`pairing_${code}`)
       .on(
@@ -58,7 +102,12 @@ export function usePairing(userId: string | undefined) {
           filter: `token=eq.${code}`,
         },
         (payload: { new: { used_at: string | null } }) => {
-          if (payload.new.used_at) setPaired(true);
+          if (!payload.new.used_at) return;
+          setPairingState((previous) =>
+            previous?.userId === userId && previous.code === code
+              ? { ...previous, paired: true }
+              : previous
+          );
         }
       )
       .subscribe();
@@ -66,7 +115,7 @@ export function usePairing(userId: string | undefined) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [code]);
+  }, [code, userId]);
 
-  return { code, expiresAt, loading, paired, start };
+  return { code, expiresAt, loading, paired, error, start };
 }

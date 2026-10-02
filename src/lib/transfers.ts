@@ -30,6 +30,40 @@ export type Transfer = {
 };
 
 // ---------------------------------------------------------------------------
+// Cache local du texte envoyé (pour afficher nos propres messages en clair)
+// ---------------------------------------------------------------------------
+
+const SENT_CACHE_KEY = "ovbridge_sent_plaintext";
+
+type SentCache = Record<string, string>;
+
+function loadSentCache(): SentCache {
+  try {
+    return JSON.parse(localStorage.getItem(SENT_CACHE_KEY) ?? "{}");
+  } catch {
+    return {};
+  }
+}
+
+function saveSentCache(c: SentCache) {
+  const entries = Object.entries(c).slice(-200);
+  localStorage.setItem(
+    SENT_CACHE_KEY,
+    JSON.stringify(Object.fromEntries(entries))
+  );
+}
+
+export function cacheSentPlaintext(transferId: string, plaintext: string) {
+  const c = loadSentCache();
+  c[transferId] = plaintext;
+  saveSentCache(c);
+}
+
+export function getSentPlaintext(transferId: string): string | null {
+  return loadSentCache()[transferId] ?? null;
+}
+
+// ---------------------------------------------------------------------------
 // Envoi texte
 // ---------------------------------------------------------------------------
 
@@ -45,15 +79,22 @@ export async function sendText(
     me.privateKey
   );
 
-  const { error } = await supabase.from("ovbridge_transfers").insert({
-    user_id: userId,
-    from_device_id: me.deviceId,
-    to_device_id: recipient.id,
-    kind: "text",
-    content: ciphertext,
-    nonce,
-  });
+  const { data, error } = await supabase
+    .from("ovbridge_transfers")
+    .insert({
+      user_id: userId,
+      from_device_id: me.deviceId,
+      to_device_id: recipient.id,
+      kind: "text",
+      content: ciphertext,
+      nonce,
+    })
+    .select("id")
+    .single();
+
   if (error) throw error;
+
+  if (data?.id) cacheSentPlaintext(data.id, plaintext);
 }
 
 // ---------------------------------------------------------------------------
@@ -176,16 +217,21 @@ export async function sendTextToSpace(
         me.privateKey
       );
 
-      const { error } = await supabase.from("ovbridge_transfers").insert({
-        user_id: userId,
-        from_device_id: me.deviceId,
-        to_device_id: d.id,
-        to_space_id: spaceId,
-        kind: "text",
-        content: ciphertext,
-        nonce,
-      });
+      const { data, error } = await supabase
+        .from("ovbridge_transfers")
+        .insert({
+          user_id: userId,
+          from_device_id: me.deviceId,
+          to_device_id: d.id,
+          to_space_id: spaceId,
+          kind: "text",
+          content: ciphertext,
+          nonce,
+        })
+        .select("id")
+        .single();
       if (error) throw error;
+      if (data?.id) cacheSentPlaintext(data.id, plaintext);
       sent++;
     } catch (e) {
       console.error("[sendTextToSpace] fail for device", d.id, e);
@@ -319,16 +365,18 @@ export async function getConversation(params: {
     };
   });
 
-  return transfers.map((t) => {
-    const sender = deviceMap[t.from_device_id];
-    return {
-      ...t,
-      sender_name: sender?.name ?? "Inconnu",
-      sender_platform: sender?.platform ?? null,
-      sender_user_id: sender?.user_id ?? t.user_id,
-      is_mine: t.user_id === myUserId && t.from_device_id === myDeviceId,
-    };
-  }).reverse();
+  return transfers
+    .map((t) => {
+      const sender = deviceMap[t.from_device_id];
+      return {
+        ...t,
+        sender_name: sender?.name ?? "Inconnu",
+        sender_platform: sender?.platform ?? null,
+        sender_user_id: sender?.user_id ?? t.user_id,
+        is_mine: t.user_id === myUserId && t.from_device_id === myDeviceId,
+      };
+    })
+    .reverse();
 }
 
 export type ConversationSummary = {
@@ -352,7 +400,6 @@ export async function getConversationSummaries(params: {
 
   const result: ConversationSummary[] = [];
 
-  // Espaces
   for (const sp of spacesData ?? []) {
     const { data: msgs } = await supabase
       .from("ovbridge_transfers")
@@ -384,7 +431,6 @@ export async function getConversationSummaries(params: {
     });
   }
 
-  // Devices directs
   const directDeviceIds = new Set<string>();
   const directQuery = supabase
     .from("ovbridge_transfers")

@@ -15,8 +15,9 @@ import {
   Trash2,
   MoreVertical,
   Users,
-  MessageSquare, 
-  Sparkles
+  MessageSquare,
+  HardDrive,
+  Clipboard
 } from "lucide-react";
 import SpacesPage from "@/features/spaces/SpacesPage";
 import { supabase } from "@/lib/supabase";
@@ -63,7 +64,11 @@ function timeAgo(iso: string | null): string {
 }
 
 export default function DevicesPage() {
-  const { user, signOut, isAnonymous } = useAuth();
+  const { 
+    user, 
+    signOut, 
+    // isAnonymous 
+  } = useAuth();
   const { devices, loading, refresh } = useDevices();
   const navigate = useNavigate();
   const [myDeviceId, setMyDeviceId] = useState<string | null>(null);
@@ -157,7 +162,7 @@ export default function DevicesPage() {
         </div>
       </header>
 
-      {isAnonymous && (
+      {/* {isAnonymous && (
         <Card className="p-3 border-ov-accent/40 bg-ov-accent/[0.05] flex items-center gap-3">
           <Sparkles className="w-5 h-5 text-ov-accent shrink-0" />
           <div className="flex-1 min-w-0">
@@ -175,7 +180,7 @@ export default function DevicesPage() {
             Sauvegarder
           </Button>
         </Card>
-      )}
+      )} */}
   
       {/* TABS */}
       <div className="flex gap-2 p-1 rounded-xl bg-ov-surface border border-ov-border">
@@ -336,8 +341,23 @@ export default function DevicesPage() {
                 </span>
               )}
             </Button>
+            <Button
+              variant="outline"
+              className="border-ov-border hover:bg-ov-surface"
+              onClick={() => navigate("/workspace")}
+            >
+              <HardDrive className="w-4 h-4 mr-2" /> Mon espace
+            </Button>
+
+            <Button
+              variant="outline"
+              className="border-ov-border hover:bg-ov-surface"
+              onClick={() => navigate("/clipboard")}
+            >
+              <Clipboard className="w-4 h-4 mr-2" /> Presse-papiers
+            </Button>
           </div>
-  
+          
           <Button
             variant="outline"
             className="w-full border-dashed border-ov-border text-ov-muted hover:text-ov-text hover:border-ov-primary/50 hover:bg-ov-primary/5 transition-colors"

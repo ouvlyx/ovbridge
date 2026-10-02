@@ -16,6 +16,8 @@ const JoinSpacePage = lazy(() => import("@/features/spaces/JoinSpacePage"));
 const MessagesPage = lazy(() => import("@/features/transfers/MessagesPage"));
 const ChatPage = lazy(() => import("@/features/transfers/ChatPage"));
 const ConfirmPage = lazy(() => import("@/features/auth/ConfirmPage"));
+const WorkspacePage = lazy(() => import("@/features/workspace/WorkspacePage"));
+const ClipboardPage = lazy(() => import("@/features/clipboard/ClipboardPage"));
 
 function Loading() {
   return (
@@ -48,6 +50,8 @@ export default function AppRouter() {
             <Route path="/spaces/:id" element={<SpaceDetailPage />} />
             <Route path="/messages" element={<MessagesPage />} />
             <Route path="/messages/:kind/:id" element={<ChatPage />} />
+            <Route path="/workspace" element={<WorkspacePage />} />
+            <Route path="/clipboard" element={<ClipboardPage />} />
           </Route>
 
           {/* --- Fallback --- */}

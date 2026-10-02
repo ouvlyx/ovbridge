@@ -112,20 +112,25 @@ export async function deleteSpace(spaceId: string) {
  * Renvoie tous les devices actifs de tous les membres d'un espace
  * (sauf ceux de l'utilisateur courant).
  */
+
 export async function getSpaceTargetDevices(
   spaceId: string,
   excludeUserId: string
 ) {
-  // 1. Récupère les user_ids des membres
+  // 1. Récupère les user_ids des membres (uniques)
   const { data: members, error: mErr } = await supabase
     .from("ovbridge_space_members")
     .select("user_id")
     .eq("space_id", spaceId);
   if (mErr) throw mErr;
 
-  const userIds = (members ?? [])
-    .map((m: any) => m.user_id)
-    .filter((id: string) => id !== excludeUserId);
+  const userIds = Array.from(
+    new Set(
+      (members ?? [])
+        .map((m: any) => m.user_id as string)
+        .filter((id) => id !== excludeUserId)
+    )
+  );
 
   if (userIds.length === 0) return [];
 
@@ -138,7 +143,15 @@ export async function getSpaceTargetDevices(
     .eq("approved", true);
   if (dErr) throw dErr;
 
-  return (devices ?? []) as {
+  // 3. Dédoublonne par ID (au cas où)
+  const seen = new Set<string>();
+  const unique = (devices ?? []).filter((d: any) => {
+    if (seen.has(d.id)) return false;
+    seen.add(d.id);
+    return true;
+  });
+
+  return unique as {
     id: string;
     name: string;
     public_key: string;
