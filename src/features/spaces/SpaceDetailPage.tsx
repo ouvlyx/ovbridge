@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, UserPlus, Shield, Trash2, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/errors";
-import { useAuth } from "@/features/auth/AuthProvider";
+import { useAuth } from "@/features/auth";
 import { useSpaceDetail } from "./useSpaceDetail";
 import InviteToSpaceDialog from "./InviteToSpaceDialog";
 import ConfirmDialog from "@/features/devices/ConfirmDialog";

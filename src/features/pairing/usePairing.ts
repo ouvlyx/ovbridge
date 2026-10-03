@@ -51,7 +51,6 @@ export function usePairing(userId: string | undefined) {
       const newCode = generateCode();
       const exp = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
-      // Insert direct (plus de RPC)
       const { error: createError } = await supabase
         .from("ovbridge_pairing_tokens")
         .insert({

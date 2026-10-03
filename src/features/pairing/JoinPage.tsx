@@ -1,15 +1,16 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/features/auth/AuthProvider";
+import { useAuth } from "@/features/auth/useAuth";
 import { ensureDeviceRegistered } from "@/lib/device";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Camera } from "lucide-react";
-import { friendlyError } from "@/lib/errors";
+import { friendlyError, PairingError, AuthError } from "@/lib/errors";
+import { formatPairingToken } from "@/lib/qr";
 
 export default function JoinPage() {
   const { user, signIn, loading: authLoading } = useAuth();
@@ -20,20 +21,12 @@ export default function JoinPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  const [step, setStep] = useState<"form" | "linking" | "done">("form");
+  const [stepOverride, setStepOverride] = useState<"form" | "linking" | "done" | null>(null);
 
-  // Si déjà connecté, on saute direct à l'étape link
-  useEffect(() => {
-    if (user && step === "form") setStep("linking");
-  }, [user, step]);
+  const step = stepOverride ?? (user ? "linking" : "form");
 
   const finalize = async (userId: string) => {
-    // Normalise : "abcd2345" → "ABCD-2345"
-    const clean = token.replace(/[^A-Z0-9]/gi, "").toUpperCase();
-    const normalized =
-      clean.length === 8
-        ? `${clean.slice(0, 4)}-${clean.slice(4)}`
-        : token.trim().toUpperCase();
+    const normalized = formatPairingToken(token);
 
     // 1. Vérifier le token
     const { data: tok, error: tokErr } = await supabase
@@ -43,9 +36,9 @@ export default function JoinPage() {
       .maybeSingle();
 
     if (tokErr) throw new Error("Erreur de vérification : " + tokErr.message);
-    if (!tok) throw new Error("Code introuvable");
-    if (tok.used_at) throw new Error("Code déjà utilisé");
-    if (new Date(tok.expires_at) < new Date()) throw new Error("Code expiré");
+    if (!tok) throw PairingError.notFound();
+    if (tok.used_at) throw PairingError.alreadyUsed();
+    if (new Date(tok.expires_at) < new Date()) throw PairingError.expired();
 
     // 2. Enregistrer cet appareil
     await ensureDeviceRegistered(userId);
@@ -58,9 +51,9 @@ export default function JoinPage() {
     if (consumeErr) {
       throw new Error("Impossible de marquer le code : " + consumeErr.message);
     }
-    if (!consumed) throw new Error("Code déjà utilisé ou expiré");
+    if (!consumed) throw PairingError.alreadyUsed();
 
-    setStep("done");
+    setStepOverride("done");
   };
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -74,12 +67,12 @@ export default function JoinPage() {
       // after signIn, user state updates async — récupérer l'id via getSession
       const { data } = await supabase.auth.getSession();
       const uid = data.session?.user.id;
-      if (!uid) throw new Error("Session introuvable");
-      setStep("linking");
+      if (!uid) throw AuthError.sessionExpired();
+      setStepOverride("linking");
       await finalize(uid);
     } catch (err: any) {
       toast.error(friendlyError(err));
-      setStep("form");
+      setStepOverride("form");
     } finally {
       setBusy(false);
     }

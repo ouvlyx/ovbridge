@@ -21,6 +21,7 @@ type CacheIndex = Record<string, CacheEntry>;
 // ---------------------------------------------------------------------------
 
 const isNative = Capacitor.isNativePlatform();
+const memoryBlobCache = new Map<string, Blob>();
 
 async function ensureDir() {
   if (!isNative) return;
@@ -37,7 +38,6 @@ async function ensureDir() {
 
 async function readIndex(): Promise<CacheIndex> {
   if (!isNative) {
-    // Web : utilise localStorage comme fallback
     try {
       return JSON.parse(localStorage.getItem("ovbridge_cache_index") ?? "{}");
     } catch {
@@ -58,7 +58,11 @@ async function readIndex(): Promise<CacheIndex> {
 
 async function writeIndex(index: CacheIndex) {
   if (!isNative) {
-    localStorage.setItem("ovbridge_cache_index", JSON.stringify(index));
+    try {
+      localStorage.setItem("ovbridge_cache_index", JSON.stringify(index));
+    } catch {
+      // quota ou désactivé
+    }
     return;
   }
   await Filesystem.writeFile({
@@ -79,18 +83,25 @@ export async function getCacheIndex(): Promise<CacheIndex> {
 }
 
 export async function isCached(fileId: string): Promise<boolean> {
+  if (!isNative) {
+    return memoryBlobCache.has(fileId);
+  }
   const idx = await readIndex();
   return !!idx[fileId];
 }
 
 export async function getCachedPath(fileId: string): Promise<string | null> {
+  if (!isNative) {
+    const b = memoryBlobCache.get(fileId);
+    return b ? URL.createObjectURL(b) : null;
+  }
   const idx = await readIndex();
   return idx[fileId]?.localPath ?? null;
 }
 
 /**
  * Enregistre un blob dans le cache local.
- * Retourne le chemin local.
+ * Retourne le chemin local ou URL objet en mémoire.
  */
 export async function cacheBlob(
   fileId: string,
@@ -100,24 +111,12 @@ export async function cacheBlob(
 ): Promise<string> {
   await ensureDir();
 
-  const base64 = await blobToBase64(blob);
-
   if (!isNative) {
-    // Web : garde le Blob en mémoire + URL
-    const url = URL.createObjectURL(blob);
-    const idx = await readIndex();
-    idx[fileId] = {
-      fileId,
-      name: fileName,
-      mimeType,
-      sizeBytes: blob.size,
-      localPath: url,
-      cachedAt: new Date().toISOString(),
-    };
-    await writeIndex(idx);
-    return url;
+    memoryBlobCache.set(fileId, blob);
+    return URL.createObjectURL(blob);
   }
 
+  const base64 = await blobToBase64(blob);
   const ext = fileName.includes(".") ? fileName.split(".").pop() : "bin";
   const safeName = `${fileId}.${ext}`;
 
@@ -155,11 +154,7 @@ export async function readCachedBlob(
   fileName: string
 ): Promise<Blob | null> {
   if (!isNative) {
-    const idx = await readIndex();
-    const entry = idx[fileId];
-    if (!entry) return null;
-    const res = await fetch(entry.localPath);
-    return res.blob();
+    return memoryBlobCache.get(fileId) ?? null;
   }
 
   const idx = await readIndex();
@@ -184,24 +179,26 @@ export async function readCachedBlob(
  * Supprime un fichier du cache
  */
 export async function uncacheFile(fileId: string) {
+  if (!isNative) {
+    memoryBlobCache.delete(fileId);
+    return;
+  }
+
   const idx = await readIndex();
   const entry = idx[fileId];
   if (!entry) return;
 
-  if (isNative) {
-    try {
-      const fileName = entry.localPath.split("/").pop();
-      if (fileName) {
-        await Filesystem.deleteFile({
-          path: `${CACHE_DIR}/${fileName}`,
-          directory: Directory.Data,
-        });
-      }
-    } catch {
-      // déjà supprimé
+  try {
+    const fileName = entry.localPath.split("/").pop();
+    if (fileName) {
+      await Filesystem.deleteFile({
+        path: `${CACHE_DIR}/${fileName}`,
+        directory: Directory.Data,
+      });
     }
+  } catch {
+    // ignoré si déjà supprimé
   }
-
   delete idx[fileId];
   await writeIndex(idx);
 }
@@ -210,16 +207,19 @@ export async function uncacheFile(fileId: string) {
  * Vide tout le cache
  */
 export async function clearCache() {
-  if (isNative) {
-    try {
-      await Filesystem.rmdir({
-        path: CACHE_DIR,
-        directory: Directory.Data,
-        recursive: true,
-      });
-    } catch {
-      // rien
-    }
+  if (!isNative) {
+    memoryBlobCache.clear();
+    return;
+  }
+
+  try {
+    await Filesystem.rmdir({
+      path: CACHE_DIR,
+      directory: Directory.Data,
+      recursive: true,
+    });
+  } catch {
+    // rien
   }
   await writeIndex({});
 }
@@ -232,23 +232,29 @@ export async function exportFile(
   fileId: string,
   fileName: string
 ): Promise<void> {
+  if (!isNative) {
+    const blob = memoryBlobCache.get(fileId);
+    if (!blob) throw new Error("Fichier non trouvé dans le cache");
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    return;
+  }
+
   const idx = await readIndex();
   const entry = idx[fileId];
   if (!entry) throw new Error("Fichier non trouvé dans le cache");
 
-  if (isNative) {
-    await Share.share({
-      title: fileName,
-      url: entry.localPath,
-      dialogTitle: "Exporter le fichier",
-    });
-  } else {
-    // Web : force le téléchargement
-    const a = document.createElement("a");
-    a.href = entry.localPath;
-    a.download = fileName;
-    a.click();
-  }
+  await Share.share({
+    title: fileName,
+    url: entry.localPath,
+    dialogTitle: "Exporter le fichier",
+  });
 }
 
 // ---------------------------------------------------------------------------

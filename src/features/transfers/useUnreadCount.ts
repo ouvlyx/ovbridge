@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { getStoredIdentity } from "@/lib/device";
-import { useAuth } from "@/features/auth/AuthProvider";
+import { useAuth } from "@/features/auth";
 
 export function useUnreadCount() {
   const { user } = useAuth();

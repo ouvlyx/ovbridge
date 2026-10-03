@@ -22,7 +22,7 @@ import {
   type DecryptedClipboard,
 } from "@/lib/clipboard";
 import { getStoredIdentity } from "@/lib/device";
-import { useAuth } from "@/features/auth/AuthProvider";
+import { useAuth } from "@/features/auth";
 import { friendlyError } from "@/lib/errors";
 import ConfirmDialog from "@/features/devices/ConfirmDialog";
 import { Button } from "@/components/ui/button";
@@ -86,11 +86,11 @@ export default function ClipboardPage() {
         toast.error("Le presse-papiers est vide");
       } else if (result.status === "denied") {
         toast.error("Accès au presse-papiers refusé");
+      } else if (result.status === "error") {
+        toast.error(result.message);
       } else if (result.status === "sensitive") {
         setPrefillContent(result.content);
         setSharing(true);
-      } else {
-        toast.error(result.message);
       }
     } catch (e) {
       toast.error(friendlyError(e));

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/features/auth/AuthProvider";
+import { useAuth } from "@/features/auth";
 
 /**
  * Écoute les insertions de nouveaux devices de l'utilisateur.

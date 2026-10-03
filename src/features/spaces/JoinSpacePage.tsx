@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Users, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/errors";
-import { useAuth } from "@/features/auth/AuthProvider";
+import { useAuth } from "@/features/auth";
 import { joinSpaceByCode } from "@/lib/spaces";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

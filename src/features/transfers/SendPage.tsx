@@ -5,7 +5,7 @@ import { friendlyError } from "@/lib/errors";
 import { MAX_FILE_SIZE_MB } from "@/lib/constants";
 import { ArrowLeft, Send, FileUp, Type, Users, Smartphone } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/features/auth/AuthProvider";
+import { useAuth } from "@/features/auth";
 import { getStoredIdentity } from "@/lib/device";
 import {
   sendText,

@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { getStoredIdentity } from "@/lib/device";
-import { useAuth } from "@/features/auth/AuthProvider";
+import { useAuth } from "@/features/auth/useAuth";
 
 type Options = {
   /** ID de la conversation actuellement ouverte (format "space:xxx" ou "device:yyy") */
@@ -11,6 +12,7 @@ type Options = {
 
 export function useTransferAlerts({ currentChat }: Options = {}) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const recentIds = useRef<Set<string>>(new Set());
   const chatRef = useRef<string | null | undefined>(currentChat);
 
@@ -83,7 +85,7 @@ export function useTransferAlerts({ currentChat }: Options = {}) {
             action: {
               label: "Ouvrir",
               onClick: () => {
-                window.location.href = url;
+                navigate(url);
               },
             },
           });
@@ -94,5 +96,5 @@ export function useTransferAlerts({ currentChat }: Options = {}) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, navigate]);
 }

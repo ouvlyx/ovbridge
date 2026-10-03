@@ -1,7 +1,7 @@
 import { friendlyError } from "@/lib/errors";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useAuth } from "@/features/auth/AuthProvider";
+import { useAuth } from "@/features/auth";
 import { createSpace } from "@/lib/spaces";
 import {
   Dialog,

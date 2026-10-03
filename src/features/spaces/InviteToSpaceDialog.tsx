@@ -3,7 +3,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { Copy, Check, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/errors";
-import { useAuth } from "@/features/auth/AuthProvider";
+import { useAuth } from "@/features/auth";
 import { inviteToSpace, type SpaceInvite } from "@/lib/spaces";
 import {
   Dialog,

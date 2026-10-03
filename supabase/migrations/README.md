@@ -18,6 +18,7 @@ renommer ni réordonner les fichiers déjà appliqués.
 10. `0010_rotate_pairing_token.sql` — création et rotation atomiques des codes.
 11. `0011_transfer_recipient_read.sql` — lecture des transferts destinés aux appareils.
 12. `0012_seen.sql` — ajout de `seen_at` aux appareils.
+13. `0013_workspace_and_clipboard.sql` — tables pour le presse-papiers partagé (`ovbridge_clipboard`), espaces personnels (`ovbridge_workspaces`, `ovbridge_workspace_files`) et fonction d'ajustement de quota (`ovbridge_add_workspace_usage`).
 
 ## Recréer une base locale
 

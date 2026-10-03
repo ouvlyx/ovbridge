@@ -7,6 +7,7 @@ import {
   decryptFileFrom,
 } from "./crypto";
 import { getSpaceTargetDevices } from "./spaces";
+import { TransferError, CryptoError } from "./errors";
 
 const BUCKET = "ovbridge_files";
 
@@ -149,34 +150,46 @@ export async function decryptTransfer(
   me: DeviceIdentity,
   senderPublicKey: string
 ): Promise<{ text?: string; blob?: Blob }> {
-  if (tr.kind === "text") {
-    const text = await decryptFrom(
-      { ciphertext: tr.content!, nonce: tr.nonce! },
+  try {
+    if (tr.kind === "text") {
+      const text = await decryptFrom(
+        { ciphertext: tr.content!, nonce: tr.nonce! },
+        senderPublicKey,
+        me.privateKey
+      );
+      return { text };
+    }
+
+    const { data, error } = await supabase.storage
+      .from(BUCKET)
+      .download(tr.file_path!);
+    if (error || !data) {
+      throw TransferError.downloadFailed(error?.message, error);
+    }
+
+    const buf = new Uint8Array(await data.arrayBuffer());
+    const plain = await decryptFileFrom(
+      buf,
+      tr.encrypted_key!,
+      tr.nonce!,
       senderPublicKey,
       me.privateKey
     );
-    return { text };
+
+    return {
+      blob: new Blob([new Uint8Array(plain)], {
+        type: tr.mime_type ?? "application/octet-stream",
+      }),
+    };
+  } catch (err) {
+    if (err instanceof TransferError || err instanceof CryptoError) {
+      throw err;
+    }
+    throw CryptoError.decryptionFailed(
+      err instanceof Error ? err.message : String(err),
+      err
+    );
   }
-
-  const { data, error } = await supabase.storage
-    .from(BUCKET)
-    .download(tr.file_path!);
-  if (error || !data) throw error ?? new Error("Téléchargement échoué");
-
-  const buf = new Uint8Array(await data.arrayBuffer());
-  const plain = await decryptFileFrom(
-    buf,
-    tr.encrypted_key!,
-    tr.nonce!,
-    senderPublicKey,
-    me.privateKey
-  );
-
-  return {
-    blob: new Blob([new Uint8Array(plain)], {
-      type: tr.mime_type ?? "application/octet-stream",
-    }),
-  };
 }
 
 export async function markAsRead(transferId: string) {
@@ -203,7 +216,7 @@ export async function sendTextToSpace(
 ): Promise<FanoutResult> {
   const devices = await getSpaceTargetDevices(spaceId, userId);
   if (devices.length === 0) {
-    throw new Error("Aucun appareil destinataire dans cet espace");
+    throw new TransferError("SPACE_NO_RECIPIENT", "Aucun appareil destinataire dans cet espace");
   }
 
   let sent = 0;
@@ -394,9 +407,13 @@ export async function getConversationSummaries(params: {
 }): Promise<ConversationSummary[]> {
   const { myDeviceId } = params;
 
-  const { data: spacesData } = await supabase
+  const { data: spacesData, error: spacesError } = await supabase
     .from("ovbridge_spaces")
     .select("id, name");
+
+  if (spacesError) {
+    console.error("[getConversationSummaries] Erreur de chargement des espaces:", spacesError);
+  }
 
   const result: ConversationSummary[] = [];
 
@@ -432,14 +449,6 @@ export async function getConversationSummaries(params: {
   }
 
   const directDeviceIds = new Set<string>();
-  const directQuery = supabase
-    .from("ovbridge_transfers")
-    .select(
-      "from_device_id, to_device_id, content, file_name, kind, created_at, read_at"
-    )
-    .or(`from_device_id.eq.${myDeviceId},to_device_id.eq.${myDeviceId}`)
-    .is("to_space_id", null)
-    .order("created_at", { ascending: false });
 
   const directMsgs: {
     from_device_id: string;
@@ -450,9 +459,20 @@ export async function getConversationSummaries(params: {
     created_at: string;
     read_at: string | null;
   }[] = [];
+
   for (let offset = 0; ; offset += 1000) {
-    const { data, error } = await directQuery.range(offset, offset + 999);
-    if (error) throw error;
+    const { data, error } = await supabase
+      .from("ovbridge_transfers")
+      .select("from_device_id, to_device_id, content, file_name, kind, created_at, read_at")
+      .or(`from_device_id.eq.${myDeviceId},to_device_id.eq.${myDeviceId}`)
+      .is("to_space_id", null)
+      .order("created_at", { ascending: false })
+      .range(offset, offset + 999);
+
+    if (error) {
+      console.error("[getConversationSummaries] Erreur transferts directs:", error);
+      break;
+    }
     directMsgs.push(...(data ?? []));
     if (!data || data.length < 1000) break;
   }
@@ -463,10 +483,16 @@ export async function getConversationSummaries(params: {
       directDeviceIds.add(m.to_device_id);
   });
 
-  const { data: directDevicesData } = await supabase
-    .from("ovbridge_devices")
-    .select("id, name")
-    .in("id", Array.from(directDeviceIds));
+  let directDevicesData: { id: string; name: string }[] = [];
+  if (directDeviceIds.size > 0) {
+    const { data: devs, error: devErr } = await supabase
+      .from("ovbridge_devices")
+      .select("id, name")
+      .in("id", Array.from(directDeviceIds));
+    if (!devErr && devs) {
+      directDevicesData = devs;
+    }
+  }
 
   for (const d of directDevicesData ?? []) {
     const msgsForThis = (directMsgs ?? []).filter(

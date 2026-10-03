@@ -52,12 +52,16 @@ export function useSpaceDetail(spaceId: string | undefined) {
     } else {
       setMembers([]);
     }
-    setLoading(false);
   }, [spaceId]);
 
   useEffect(() => {
     if (!spaceId) return;
-    refresh();
+    let active = true;
+
+    (async () => {
+      await refresh();
+      if (active) setLoading(false);
+    })();
 
     const ch = supabase
       .channel(`space_${spaceId}_rt`)
@@ -69,7 +73,9 @@ export function useSpaceDetail(spaceId: string | undefined) {
           table: "ovbridge_space_members",
           filter: `space_id=eq.${spaceId}`,
         },
-        () => refresh()
+        () => {
+          if (active) refresh();
+        }
       )
       .on(
         "postgres_changes",
@@ -79,11 +85,14 @@ export function useSpaceDetail(spaceId: string | undefined) {
           table: "ovbridge_spaces",
           filter: `id=eq.${spaceId}`,
         },
-        () => refresh()
+        () => {
+          if (active) refresh();
+        }
       )
       .subscribe();
 
     return () => {
+      active = false;
       supabase.removeChannel(ch);
     };
   }, [spaceId, refresh]);

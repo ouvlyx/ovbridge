@@ -30,7 +30,7 @@ import {
   uncacheFile,
 } from "@/lib/localCache";
 import { getStoredIdentity } from "@/lib/device";
-import { useAuth } from "@/features/auth/AuthProvider";
+import { useAuth } from "@/features/auth";
 import { MAX_FILE_SIZE_MB } from "@/lib/constants";
 import { friendlyError } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
@@ -354,3 +354,4 @@ export default function WorkspacePage() {
     </div>
   );
 }
+

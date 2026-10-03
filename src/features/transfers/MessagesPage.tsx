@@ -8,7 +8,7 @@ import {
   Plus,
 } from "lucide-react";
 import { getStoredIdentity } from "@/lib/device";
-import { useAuth } from "@/features/auth/AuthProvider";
+import { useAuth } from "@/features/auth";
 import {
   getConversationSummaries,
   type ConversationSummary,

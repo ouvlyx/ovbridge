@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import SpacesPage from "@/features/spaces/SpacesPage";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/features/auth/AuthProvider";
+import { useAuth } from "@/features/auth";
 import { ensureDeviceRegistered } from "@/lib/device";
 import { useDevices, type Device } from "./useDevices";
 import RenameDeviceDialog from "./RenameDeviceDialog";

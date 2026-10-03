@@ -1,6 +1,8 @@
 import { supabase } from "./supabase";
 import type { DeviceIdentity } from "./device";
 import { encryptFor, decryptFrom } from "./crypto";
+import { MAX_CLIPBOARD_SIZE_BYTES } from "./constants";
+import { ClipboardError } from "./errors";
 
 export type ClipboardItem = {
   id: string;
@@ -17,6 +19,13 @@ export type ClipboardItem = {
 export type DecryptedClipboard = ClipboardItem & {
   content: string;
 };
+
+export function clipboardContentSizeBytes(content: string): number {
+  if (content.length > MAX_CLIPBOARD_SIZE_BYTES) {
+    return MAX_CLIPBOARD_SIZE_BYTES + 1;
+  }
+  return new TextEncoder().encode(content).byteLength;
+}
 
 // ---------------------------------------------------------------------------
 // Détection de contenu sensible
@@ -67,21 +76,22 @@ export async function sendToSharedClipboard(
   me: DeviceIdentity,
   content: string
 ): Promise<void> {
+  if (clipboardContentSizeBytes(content) > MAX_CLIPBOARD_SIZE_BYTES) {
+    throw ClipboardError.tooLarge(MAX_CLIPBOARD_SIZE_BYTES / 1024);
+  }
+
   const { ciphertext, nonce } = await encryptFor(
     content,
     me.publicKey,
     me.privateKey
   );
 
-  const preview =
-    content.length > 60 ? content.slice(0, 60) + "…" : content;
-
   const { error } = await supabase.from("ovbridge_clipboard").insert({
     user_id: userId,
     from_device_id: me.deviceId,
     content_encrypted: ciphertext,
     nonce,
-    preview,
+    preview: null,
     kind: detectKind(content),
   });
   if (error) throw error;
@@ -161,6 +171,12 @@ export async function quickShareFromLocalClipboard(
     const text = await navigator.clipboard.readText();
     if (!text || !text.trim()) {
       return { status: "empty" };
+    }
+    if (clipboardContentSizeBytes(text) > MAX_CLIPBOARD_SIZE_BYTES) {
+      return {
+        status: "error",
+        message: ClipboardError.tooLarge(MAX_CLIPBOARD_SIZE_BYTES / 1024).userMessage,
+      };
     }
 
     const sensitivity = checkSensitivity(text);

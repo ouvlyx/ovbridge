@@ -1,8 +1,18 @@
 import { supabase } from "./supabase";
 import type { DeviceIdentity } from "./device";
 import { encryptFileFor, decryptFileFrom } from "./crypto";
+import { WorkspaceError, TransferError, CryptoError } from "./errors";
 
 const BUCKET = "ovbridge_files";
+
+export type Workspace = {
+  id: string;
+  owner_id: string;
+  name: string;
+  quota_bytes: number;
+  used_bytes: number;
+  created_at: string;
+};
 
 export type WorkspaceFile = {
   id: string;
@@ -19,6 +29,43 @@ export type WorkspaceFile = {
   updated_at: string;
   deleted_at: string | null;
 };
+
+/**
+ * Récupère ou initialise automatiquement le workspace de stockage personnel de l'utilisateur.
+ */
+export async function ensureWorkspace(userId: string): Promise<Workspace> {
+  const { data, error } = await supabase
+    .from("ovbridge_workspaces")
+    .select("*")
+    .eq("owner_id", userId)
+    .maybeSingle();
+
+  if (error) {
+    throw new WorkspaceError("WORKSPACE_FETCH_FAILED", "Impossible de charger votre espace de stockage.", error.message, error);
+  }
+
+  if (data) {
+    return data as Workspace;
+  }
+
+  // Crée un espace par défaut s'il n'existe pas encore
+  const { data: created, error: createError } = await supabase
+    .from("ovbridge_workspaces")
+    .insert({
+      owner_id: userId,
+      name: "Mon espace personnel",
+      quota_bytes: 100 * 1024 * 1024, // 100 Mo
+      used_bytes: 0,
+    })
+    .select("*")
+    .single();
+
+  if (createError) {
+    throw new WorkspaceError("WORKSPACE_CREATE_FAILED", "Échec de l'initialisation de votre espace personnel.", createError.message, createError);
+  }
+
+  return created as Workspace;
+}
 
 // ---------------------------------------------------------------------------
 // Upload
@@ -40,7 +87,9 @@ export async function uploadWorkspaceFile(
       contentType: "application/octet-stream",
       upsert: false,
     });
-  if (upErr) throw upErr;
+  if (upErr) {
+    throw TransferError.uploadFailed(upErr.message, upErr);
+  }
 
   const { data, error } = await supabase
     .from("ovbridge_workspace_files")
@@ -82,20 +131,29 @@ export async function downloadWorkspaceFile(
   const { data, error } = await supabase.storage
     .from(BUCKET)
     .download(wf.storage_path);
-  if (error || !data) throw error ?? new Error("Téléchargement échoué");
+  if (error || !data) {
+    throw TransferError.downloadFailed(error?.message ?? "Téléchargement échoué", error);
+  }
 
-  const buf = new Uint8Array(await data.arrayBuffer());
-  const plain = await decryptFileFrom(
-    buf,
-    wf.encrypted_key,
-    wf.nonce,
-    me.publicKey,
-    me.privateKey
-  );
+  try {
+    const buf = new Uint8Array(await data.arrayBuffer());
+    const plain = await decryptFileFrom(
+      buf,
+      wf.encrypted_key,
+      wf.nonce,
+      me.publicKey,
+      me.privateKey
+    );
 
-  return new Blob([new Uint8Array(plain)], {
-    type: wf.mime_type ?? "application/octet-stream",
-  });
+    return new Blob([new Uint8Array(plain)], {
+      type: wf.mime_type ?? "application/octet-stream",
+    });
+  } catch (err) {
+    throw CryptoError.decryptionFailed(
+      err instanceof Error ? err.message : String(err),
+      err
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------

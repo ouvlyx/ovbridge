@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { getStoredIdentity } from "@/lib/device";
-import { useAuth } from "@/features/auth/AuthProvider";
+import { useAuth } from "@/features/auth/useAuth";
 import { getConversation, type ConversationMessage } from "@/lib/transfers";
 
 type Scope = { kind: "space" | "device"; id: string };
@@ -14,9 +14,12 @@ export function useConversation(scope: Scope | undefined) {
   // Verrou anti-requêtes concurrentes
   const fetchingRef = useRef(false);
 
+  const scopeKind = scope?.kind;
+  const scopeId = scope?.id;
+
   const refresh = useCallback(async () => {
-    if (!user || !scope) return;
-    if (fetchingRef.current) return;         // ← empêche les refresh simultanés
+    if (!user || !scopeKind || !scopeId) return;
+    if (fetchingRef.current) return;
     const me = getStoredIdentity();
     if (!me) return;
 
@@ -25,10 +28,10 @@ export function useConversation(scope: Scope | undefined) {
       const msgs = await getConversation({
         myUserId: user.id,
         myDeviceId: me.deviceId,
-        scope,
+        scope: { kind: scopeKind, id: scopeId },
       });
 
-      // Dédoublonne par id (ceinture + bretelles)
+      // Dédoublonne par id
       const seen = new Set<string>();
       const unique = msgs.filter((m) => {
         if (seen.has(m.id)) return false;
@@ -42,10 +45,10 @@ export function useConversation(scope: Scope | undefined) {
     } finally {
       fetchingRef.current = false;
     }
-  }, [user, scope?.kind, scope?.id]);
+  }, [user, scopeKind, scopeId]);
 
   useEffect(() => {
-    if (!user || !scope) return;
+    if (!user || !scopeKind || !scopeId) return;
     let active = true;
 
     (async () => {
@@ -57,11 +60,13 @@ export function useConversation(scope: Scope | undefined) {
     let debounceTimer: ReturnType<typeof setTimeout> | null = null;
     const debouncedRefresh = () => {
       if (debounceTimer) clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => refresh(), 200);
+      debounceTimer = setTimeout(() => {
+        if (active) refresh();
+      }, 200);
     };
 
     const ch = supabase
-      .channel(`conv_${scope.kind}_${scope.id}`)
+      .channel(`conv_${scopeKind}_${scopeId}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "ovbridge_transfers" },
@@ -74,7 +79,7 @@ export function useConversation(scope: Scope | undefined) {
       if (debounceTimer) clearTimeout(debounceTimer);
       supabase.removeChannel(ch);
     };
-  }, [user, scope?.kind, scope?.id, refresh]);
+  }, [user, scopeKind, scopeId, refresh]);
 
   return { messages, loading, refresh };
 }

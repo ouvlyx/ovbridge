@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { friendlyError } from "@/lib/errors";
 import { MAX_FILE_SIZE_MB } from "@/lib/constants";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/features/auth/AuthProvider";
+import { useAuth } from "@/features/auth";
 import { getStoredIdentity } from "@/lib/device";
 import {
   decryptTransfer,
@@ -70,26 +70,35 @@ export default function ChatPage() {
   const currentChatKey = kind && id ? `${kind}:${id}` : null;
   useTransferAlerts({ currentChat: currentChatKey });
 
+  const scopeKind = scope?.kind;
+  const scopeId = scope?.id;
+
   useEffect(() => {
-    if (!scope) return;
+    if (!scopeKind || !scopeId) return;
+    let active = true;
+
     (async () => {
-      if (scope.kind === "space") {
+      if (scopeKind === "space") {
         const { data } = await supabase
           .from("ovbridge_spaces")
           .select("name")
-          .eq("id", scope.id)
+          .eq("id", scopeId)
           .maybeSingle();
-        if (data) setTitle(data.name);
+        if (data && active) setTitle(data.name);
       } else {
         const { data } = await supabase
           .from("ovbridge_devices")
           .select("name")
-          .eq("id", scope.id)
+          .eq("id", scopeId)
           .maybeSingle();
-        if (data) setTitle(data.name);
+        if (data && active) setTitle(data.name);
       }
     })();
-  }, [scope?.id, scope?.kind]);
+
+    return () => {
+      active = false;
+    };
+  }, [scopeKind, scopeId]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -154,7 +163,7 @@ export default function ChatPage() {
         await markAsRead(m.id);
       }
     } catch (e: any) {
-      toast.error("Déchiffrement impossible");
+      toast.error(friendlyError(e) || "Déchiffrement impossible");
     } finally {
       setBusyId(null);
     }

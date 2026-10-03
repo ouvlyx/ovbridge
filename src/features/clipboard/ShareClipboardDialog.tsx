@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { AlertTriangle, Clipboard, Check } from "lucide-react";
 import { getStoredIdentity } from "@/lib/device";
-import { useAuth } from "@/features/auth/AuthProvider";
+import { useAuth } from "@/features/auth";
 import {
   sendToSharedClipboard,
   checkSensitivity,
+  clipboardContentSizeBytes,
 } from "@/lib/clipboard";
+import { MAX_CLIPBOARD_SIZE_BYTES } from "@/lib/constants";
 import { friendlyError } from "@/lib/errors";
 import {
   Dialog,
@@ -22,13 +24,14 @@ type Props = {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   onSent: () => void;
-  prefillContent?: string | null;   // ← DOIT ÊTRE LÀ
+  prefillContent?: string | null;
 };
 
 export default function ShareClipboardDialog({
   open,
   onOpenChange,
   onSent,
+  prefillContent,
 }: Props) {
   const { user } = useAuth();
   const [content, setContent] = useState("");
@@ -41,36 +44,70 @@ export default function ShareClipboardDialog({
 
   useEffect(() => {
     if (!open) return;
-
-    setContent("");
-    setError(null);
-    setSensitivity({ sensitive: false, reason: null });
+    let active = true;
 
     (async () => {
+      if (prefillContent) {
+        if (!active) return;
+        if (clipboardContentSizeBytes(prefillContent) > MAX_CLIPBOARD_SIZE_BYTES) {
+          setError("Le contenu est trop volumineux. La limite est de 512 Kio.");
+          return;
+        }
+        setContent(prefillContent);
+        setSensitivity(checkSensitivity(prefillContent));
+        return;
+      }
+
       try {
         if (!navigator.clipboard?.readText) {
-          setError(
-            "Votre navigateur ne permet pas la lecture automatique. Collez le contenu manuellement."
-          );
+          if (active) {
+            setError(
+              "Votre navigateur ne permet pas la lecture automatique. Collez le contenu manuellement."
+            );
+          }
           return;
         }
         const text = await navigator.clipboard.readText();
+        if (!active) return;
         if (!text) {
           setError("Le presse-papiers est vide.");
+          return;
+        }
+        if (clipboardContentSizeBytes(text) > MAX_CLIPBOARD_SIZE_BYTES) {
+          setError("Le contenu est trop volumineux. La limite est de 512 Kio.");
           return;
         }
         setContent(text);
         setSensitivity(checkSensitivity(text));
       } catch {
-        setError(
-          "Accès au presse-papiers refusé. Collez le contenu manuellement."
-        );
+        if (active) {
+          setError(
+            "Accès au presse-papiers refusé. Collez le contenu manuellement."
+          );
+        }
       }
     })();
-  }, [open]);
+
+    return () => {
+      active = false;
+    };
+  }, [open, prefillContent]);
+
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+      setContent("");
+      setError(null);
+      setSensitivity({ sensitive: false, reason: null });
+    }
+    onOpenChange(isOpen);
+  };
 
   const submit = async () => {
     if (!user || !content.trim()) return;
+    if (clipboardContentSizeBytes(content) > MAX_CLIPBOARD_SIZE_BYTES) {
+      setError("Le contenu est trop volumineux. La limite est de 512 Kio.");
+      return;
+    }
     const me = getStoredIdentity();
     if (!me) return;
 
@@ -78,7 +115,7 @@ export default function ShareClipboardDialog({
     try {
       await sendToSharedClipboard(user.id, me, content);
       toast.success("Contenu partagé");
-      onOpenChange(false);
+      handleOpenChange(false);
       onSent();
     } catch (e) {
       toast.error(friendlyError(e));
@@ -88,7 +125,7 @@ export default function ShareClipboardDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -110,11 +147,17 @@ export default function ShareClipboardDialog({
           <textarea
             value={content}
             onChange={(e) => {
-              setContent(e.target.value);
-              setSensitivity(checkSensitivity(e.target.value));
+              const nextContent = e.target.value;
+              if (clipboardContentSizeBytes(nextContent) > MAX_CLIPBOARD_SIZE_BYTES) {
+                setError("Le contenu est trop volumineux. La limite est de 512 Kio.");
+                return;
+              }
+              setError(null);
+              setContent(nextContent);
+              setSensitivity(checkSensitivity(nextContent));
             }}
             rows={5}
-            placeholder="Collez ici…"
+            placeholder="Collez ici… (512 Kio maximum)"
             className="w-full rounded-xl border border-ov-border bg-ov-bg p-3 text-sm text-ov-text focus:outline-none focus:ring-2 focus:ring-ov-primary"
           />
 

@@ -1,15 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/features/auth/AuthProvider";
+import { useAuth } from "@/features/auth/useAuth";
+import { ensureWorkspace, type Workspace } from "@/lib/workspace";
 
-export type Workspace = {
-  id: string;
-  owner_id: string;
-  name: string;
-  quota_bytes: number;
-  used_bytes: number;
-  created_at: string;
-};
+export type { Workspace };
 
 export function useWorkspace() {
   const { user } = useAuth();
@@ -18,16 +12,12 @@ export function useWorkspace() {
 
   const refresh = useCallback(async () => {
     if (!user) return;
-    const { data, error } = await supabase
-      .from("ovbridge_workspaces")
-      .select("*")
-      .eq("owner_id", user.id)
-      .maybeSingle();
-    if (error) {
-      console.error("[useWorkspace]", error);
-      return;
+    try {
+      const ws = await ensureWorkspace(user.id);
+      setWorkspace(ws);
+    } catch (error) {
+      console.error("[useWorkspace] Erreur lors de l'accès au workspace:", error);
     }
-    setWorkspace((data as Workspace) ?? null);
   }, [user]);
 
   useEffect(() => {
@@ -49,7 +39,9 @@ export function useWorkspace() {
           table: "ovbridge_workspaces",
           filter: `owner_id=eq.${user.id}`,
         },
-        () => refresh()
+        () => {
+          if (active) refresh();
+        }
       )
       .subscribe();
 

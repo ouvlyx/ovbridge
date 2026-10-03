@@ -11,7 +11,7 @@ import {
   QrCode as QrIcon,
   KeyRound,
 } from "lucide-react";
-import { useAuth } from "@/features/auth/AuthProvider";
+import { useAuth } from "@/features/auth";
 import { usePairing } from "./usePairing";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +24,7 @@ type Tab = "invite" | "join";
 export default function PairingPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { code, expiresAt, loading, paired, start } = usePairing(user?.id);
+  const { code, expiresAt, loading, paired, error, start } = usePairing(user?.id);
 
   const [tab, setTab] = useState<Tab>("invite");
   const [manualCode, setManualCode] = useState("");
@@ -107,7 +107,23 @@ export default function PairingPage() {
           ) : (
             <>
               <Card className="p-6 border-ov-border flex flex-col items-center gap-4">
-                {code ? (
+                {error && !code ? (
+                  <div
+                    role="alert"
+                    className="w-full min-h-28 flex flex-col items-center justify-center gap-3 rounded-xl bg-ov-danger/10 p-4 text-center"
+                  >
+                    <p className="text-sm text-ov-danger">{error}</p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={start}
+                      disabled={loading}
+                    >
+                      Réessayer
+                    </Button>
+                  </div>
+                ) : code ? (
                   <div className="w-full max-w-[220px] aspect-square bg-white p-3 rounded-xl">
                     <QRCodeSVG
                       value={joinUrl}
@@ -118,7 +134,7 @@ export default function PairingPage() {
                   </div>
                 ) : (
                   <div className="w-full max-w-[220px] aspect-square bg-ov-bg rounded-xl flex items-center justify-center text-ov-muted text-sm">
-                    {loading ? "Génération…" : "—"}
+                    {loading ? "Génération…" : "Préparation du code…"}
                   </div>
                 )}
 
@@ -127,8 +143,13 @@ export default function PairingPage() {
                     Code d'appairage
                   </p>
                   <p className="text-2xl font-mono font-bold tracking-widest text-ov-accent">
-                    {code ?? "····-····"}
+                    {code ?? (error ? "—" : "····-····")}
                   </p>
+                  {error && code && (
+                    <p role="alert" className="text-xs text-ov-danger">
+                      {error}
+                    </p>
+                  )}
                   {expiresAt && (
                     <p className="text-xs text-ov-muted">
                       Expire à{" "}
@@ -141,6 +162,7 @@ export default function PairingPage() {
                   <Button
                     variant="outline"
                     onClick={start}
+                    disabled={loading}
                     className="flex-1"
                   >
                     <RefreshCw className="w-4 h-4 mr-2" /> Nouveau
