@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
+import AdminRoute from "./AdminRoute";
 
 const LoginPage = lazy(() => import("@/features/auth/LoginPage"));
 const SignupPage = lazy(() => import("@/features/auth/SignupPage"));
@@ -18,6 +19,7 @@ const ChatPage = lazy(() => import("@/features/transfers/ChatPage"));
 const ConfirmPage = lazy(() => import("@/features/auth/ConfirmPage"));
 const WorkspacePage = lazy(() => import("@/features/workspace/WorkspacePage"));
 const ClipboardPage = lazy(() => import("@/features/clipboard/ClipboardPage"));
+const AdminDashboardPage = lazy(() => import("@/features/admin/AdminDashboardPage"));
 
 function Loading() {
   return (
@@ -52,6 +54,11 @@ export default function AppRouter() {
             <Route path="/messages/:kind/:id" element={<ChatPage />} />
             <Route path="/workspace" element={<WorkspacePage />} />
             <Route path="/clipboard" element={<ClipboardPage />} />
+
+            {/* --- Console Admin (Niveau min 10) --- */}
+            <Route element={<AdminRoute minLevel={10} />}>
+              <Route path="/admin" element={<AdminDashboardPage />} />
+            </Route>
           </Route>
 
           {/* --- Fallback --- */}

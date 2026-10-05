@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/features/auth";
@@ -8,23 +8,31 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { fetchUserAdminRole } from "@/lib/admin";
+import { ADMIN_ROLE_LABELS, type AdminRole } from "@/types/admin";
 
 export default function ProfilePage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState("");
+  const [adminRole, setAdminRole] = useState<AdminRole>("none");
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data } = await supabase
-        .from("ovbridge_profiles")
-        .select("display_name")
-        .eq("id", user.id)
-        .maybeSingle();
+      const [{ data }, role] = await Promise.all([
+        supabase
+          .from("ovbridge_profiles")
+          .select("display_name")
+          .eq("id", user.id)
+          .maybeSingle(),
+        fetchUserAdminRole(user.id),
+      ]);
       setDisplayName(data?.display_name ?? "");
+      setAdminRole(role);
       setLoading(false);
     })();
   }, [user]);
@@ -50,7 +58,7 @@ export default function ProfilePage() {
         <h1 className="text-lg font-semibold">Mon profil</h1>
       </header>
 
-      <Card className="p-5 border-ov-border space-y-5">
+      <Card className="p-5 border-ov-border space-y-5 bg-ov-surface">
         <div className="space-y-2">
           <Label>Email</Label>
           <Input value={user?.email ?? ""} disabled />
@@ -71,6 +79,27 @@ export default function ProfilePage() {
             Ce nom apparaîtra comme signature lors de l'envoi de fichiers.
           </p>
         </div>
+
+        {adminRole !== "none" && (
+          <div className="p-3 bg-ov-primary/10 border border-ov-primary/30 rounded-xl space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-ov-primary flex items-center gap-1.5">
+                <Shield className="w-4 h-4" /> Rôle Administrateur
+              </span>
+              <Badge className="bg-ov-primary text-white border-0 text-[10px]">
+                {adminRole.toUpperCase()}
+              </Badge>
+            </div>
+            <p className="text-xs text-ov-muted">{ADMIN_ROLE_LABELS[adminRole]}</p>
+            <Button
+              size="sm"
+              onClick={() => navigate("/admin")}
+              className="w-full bg-ov-primary hover:bg-ov-primaryHover text-xs mt-1"
+            >
+              Ouvrir la Console Admin
+            </Button>
+          </div>
+        )}
 
         <Button
           onClick={save}
