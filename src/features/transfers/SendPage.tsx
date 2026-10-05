@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/errors";
 import { MAX_FILE_SIZE_MB } from "@/lib/constants";
-import { ArrowLeft, Send, FileUp, Type, Users, Smartphone } from "lucide-react";
+import { ArrowLeft, Send, FileUp, Type, Users, Smartphone, UploadCloud } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/features/auth";
 import { getStoredIdentity } from "@/lib/device";
@@ -46,6 +46,7 @@ export default function SendPage() {
   const [mode, setMode] = useState<"text" | "file">("text");
   const [text, setText] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const [busy, setBusy] = useState(false);
 
   // Charge mes autres appareils
@@ -94,6 +95,25 @@ export default function SendPage() {
   const selected = targets.find(
     (t) => `${t.kind}:${t.id}` === targetKey
   );
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const droppedFile = e.dataTransfer.files[0];
+      setFile(droppedFile);
+      setMode("file");
+    }
+  };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -147,7 +167,15 @@ export default function SendPage() {
   };
 
   return (
-    <div className="min-h-screen p-6 max-w-md mx-auto space-y-6">
+    <div
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      className={cn(
+        "min-h-screen p-6 max-w-md mx-auto space-y-6 transition-colors",
+        isDragging && "bg-ov-primary/10 border-2 border-dashed border-ov-primary rounded-2xl"
+      )}
+    >
       <header className="flex items-center gap-3">
         <Button
           variant="ghost"
@@ -231,22 +259,33 @@ export default function SendPage() {
             className="w-full rounded-xl border border-ov-border bg-ov-bg p-3 text-sm text-ov-text focus:outline-none focus:ring-2 focus:ring-ov-primary"
           />
         ) : (
-          <Card className="p-4 border-ov-border space-y-2">
-            <Label htmlFor="send-file">
-              Fichier ({MAX_FILE_SIZE_MB} Mo maximum)
-            </Label>
+          <Card
+            className={cn(
+              "p-6 border-2 border-dashed border-ov-border space-y-3 text-center transition-colors",
+              isDragging && "border-ov-primary bg-ov-primary/5"
+            )}
+          >
+            <UploadCloud className="w-10 h-10 text-ov-primary mx-auto" />
+            <div className="space-y-1">
+              <Label htmlFor="send-file" className="cursor-pointer font-medium text-ov-text">
+                Glissez-déposez ou cliquez pour sélectionner
+              </Label>
+              <p className="text-xs text-ov-muted">
+                Taille maximale : {MAX_FILE_SIZE_MB} Mo
+              </p>
+            </div>
             <Input
               id="send-file"
               type="file"
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setFile(e.target.files?.[0] ?? null)
               }
-              className="bg-ov-bg"
+              className="hidden"
             />
             {file && (
-              <p className="text-xs text-ov-muted">
+              <div className="p-2 bg-ov-bg rounded-lg text-xs font-mono text-ov-accent">
                 {file.name} — {(file.size / 1024).toFixed(1)} Ko
-              </p>
+              </div>
             )}
           </Card>
         )}
