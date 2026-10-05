@@ -81,7 +81,12 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
       <Card className="w-full max-w-md p-6 bg-ov-surface border-ov-border space-y-6">
-        <div className="space-y-1 text-center">
+        <div className="space-y-2 text-center">
+          <img
+            src="/brandmark-bg.png"
+            alt="OvBridge"
+            className="mx-auto h-16 w-auto rounded-2xl shadow-lg border border-ov-border/40"
+          />
           <h1 className="text-2xl font-bold text-ov-primary">Créer un compte</h1>
           <p className="text-sm text-ov-muted">Rejoins OvBridge</p>
         </div>

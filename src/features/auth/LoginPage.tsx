@@ -84,9 +84,9 @@ export default function LoginPage() {
       <Card className="w-full max-w-md p-6 bg-ov-surface border-ov-border space-y-6">
         <div className="space-y-2 text-center">
           <img
-            src="/brandmark-transparent.png"
-            alt=""
-            className="mx-auto h-12 w-auto"
+            src="/brandmark-bg.png"
+            alt="OvBridge"
+            className="mx-auto h-16 w-auto rounded-2xl shadow-lg border border-ov-border/40"
           />
           <h1 className="text-2xl font-bold text-ov-primary">OvBridge</h1>
           <p className="text-sm text-ov-muted">Connexion à votre pont</p>
