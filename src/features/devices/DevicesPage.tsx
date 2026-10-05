@@ -145,6 +145,11 @@ export default function DevicesPage() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ov-success opacity-60" />
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-ov-success" />
             </span>
+            <img
+              src="/brandmark-transparent.png"
+              alt=""
+              className="h-7 w-auto shrink-0"
+            />
             <h1 className="text-2xl font-bold text-ov-primary">OvBridge</h1>
           </div>        </div>
         <div className="flex items-center gap-1">

@@ -340,6 +340,10 @@ export default function ChatPage() {
                     </div>
                   ) : displayText ? (
                     <p className="whitespace-pre-wrap">{displayText}</p>
+                  ) : mine ? (
+                    <p className="text-xs italic text-white/80">
+                      Message envoyé (contenu local indisponible)
+                    </p>
                   ) : (
                     <button
                       onClick={() => open(m)}

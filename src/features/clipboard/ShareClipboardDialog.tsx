@@ -7,6 +7,7 @@ import {
   sendToSharedClipboard,
   checkSensitivity,
   clipboardContentSizeBytes,
+  readLocalClipboardText,
 } from "@/lib/clipboard";
 import { MAX_CLIPBOARD_SIZE_BYTES } from "@/lib/constants";
 import { friendlyError } from "@/lib/errors";
@@ -59,15 +60,7 @@ export default function ShareClipboardDialog({
       }
 
       try {
-        if (!navigator.clipboard?.readText) {
-          if (active) {
-            setError(
-              "Votre navigateur ne permet pas la lecture automatique. Collez le contenu manuellement."
-            );
-          }
-          return;
-        }
-        const text = await navigator.clipboard.readText();
+        const text = await readLocalClipboardText();
         if (!active) return;
         if (!text) {
           setError("Le presse-papiers est vide.");
@@ -79,11 +72,9 @@ export default function ShareClipboardDialog({
         }
         setContent(text);
         setSensitivity(checkSensitivity(text));
-      } catch {
+      } catch (readError) {
         if (active) {
-          setError(
-            "Accès au presse-papiers refusé. Collez le contenu manuellement."
-          );
+          setError(friendlyError(readError));
         }
       }
     })();
@@ -191,7 +182,7 @@ export default function ShareClipboardDialog({
             </DialogClose>
             <Button
               onClick={submit}
-              disabled={busy || !content.trim()}
+              disabled={busy || !content.trim() || !!error}
               className={
                 sensitivity.sensitive
                   ? "flex-1 bg-ov-danger hover:opacity-90"

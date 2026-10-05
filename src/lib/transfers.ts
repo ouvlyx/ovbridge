@@ -34,34 +34,19 @@ export type Transfer = {
 // Cache local du texte envoyé (pour afficher nos propres messages en clair)
 // ---------------------------------------------------------------------------
 
-const SENT_CACHE_KEY = "ovbridge_sent_plaintext";
+const sentPlaintextCache = new Map<string, string>();
 
-type SentCache = Record<string, string>;
-
-function loadSentCache(): SentCache {
-  try {
-    return JSON.parse(localStorage.getItem(SENT_CACHE_KEY) ?? "{}");
-  } catch {
-    return {};
+export function cacheSentPlaintext(transferId: string, plaintext: string) {
+  sentPlaintextCache.delete(transferId);
+  sentPlaintextCache.set(transferId, plaintext);
+  if (sentPlaintextCache.size > 200) {
+    const oldestId = sentPlaintextCache.keys().next().value;
+    if (oldestId) sentPlaintextCache.delete(oldestId);
   }
 }
 
-function saveSentCache(c: SentCache) {
-  const entries = Object.entries(c).slice(-200);
-  localStorage.setItem(
-    SENT_CACHE_KEY,
-    JSON.stringify(Object.fromEntries(entries))
-  );
-}
-
-export function cacheSentPlaintext(transferId: string, plaintext: string) {
-  const c = loadSentCache();
-  c[transferId] = plaintext;
-  saveSentCache(c);
-}
-
 export function getSentPlaintext(transferId: string): string | null {
-  return loadSentCache()[transferId] ?? null;
+  return sentPlaintextCache.get(transferId) ?? null;
 }
 
 // ---------------------------------------------------------------------------

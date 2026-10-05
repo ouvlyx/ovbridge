@@ -27,6 +27,26 @@ export function clipboardContentSizeBytes(content: string): number {
   return new TextEncoder().encode(content).byteLength;
 }
 
+export async function readLocalClipboardText(timeoutMs = 8000): Promise<string> {
+  const readText = navigator.clipboard?.readText;
+  if (!readText) throw ClipboardError.accessDenied();
+
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      readText.call(navigator.clipboard),
+      new Promise<string>((_, reject) => {
+        timeoutId = setTimeout(
+          () => reject(ClipboardError.readTimeout()),
+          timeoutMs
+        );
+      }),
+    ]);
+  } finally {
+    if (timeoutId !== undefined) clearTimeout(timeoutId);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Détection de contenu sensible
 // ---------------------------------------------------------------------------
@@ -168,7 +188,7 @@ export async function quickShareFromLocalClipboard(
       return { status: "denied" };
     }
 
-    const text = await navigator.clipboard.readText();
+    const text = await readLocalClipboardText();
     if (!text || !text.trim()) {
       return { status: "empty" };
     }

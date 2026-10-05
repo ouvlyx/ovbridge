@@ -19,6 +19,9 @@ renommer ni réordonner les fichiers déjà appliqués.
 11. `0011_transfer_recipient_read.sql` — lecture des transferts destinés aux appareils.
 12. `0012_seen.sql` — ajout de `seen_at` aux appareils.
 13. `0013_workspace_and_clipboard.sql` — tables pour le presse-papiers partagé (`ovbridge_clipboard`), espaces personnels (`ovbridge_workspaces`, `ovbridge_workspace_files`) et fonction d'ajustement de quota (`ovbridge_add_workspace_usage`).
+14. `0014_clipboard_preview_privacy.sql` — efface les aperçus plaintext déjà stockés.
+15. `0015_clipboard_preview_guard.sql` — interdit les aperçus plaintext et borne la taille des nouveaux textes chiffrés.
+16. `0016_workspace_storage_policies.sql` — autorise le Storage Workspace uniquement à son propriétaire.
 
 ## Recréer une base locale
 

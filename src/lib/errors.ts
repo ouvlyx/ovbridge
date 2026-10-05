@@ -400,6 +400,14 @@ export class ClipboardError extends AppError {
       `Le contenu est trop volumineux. La limite est de ${maxKiB} Kio.`
     );
   }
+
+  static readTimeout() {
+    return new ClipboardError(
+      "CLIPBOARD_READ_TIMEOUT",
+      "La lecture du presse-papiers prend trop de temps. Collez le contenu manuellement."
+    );
+  }
+
 }
 
 /**
