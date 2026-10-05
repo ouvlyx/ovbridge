@@ -48,6 +48,8 @@ export default function ShareClipboardDialog({
     let active = true;
 
     (async () => {
+      setError(null);
+
       if (prefillContent) {
         if (!active) return;
         if (clipboardContentSizeBytes(prefillContent) > MAX_CLIPBOARD_SIZE_BYTES) {
@@ -59,23 +61,16 @@ export default function ShareClipboardDialog({
         return;
       }
 
+      // Saisie manuelle : tente la lecture silencieuse du presse-papiers
       try {
-        const text = await readLocalClipboardText();
+        const text = await readLocalClipboardText(3000);
         if (!active) return;
-        if (!text) {
-          setError("Le presse-papiers est vide.");
-          return;
+        if (text && clipboardContentSizeBytes(text) <= MAX_CLIPBOARD_SIZE_BYTES) {
+          setContent(text);
+          setSensitivity(checkSensitivity(text));
         }
-        if (clipboardContentSizeBytes(text) > MAX_CLIPBOARD_SIZE_BYTES) {
-          setError("Le contenu est trop volumineux. La limite est de 512 Kio.");
-          return;
-        }
-        setContent(text);
-        setSensitivity(checkSensitivity(text));
-      } catch (readError) {
-        if (active) {
-          setError(friendlyError(readError));
-        }
+      } catch {
+        // En mode saisie manuelle, si le presse-papiers n'est pas accessible, laisser le champ vide sans bloquer l'utilisateur
       }
     })();
 
@@ -104,8 +99,8 @@ export default function ShareClipboardDialog({
 
     setBusy(true);
     try {
-      await sendToSharedClipboard(user.id, me, content);
-      toast.success("Contenu partagé");
+      await sendToSharedClipboard(user.id, me, content.trim());
+      toast.success("Contenu partagé ✅");
       handleOpenChange(false);
       onSent();
     } catch (e) {
@@ -117,20 +112,20 @@ export default function ShareClipboardDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent>
+      <DialogContent className="bg-ov-surface border-ov-border text-ov-text">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Clipboard className="w-5 h-5 text-ov-accent" />
             Partager dans le presse-papiers
           </DialogTitle>
-          <DialogDescription>
-            Ce contenu sera visible depuis vos autres appareils.
+          <DialogDescription className="text-ov-muted text-xs">
+            Ce contenu sera chiffré et synchronisé instantanément sur tous vos appareils.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           {error && (
-            <div className="rounded-lg bg-ov-danger/10 text-ov-danger text-xs p-3">
+            <div className="rounded-lg bg-ov-danger/10 text-ov-danger text-xs p-3 border border-ov-danger/20">
               {error}
             </div>
           )}
@@ -139,16 +134,16 @@ export default function ShareClipboardDialog({
             value={content}
             onChange={(e) => {
               const nextContent = e.target.value;
-              if (clipboardContentSizeBytes(nextContent) > MAX_CLIPBOARD_SIZE_BYTES) {
-                setError("Le contenu est trop volumineux. La limite est de 512 Kio.");
-                return;
-              }
               setError(null);
               setContent(nextContent);
-              setSensitivity(checkSensitivity(nextContent));
+              if (clipboardContentSizeBytes(nextContent) > MAX_CLIPBOARD_SIZE_BYTES) {
+                setError("Le contenu est trop volumineux. La limite est de 512 Kio.");
+              } else {
+                setSensitivity(checkSensitivity(nextContent));
+              }
             }}
             rows={5}
-            placeholder="Collez ici… (512 Kio maximum)"
+            placeholder="Collez ou saisissez votre texte ici… (512 Kio max)"
             className="w-full rounded-xl border border-ov-border bg-ov-bg p-3 text-sm text-ov-text focus:outline-none focus:ring-2 focus:ring-ov-primary"
           />
 
@@ -167,8 +162,7 @@ export default function ShareClipboardDialog({
                 </p>
                 <p className="text-ov-muted mt-1">{sensitivity.reason}</p>
                 <p className="text-ov-muted mt-1">
-                  Voulez-vous vraiment le partager ? Il sera stocké chiffré,
-                  mais visible depuis vos autres appareils.
+                  Ce texte sera transmis de manière totalement chiffrée.
                 </p>
               </div>
             </div>
@@ -190,7 +184,7 @@ export default function ShareClipboardDialog({
               }
             >
               {busy ? (
-                "Envoi…"
+                "Envoi en cours…"
               ) : sensitivity.sensitive ? (
                 <>
                   <Check className="w-4 h-4 mr-2" /> Partager quand même
