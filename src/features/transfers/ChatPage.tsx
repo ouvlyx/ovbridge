@@ -179,7 +179,6 @@ export default function ChatPage() {
   };
 
   const send = async () => {
-    // 1. Verrou synchrone : bloque tout 2ᵉ appel immédiat
     if (sendLock.current) return;
     if (!user || !me || !scope) return;
     if (!input.trim() && !file) return;
@@ -190,15 +189,12 @@ export default function ChatPage() {
       );
     }
 
-    // 2. On verrouille TOUT DE SUITE
     sendLock.current = true;
     setSending(true);
 
-    // 3. On capture les valeurs AVANT les await
     const textToSend = input;
     const fileToSend = file;
 
-    // 4. On vide les champs immédiatement (empêche un 2ᵉ envoi visuel)
     if (!fileToSend) setInput("");
     setFile(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -231,7 +227,6 @@ export default function ChatPage() {
       }
       await refresh();
     } catch (e: any) {
-      // En cas d'erreur, on restaure le contenu perdu
       if (!fileToSend) setInput(textToSend);
       else setFile(fileToSend);
       toast.error(friendlyError(e));
@@ -242,7 +237,7 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col max-w-md mx-auto bg-ov-bg">
+    <div className="min-h-screen flex flex-col w-full max-w-4xl mx-auto bg-ov-bg border-x border-ov-border">
       <header className="flex items-center gap-3 p-4 border-b border-ov-border bg-ov-surface sticky top-0 z-10">
         <Button
           variant="ghost"
@@ -290,7 +285,7 @@ export default function ChatPage() {
               <div
                 key={m.id}
                 className={cn(
-                  "flex flex-col max-w-[80%]",
+                  "flex flex-col max-w-[85%] sm:max-w-[70%]",
                   mine ? "self-end items-end ml-auto" : "items-start"
                 )}
               >
@@ -302,39 +297,39 @@ export default function ChatPage() {
 
                 <div
                   className={cn(
-                    "rounded-2xl px-3 py-2 text-sm break-words",
+                    "rounded-2xl px-3.5 py-2.5 text-sm break-words shadow-sm",
                     mine
                       ? "bg-ov-primary text-white rounded-br-md"
                       : "bg-ov-surface border border-ov-border text-ov-text rounded-bl-md"
                   )}
                 >
                   {isFile ? (
-                    <div className="space-y-2 min-w-[180px]">
-                      <p className="text-xs opacity-80">📄 {m.file_name}</p>
+                    <div className="space-y-2 min-w-[200px]">
+                      <p className="text-xs opacity-80 font-medium">📄 {m.file_name}</p>
                       {!d ? (
                         <button
                           onClick={() => open(m)}
                           disabled={busyId === m.id}
                           className={cn(
-                            "text-xs px-2 py-1 rounded-lg w-full",
+                            "text-xs px-2.5 py-1.5 rounded-lg w-full font-medium transition-colors",
                             mine
-                              ? "bg-white/20 hover:bg-white/30"
-                              : "bg-ov-bg hover:bg-ov-primary/10"
+                              ? "bg-white/20 hover:bg-white/30 text-white"
+                              : "bg-ov-bg hover:bg-ov-primary/10 text-ov-primary"
                           )}
                         >
-                          {busyId === m.id ? "…" : "Ouvrir"}
+                          {busyId === m.id ? "Déchiffrement…" : "Déchiffrer & Ouvrir"}
                         </button>
                       ) : (
                         <button
                           onClick={() => download(m)}
                           className={cn(
-                            "text-xs px-2 py-1 rounded-lg w-full flex items-center justify-center gap-1",
+                            "text-xs px-2.5 py-1.5 rounded-lg w-full flex items-center justify-center gap-1.5 font-medium transition-colors",
                             mine
-                              ? "bg-white/20 hover:bg-white/30"
-                              : "bg-ov-bg hover:bg-ov-primary/10"
+                              ? "bg-white/20 hover:bg-white/30 text-white"
+                              : "bg-ov-bg hover:bg-ov-primary/10 text-ov-primary"
                           )}
                         >
-                          <Download className="w-3 h-3" /> Télécharger
+                          <Download className="w-3.5 h-3.5" /> Télécharger
                         </button>
                       )}
                     </div>
@@ -385,7 +380,7 @@ export default function ChatPage() {
         )}
       </div>
 
-      <div className="p-3 border-t border-ov-border bg-ov-surface sticky bottom-0">
+      <div className="p-3 sm:p-4 border-t border-ov-border bg-ov-surface sticky bottom-0">
         <p className="text-[10px] text-ov-muted mb-2">
           Fichier : {MAX_FILE_SIZE_MB} Mo maximum
         </p>
