@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { getStoredIdentity } from "@/lib/device";
 import { useAuth } from "@/features/auth/useAuth";
+import { sendUniversalNotification } from "@/lib/notifications";
 
 type Options = {
   /** ID de la conversation actuellement ouverte (format "space:xxx" ou "device:yyy") */
@@ -70,24 +70,20 @@ export function useTransferAlerts({ currentChat }: Options = {}) {
 
           const senderName = sender?.name ?? "Quelqu'un";
           const title =
-            t.kind === "file" ? "📎 Nouveau fichier" : "💬 Nouveau message";
+            t.kind === "file" ? "📎 Nouveau fichier reçu" : "💬 Nouveau message reçu";
           const desc = t.kind === "file"
             ? `${senderName} vous a envoyé ${t.file_name ?? "un fichier"}`
-            : `${senderName} vous a envoyé un message`;
+            : `${senderName} vous a envoyé un message chiffré`;
 
           const url = t.to_space_id
             ? `/messages/space/${t.to_space_id}`
             : `/messages/device/${t.from_device_id}`;
 
-          toast(title, {
-            description: desc,
-            duration: 8000,
-            action: {
-              label: "Ouvrir",
-              onClick: () => {
-                navigate(url);
-              },
-            },
+          sendUniversalNotification({
+            title,
+            body: desc,
+            type: "transfer",
+            onClick: () => navigate(url),
           });
         }
       )

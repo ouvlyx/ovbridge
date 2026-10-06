@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import AdminRoute from "./AdminRoute";
+import AppLayout from "@/components/AppLayout";
 
 const LoginPage = lazy(() => import("@/features/auth/LoginPage"));
 const SignupPage = lazy(() => import("@/features/auth/SignupPage"));
@@ -44,22 +45,24 @@ export default function AppRouter() {
           <Route path="/auth/confirm" element={<ConfirmPage />} />
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
-          {/* --- Protégées --- */}
+          {/* --- Protégées avec AppLayout (Desktop Sidebar + Mobile BottomBar) --- */}
           <Route element={<ProtectedRoute />}>
-            <Route path="/devices" element={<DevicesPage />} />
-            <Route path="/pair" element={<PairingPage />} />
-            <Route path="/send" element={<SendPage />} />
-            <Route path="/inbox" element={<InboxPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/spaces/:id" element={<SpaceDetailPage />} />
-            <Route path="/messages" element={<MessagesPage />} />
-            <Route path="/messages/:kind/:id" element={<ChatPage />} />
-            <Route path="/workspace" element={<WorkspacePage />} />
-            <Route path="/clipboard" element={<ClipboardPage />} />
+            <Route element={<AppLayout />}>
+              <Route path="/devices" element={<DevicesPage />} />
+              <Route path="/pair" element={<PairingPage />} />
+              <Route path="/send" element={<SendPage />} />
+              <Route path="/inbox" element={<InboxPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/spaces/:id" element={<SpaceDetailPage />} />
+              <Route path="/messages" element={<MessagesPage />} />
+              <Route path="/messages/:kind/:id" element={<ChatPage />} />
+              <Route path="/workspace" element={<WorkspacePage />} />
+              <Route path="/clipboard" element={<ClipboardPage />} />
 
-            {/* --- Console Admin (Niveau min 10) --- */}
-            <Route element={<AdminRoute minLevel={10} />}>
-              <Route path="/admin" element={<AdminDashboardPage />} />
+              {/* --- Console Admin (Niveau min 10) --- */}
+              <Route element={<AdminRoute minLevel={10} />}>
+                <Route path="/admin" element={<AdminDashboardPage />} />
+              </Route>
             </Route>
           </Route>
 

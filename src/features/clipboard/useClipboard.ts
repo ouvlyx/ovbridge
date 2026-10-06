@@ -12,11 +12,17 @@ export function useClipboard() {
   const [items, setItems] = useState<DecryptedClipboard[]>([]);
   const [loading, setLoading] = useState(true);
   const fetchingRef = useRef(false);
+  const pendingRefreshRef = useRef(false);
 
   const refresh = useCallback(async () => {
-    if (!user || fetchingRef.current) return;
+    if (!user) return;
     const me = getStoredIdentity();
     if (!me) return;
+
+    if (fetchingRef.current) {
+      pendingRefreshRef.current = true;
+      return;
+    }
 
     fetchingRef.current = true;
     try {
@@ -32,6 +38,10 @@ export function useClipboard() {
       console.error("[useClipboard]", e);
     } finally {
       fetchingRef.current = false;
+      if (pendingRefreshRef.current) {
+        pendingRefreshRef.current = false;
+        refresh();
+      }
     }
   }, [user]);
 

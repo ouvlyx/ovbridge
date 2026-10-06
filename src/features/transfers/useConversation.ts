@@ -11,17 +11,22 @@ export function useConversation(scope: Scope | undefined) {
   const [messages, setMessages] = useState<ConversationMessage[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Verrou anti-requêtes concurrentes
+  // Verrou anti-requêtes concurrentes avec re-déclenchement automatique
   const fetchingRef = useRef(false);
+  const pendingRefreshRef = useRef(false);
 
   const scopeKind = scope?.kind;
   const scopeId = scope?.id;
 
   const refresh = useCallback(async () => {
     if (!user || !scopeKind || !scopeId) return;
-    if (fetchingRef.current) return;
     const me = getStoredIdentity();
     if (!me) return;
+
+    if (fetchingRef.current) {
+      pendingRefreshRef.current = true;
+      return;
+    }
 
     fetchingRef.current = true;
     try {
@@ -44,6 +49,10 @@ export function useConversation(scope: Scope | undefined) {
       console.error("[useConversation]", e);
     } finally {
       fetchingRef.current = false;
+      if (pendingRefreshRef.current) {
+        pendingRefreshRef.current = false;
+        refresh();
+      }
     }
   }, [user, scopeKind, scopeId]);
 
@@ -56,7 +65,6 @@ export function useConversation(scope: Scope | undefined) {
       if (active) setLoading(false);
     })();
 
-    // Debounce : si plusieurs events arrivent vite, on ne refresh qu'une fois
     let debounceTimer: ReturnType<typeof setTimeout> | null = null;
     const debouncedRefresh = () => {
       if (debounceTimer) clearTimeout(debounceTimer);
