@@ -33,7 +33,7 @@ export default function PrivacyPolicyPage() {
             <EyeOff className="w-4 h-4" /> 2. Données Collectées & Traitement
           </h2>
           <p className="text-ov-muted">
-            Seules les données strictly indispensables au fonctionnement du pont sont conservées :
+            Seules les données strictement indispensables au fonctionnement du pont sont conservées :
           </p>
           <ul className="list-disc list-inside text-ov-muted pl-2 space-y-1">
             <li>Votre adresse e-mail d'authentification.</li>

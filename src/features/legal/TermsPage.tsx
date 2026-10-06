@@ -42,7 +42,7 @@ export default function TermsPage() {
             <Scale className="w-4 h-4" /> 3. Usage Autorisé et Modération
           </h2>
           <p className="text-ov-muted">
-            Il est strictement interdit d'utiliser OvBridge pour la diffusion de contenus illicites, malveillants ou contrefaits. L'équipe d'administration (via les modérateurs S Admin et SSS Admin) se réserve le droit de suspendre ou bannir tout compte en cas de signalement ou d'abus avéré.
+            Il est strictly interdit d'utiliser OvBridge pour la diffusion de contenus illicites, malveillants ou contrefaits. L'équipe d'administration (via les modérateurs S Admin et SSS Admin) se réserve le droit de suspendre ou bannir tout compte en cas de signalement ou d'abus avéré.
           </p>
         </section>
       </Card>
