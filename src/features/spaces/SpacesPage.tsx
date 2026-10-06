@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Users, Shield, ChevronRight } from "lucide-react";
+import { Plus, Users, Shield, ChevronRight, Globe, Clipboard, MessageSquare } from "lucide-react";
 import { useSpaces } from "./useSpaces";
 import CreateSpaceDialog from "./CreateSpaceDialog";
 import { Button } from "@/components/ui/button";
@@ -16,33 +16,73 @@ export default function SpacesPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Mes collaborateurs</h2>
-          <p className="text-sm text-ov-muted">
-            Espaces partagés avec d'autres utilisateurs
+          <h2 className="text-lg font-bold">Espaces Collaboratifs</h2>
+          <p className="text-xs text-ov-muted">
+            Partagez fichiers, conversations et presse-papiers avec vos collaborateurs
           </p>
         </div>
         <Button
           size="sm"
           onClick={() => setCreating(true)}
-          className="bg-ov-primary hover:bg-ov-primaryHover"
+          className="bg-ov-primary hover:bg-ov-primaryHover text-xs"
         >
           <Plus className="w-4 h-4 mr-1" /> Nouvel espace
         </Button>
       </div>
 
+      {/* BANNIÈRE ESPACE COMMUN */}
+      <Card className="p-4 border-ov-primary/40 bg-gradient-to-r from-ov-primary/15 via-ov-surface to-ov-surface space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-ov-primary text-white flex items-center justify-center shrink-0 shadow-md">
+              <Globe className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-sm">Espace Commun Hub</h3>
+                <Badge className="bg-ov-primary/20 text-ov-primary border-0 text-[10px]">
+                  Public / Global
+                </Badge>
+              </div>
+              <p className="text-xs text-ov-muted">
+                Dépôt rapide et presse-papiers partagé avec tous vos collaborateurs
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex gap-2 pt-1">
+          <Button
+            size="sm"
+            onClick={() => navigate("/clipboard")}
+            className="flex-1 text-xs bg-ov-bg hover:bg-ov-surface border border-ov-border text-ov-text"
+          >
+            <Clipboard className="w-3.5 h-3.5 mr-1.5 text-ov-accent" /> Presse-papiers Commun
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => navigate("/send")}
+            className="flex-1 text-xs bg-ov-primary hover:bg-ov-primaryHover"
+          >
+            <MessageSquare className="w-3.5 h-3.5 mr-1.5" /> Envoi Général
+          </Button>
+        </div>
+      </Card>
+
+      {/* LISTE DES ESPACES DE GROUPES */}
       {loading ? (
-        <p className="text-sm text-ov-muted">Chargement…</p>
+        <p className="text-sm text-ov-muted">Chargement de vos espaces…</p>
       ) : spaces.length === 0 ? (
-        <Card className="p-8 border-ov-border text-center space-y-3">
+        <Card className="p-8 border-ov-border text-center space-y-3 bg-ov-surface">
           <Users className="w-8 h-8 mx-auto text-ov-muted" />
           <p className="text-sm text-ov-muted">
-            Aucun espace pour l'instant. Créez-en un ou rejoignez-en un avec un
-            code.
+            Aucun groupe collaboratif spécifique pour l'instant.
           </p>
           <Button
             variant="outline"
             size="sm"
             onClick={() => navigate("/join-space")}
+            className="text-xs"
           >
             J'ai un code d'invitation
           </Button>
@@ -52,7 +92,7 @@ export default function SpacesPage() {
           {spaces.map((s) => (
             <li key={s.id}>
               <Card
-                className="p-4 border-ov-border hover:border-ov-primary/50 transition-colors cursor-pointer"
+                className="p-4 border-ov-border bg-ov-surface hover:border-ov-primary/50 transition-colors cursor-pointer"
                 role="link"
                 tabIndex={0}
                 onKeyDown={(event) => {

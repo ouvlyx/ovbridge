@@ -21,6 +21,8 @@ const ConfirmPage = lazy(() => import("@/features/auth/ConfirmPage"));
 const WorkspacePage = lazy(() => import("@/features/workspace/WorkspacePage"));
 const ClipboardPage = lazy(() => import("@/features/clipboard/ClipboardPage"));
 const AdminDashboardPage = lazy(() => import("@/features/admin/AdminDashboardPage"));
+const PrivacyPolicyPage = lazy(() => import("@/features/legal/PrivacyPolicyPage"));
+const TermsPage = lazy(() => import("@/features/legal/TermsPage"));
 
 function Loading() {
   return (
@@ -42,6 +44,8 @@ export default function AppRouter() {
           <Route path="/join-space" element={<JoinSpacePage />} />
           <Route path="/scan" element={<ScanPage />} />
           <Route path="/auth/confirm" element={<ConfirmPage />} />
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
 
           {/* --- Protégées avec AppLayout (Desktop Sidebar + Mobile BottomBar) --- */}
           <Route element={<ProtectedRoute />}>
