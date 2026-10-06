@@ -20,6 +20,7 @@ const ConfirmPage = lazy(() => import("@/features/auth/ConfirmPage"));
 const WorkspacePage = lazy(() => import("@/features/workspace/WorkspacePage"));
 const ClipboardPage = lazy(() => import("@/features/clipboard/ClipboardPage"));
 const AdminDashboardPage = lazy(() => import("@/features/admin/AdminDashboardPage"));
+const AuthCallbackPage = lazy(() => import("@/features/auth/AuthCallbackPage"));
 
 function Loading() {
   return (
@@ -41,6 +42,7 @@ export default function AppRouter() {
           <Route path="/join-space" element={<JoinSpacePage />} />
           <Route path="/scan" element={<ScanPage />} />
           <Route path="/auth/confirm" element={<ConfirmPage />} />
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
           {/* --- Protégées --- */}
           <Route element={<ProtectedRoute />}>
