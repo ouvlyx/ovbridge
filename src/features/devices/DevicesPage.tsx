@@ -17,7 +17,8 @@ import {
   Users,
   MessageSquare,
   HardDrive,
-  Clipboard
+  Clipboard,
+  Shield,
 } from "lucide-react";
 import SpacesPage from "@/features/spaces/SpacesPage";
 import { supabase } from "@/lib/supabase";
@@ -40,9 +41,8 @@ import { cn } from "@/lib/utils";
 import { useDeviceAlerts } from "./useDeviceAlerts";
 import { useTransferAlerts } from "@/features/transfers/useTransferAlerts";
 import { useUnreadCount } from "@/features/transfers/useUnreadCount";
-
-
-
+import { fetchUserAdminRole } from "@/lib/admin";
+import type { AdminRole } from "@/types/admin";
 
 function PlatformIcon({ platform }: { platform: string | null }) {
   if (platform === "android" || platform === "ios")
@@ -64,24 +64,16 @@ function timeAgo(iso: string | null): string {
 }
 
 export default function DevicesPage() {
-  const { 
-    user, 
-    signOut, 
-    // isAnonymous 
-  } = useAuth();
+  const { user, signOut } = useAuth();
   const { devices, loading, refresh } = useDevices();
   const navigate = useNavigate();
   const [myDeviceId, setMyDeviceId] = useState<string | null>(null);
   const [registering, setRegistering] = useState(true);
+  const [adminRole, setAdminRole] = useState<AdminRole>("none");
 
   useDeviceAlerts(myDeviceId);
-  useTransferAlerts({ currentChat: null }); // pas de chat ouvert ici
+  useTransferAlerts({ currentChat: null });
   const unread = useUnreadCount();
-  // dans DevicesPage, state
-  // const [newDeviceFlash, setNewDeviceFlash] = useState(false);
-
-  // afficher un badge temporaire pendant 5s après un nouveau device
-  // → à hooker sur l'event realtime si tu veux, mais le toast suffit pour l'instant
 
   const [tab, setTab] = useState<"devices" | "spaces">("devices");
 
@@ -94,8 +86,12 @@ export default function DevicesPage() {
     if (!user) return;
     (async () => {
       try {
-        const identity = await ensureDeviceRegistered(user.id);
+        const [identity, role] = await Promise.all([
+          ensureDeviceRegistered(user.id),
+          fetchUserAdminRole(user.id),
+        ]);
         setMyDeviceId(identity.deviceId);
+        setAdminRole(role);
       } catch (e: any) {
         toast.error(friendlyError(e));
       } finally {
@@ -133,7 +129,7 @@ export default function DevicesPage() {
   };
 
   return (
-    <div className="min-h-screen p-6 space-y-6 max-w-2xl mx-auto">
+    <div className="min-h-screen p-4 sm:p-6 space-y-6 w-full max-w-4xl mx-auto">
       <header className="flex flex-wrap items-center justify-between gap-y-2">
         <div className="flex items-center gap-2">
           <span className="relative flex h-2.5 w-2.5">
@@ -141,18 +137,25 @@ export default function DevicesPage() {
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-ov-success" />
           </span>
           <div className="flex items-center gap-2">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ov-success opacity-60" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-ov-success" />
-            </span>
             <img
               src="/brandmark-transparent.png"
               alt=""
               className="h-7 w-auto shrink-0"
             />
             <h1 className="text-2xl font-bold text-ov-primary">OvBridge</h1>
-          </div>        </div>
+          </div>
+        </div>
         <div className="flex items-center gap-1">
+          {adminRole !== "none" && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/admin")}
+              className="border-ov-primary/40 text-ov-primary hover:bg-ov-primary/10 text-xs mr-1"
+            >
+              <Shield className="w-4 h-4 mr-1" /> Console Admin
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -167,26 +170,6 @@ export default function DevicesPage() {
         </div>
       </header>
 
-      {/* {isAnonymous && (
-        <Card className="p-3 border-ov-accent/40 bg-ov-accent/[0.05] flex items-center gap-3">
-          <Sparkles className="w-5 h-5 text-ov-accent shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-xs text-ov-text font-medium">Mode invité</p>
-            <p className="text-[10px] text-ov-muted">
-              Vos données seront perdues à la déconnexion.
-            </p>
-          </div>
-          <Button
-            size="sm"
-            variant="outline"
-            className="border-ov-accent/40 text-ov-accent hover:bg-ov-accent/10 text-xs h-7 px-2"
-            onClick={() => navigate("/profile")}
-          >
-            Sauvegarder
-          </Button>
-        </Card>
-      )} */}
-  
       {/* TABS */}
       <div className="flex gap-2 p-1 rounded-xl bg-ov-surface border border-ov-border">
         <button
@@ -212,7 +195,7 @@ export default function DevicesPage() {
           <Users className="w-4 h-4" /> Mes collaborateurs
         </button>
       </div>
-  
+
       {tab === "spaces" ? (
         <SpacesPage />
       ) : (
@@ -228,26 +211,26 @@ export default function DevicesPage() {
             </div>
             <p className="text-sm text-ov-muted">{user?.email}</p>
           </section>
-  
+
           {registering && (
             <p className="text-sm text-ov-muted">
               Enregistrement de cet appareil…
             </p>
           )}
-  
+
           {loading ? (
             <p className="text-sm text-ov-muted">Chargement…</p>
           ) : (
-            <ul className="space-y-3">
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {devices.map((d: Device) => {
                 const isMe = d.id === myDeviceId;
                 return (
                   <li key={d.id}>
                     <Card
                       className={cn(
-                        "relative p-4 flex items-center gap-3 border transition-all",
+                        "relative p-4 flex items-center gap-3 border transition-all h-full",
                         isMe
-                          ? "border-ov-success/70 bg-gradient-to-br from-ov-success/[0.08] to-transparent shadow-[0_0_0_1px_rgba(34,197,94,0.15),0_8px_24px_-12px_rgba(34,197,94,0.4)]"
+                          ? "border-ov-success/70 bg-gradient-to-br from-ov-success/[0.08] to-transparent shadow-md"
                           : "border-ov-border bg-ov-surface hover:border-ov-border/80",
                         d.revoked && "opacity-50 border-ov-danger/30"
                       )}
@@ -255,7 +238,7 @@ export default function DevicesPage() {
                       {isMe && (
                         <span className="absolute top-0 left-0 h-full w-1 rounded-l-2xl bg-ov-success" />
                       )}
-  
+
                       <div
                         className={cn(
                           "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
@@ -266,7 +249,7 @@ export default function DevicesPage() {
                       >
                         <PlatformIcon platform={d.platform} />
                       </div>
-  
+
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="font-medium truncate">{d.name}</p>
@@ -284,7 +267,7 @@ export default function DevicesPage() {
                           {d.fingerprint?.slice(0, 8) ?? "—"}
                         </p>
                       </div>
-  
+
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon">
@@ -296,7 +279,7 @@ export default function DevicesPage() {
                             <Pencil className="w-4 h-4" />
                             {isMe ? "Renommer cet appareil" : "Renommer"}
                           </DropdownMenuItem>
-  
+
                           {!isMe && (
                             <>
                               <DropdownMenuSeparator />
@@ -326,8 +309,8 @@ export default function DevicesPage() {
               })}
             </ul>
           )}
-  
-          <div className="grid grid-cols-2 gap-3">
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <Button
               className="bg-ov-primary hover:bg-ov-primaryHover shadow-lg shadow-ov-primary/20"
               onClick={() => navigate("/send")}
@@ -362,7 +345,7 @@ export default function DevicesPage() {
               <Clipboard className="w-4 h-4 mr-2" /> Presse-papiers
             </Button>
           </div>
-          
+
           <Button
             variant="outline"
             className="w-full border-dashed border-ov-border text-ov-muted hover:text-ov-text hover:border-ov-primary/50 hover:bg-ov-primary/5 transition-colors"
@@ -372,7 +355,7 @@ export default function DevicesPage() {
           </Button>
         </>
       )}
-  
+
       {renaming && (
         <RenameDeviceDialog
           open={!!renaming}
@@ -382,7 +365,7 @@ export default function DevicesPage() {
           onRenamed={refresh}
         />
       )}
-  
+
       <ConfirmDialog
         open={!!revoking}
         onOpenChange={(v) => !v && setRevoking(null)}
@@ -393,7 +376,7 @@ export default function DevicesPage() {
         busy={busy}
         onConfirm={handleRevoke}
       />
-  
+
       <ConfirmDialog
         open={!!deleting}
         onOpenChange={(v) => !v && setDeleting(null)}

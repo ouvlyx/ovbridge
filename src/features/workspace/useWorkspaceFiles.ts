@@ -6,9 +6,16 @@ export function useWorkspaceFiles(workspaceId: string | undefined) {
   const [files, setFiles] = useState<WorkspaceFile[]>([]);
   const [loading, setLoading] = useState(true);
   const fetchingRef = useRef(false);
+  const pendingRefreshRef = useRef(false);
 
   const refresh = useCallback(async () => {
-    if (!workspaceId || fetchingRef.current) return;
+    if (!workspaceId) return;
+
+    if (fetchingRef.current) {
+      pendingRefreshRef.current = true;
+      return;
+    }
+
     fetchingRef.current = true;
     try {
       const { data, error } = await supabase
@@ -32,6 +39,10 @@ export function useWorkspaceFiles(workspaceId: string | undefined) {
       console.error("[useWorkspaceFiles]", e);
     } finally {
       fetchingRef.current = false;
+      if (pendingRefreshRef.current) {
+        pendingRefreshRef.current = false;
+        refresh();
+      }
     }
   }, [workspaceId]);
 

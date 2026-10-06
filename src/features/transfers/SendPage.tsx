@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { friendlyError } from "@/lib/errors";
 import { MAX_FILE_SIZE_MB } from "@/lib/constants";
 import { ArrowLeft, Send, FileUp, Type, Users, Smartphone, UploadCloud } from "lucide-react";
 import { supabase } from "@/lib/supabase";
@@ -13,6 +12,7 @@ import {
   sendTextToSpace,
   sendFileToSpace,
 } from "@/lib/transfers";
+import { queueOfflineTransfer, fileToBase64 } from "@/lib/offlineQueue";
 import { useSpaces } from "@/features/spaces/useSpaces";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -127,6 +127,31 @@ export default function SendPage() {
     if (!me) return;
 
     setBusy(true);
+
+    // Envoi hors-ligne immédiat si le navigateur signale hors-ligne
+    if (!navigator.onLine) {
+      let b64: string | undefined;
+      if (mode === "file" && file) {
+        b64 = await fileToBase64(file);
+      }
+      queueOfflineTransfer({
+        userId: user.id,
+        kind: mode,
+        targetKind: selected.kind,
+        targetId: selected.id,
+        targetPublicKey: selected.kind === "device" ? selected.public_key : undefined,
+        content: mode === "text" ? text : undefined,
+        fileName: file?.name,
+        fileMime: file?.type,
+        fileBase64: b64,
+      });
+      setText("");
+      setFile(null);
+      setBusy(false);
+      navigate("/devices");
+      return;
+    }
+
     try {
       if (selected.kind === "device") {
         if (mode === "text") {
@@ -159,8 +184,25 @@ export default function SendPage() {
         }
       }
       navigate("/devices");
-    } catch (err: any) {
-      toast.error(friendlyError(err));
+    } catch (_err: any) {
+      // Si une erreur de réseau survient pendant l'envoi, basculer dans la file hors-ligne
+      let b64: string | undefined;
+      if (mode === "file" && file) {
+        b64 = await fileToBase64(file);
+      }
+      queueOfflineTransfer({
+        userId: user.id,
+        kind: mode,
+        targetKind: selected.kind,
+        targetId: selected.id,
+        targetPublicKey: selected.kind === "device" ? selected.public_key : undefined,
+        content: mode === "text" ? text : undefined,
+        fileName: file?.name,
+        fileMime: file?.type,
+        fileBase64: b64,
+      });
+      toast.info("Stocké dans la file hors-ligne suite à un souci réseau.");
+      navigate("/devices");
     } finally {
       setBusy(false);
     }
@@ -296,7 +338,11 @@ export default function SendPage() {
           className={cn("w-full bg-ov-primary hover:bg-ov-primaryHover")}
         >
           <Send className="w-4 h-4 mr-2" />
-          {busy ? "Envoi…" : "Envoyer chiffré"}
+          {busy
+            ? "Envoi…"
+            : !navigator.onLine
+            ? "Mettre en file d'attente hors-ligne"
+            : "Envoyer chiffré"}
         </Button>
       </form>
     </div>
