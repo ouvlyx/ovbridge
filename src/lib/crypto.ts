@@ -55,15 +55,15 @@ export async function encryptFor(
 
 export async function decryptFrom(
   payload: EncryptedPayload,
-  senderPublicKeyB64: string,
-  recipientPrivateKeyB64: string
+  peerPublicKeyB64: string,
+  myPrivateKeyB64: string
 ): Promise<string> {
   const s = await initCrypto();
   const pt = s.crypto_box_open_easy(
     s.from_base64(payload.ciphertext),
     s.from_base64(payload.nonce),
-    s.from_base64(senderPublicKeyB64),
-    s.from_base64(recipientPrivateKeyB64)
+    s.from_base64(peerPublicKeyB64),
+    s.from_base64(myPrivateKeyB64)
   );
   return s.to_string(pt);
 }
@@ -114,8 +114,8 @@ export async function decryptFileFrom(
   ciphertextWithNonce: Uint8Array,
   encryptedKeyB64: string,
   keyNonceB64: string,
-  senderPublicKeyB64: string,
-  recipientPrivateKeyB64: string
+  peerPublicKeyB64: string,
+  myPrivateKeyB64: string
 ): Promise<Uint8Array> {
   const s = await initCrypto();
 
@@ -126,8 +126,8 @@ export async function decryptFileFrom(
   const symKey = s.crypto_box_open_easy(
     s.from_base64(encryptedKeyB64),
     s.from_base64(keyNonceB64),
-    s.from_base64(senderPublicKeyB64),
-    s.from_base64(recipientPrivateKeyB64)
+    s.from_base64(peerPublicKeyB64),
+    s.from_base64(myPrivateKeyB64)
   );
 
   return s.crypto_secretbox_open_easy(ct, fileNonce, symKey);
