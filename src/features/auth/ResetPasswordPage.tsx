@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
@@ -7,13 +7,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Lock, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { Lock, ArrowLeft, CheckCircle2, AlertTriangle } from "lucide-react";
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [hasSession, setHasSession] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setHasSession(!!data.session);
+    });
+
+    const { data: authSub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) setHasSession(true);
+    });
+
+    return () => authSub.subscription.unsubscribe();
+  }, []);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,44 +70,66 @@ export default function ResetPasswordPage() {
           </p>
         </div>
 
-        <form onSubmit={handleUpdatePassword} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="new-password">Nouveau mot de passe</Label>
-            <Input
-              id="new-password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="new-password"
-              required
-            />
+        {hasSession === false ? (
+          <div className="p-4 rounded-xl bg-ov-bg border border-ov-border space-y-3 text-center">
+            <div className="mx-auto w-10 h-10 rounded-full bg-ov-accent/10 flex items-center justify-center text-ov-accent">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-ov-text">
+                Session de réinitialisation absente
+              </p>
+              <p className="text-xs text-ov-muted">
+                Pour réinitialiser votre mot de passe, demandez un lien ou validez votre code à 6 chiffres.
+              </p>
+            </div>
+            <Button
+              onClick={() => navigate("/forgot-password")}
+              className="w-full bg-ov-primary hover:bg-ov-primaryHover text-xs"
+            >
+              Demander un lien / Saisir mon code
+            </Button>
           </div>
+        ) : (
+          <form onSubmit={handleUpdatePassword} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-password">Nouveau mot de passe</Label>
+              <Input
+                id="new-password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="new-password"
+                required
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="confirm-password">
-              Confirmer le nouveau mot de passe
-            </Label>
-            <Input
-              id="confirm-password"
-              type="password"
-              placeholder="••••••••"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              autoComplete="new-password"
-              required
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">
+                Confirmer le nouveau mot de passe
+              </Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                autoComplete="new-password"
+                required
+              />
+            </div>
 
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-ov-primary hover:bg-ov-primaryHover"
-          >
-            <CheckCircle2 className="w-4 h-4 mr-2" />
-            {loading ? "Enregistrement…" : "Changer le mot de passe"}
-          </Button>
-        </form>
+            <Button
+              type="submit"
+              disabled={loading || hasSession === null}
+              className="w-full bg-ov-primary hover:bg-ov-primaryHover"
+            >
+              <CheckCircle2 className="w-4 h-4 mr-2" />
+              {loading ? "Enregistrement…" : "Changer le mot de passe"}
+            </Button>
+          </form>
+        )}
 
         <div className="pt-2 border-t border-ov-border text-center">
           <Link
