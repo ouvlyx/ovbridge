@@ -8,25 +8,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setLoading(false);
-    });
+    let mounted = true;
+
+    // Traitement immédiat des retours OAuth quel que soit le pathname ("/" ou "/auth/callback")
+    const handleAuthRedirect = async () => {
+      const href = window.location.href;
+      const hasOAuthParams =
+        href.includes("access_token=") ||
+        href.includes("code=") ||
+        href.includes("error=") ||
+        href.includes("error_code=");
+
+      const { data } = await supabase.auth.getSession();
+      if (mounted) {
+        setSession(data.session);
+        setLoading(false);
+      }
+
+      // Si des paramètres OAuth sont présents sur la racine "/" ou sur une autre page
+      if (hasOAuthParams) {
+        if (data.session) {
+          // L'utilisateur est connecté, nettoyer les paramètres de l'URL
+          window.history.replaceState({}, document.title, "/devices");
+        } else if (window.location.pathname === "/") {
+          // Si non connecté mais des params OAuth existent sur "/", basculer vers /auth/callback
+          window.history.replaceState(
+            {},
+            document.title,
+            "/auth/callback" + window.location.search + window.location.hash
+          );
+        }
+      }
+    };
+
+    handleAuthRedirect();
 
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
-      setSession(s);
-      setLoading(false);
+      if (mounted) {
+        setSession(s);
+        setLoading(false);
+      }
     });
 
-    // Nettoyer les paramètres de requête d'erreur OAuth de l'URL root if applicable
-    if (window.location.search.includes("error_code=") || window.location.hash.includes("access_token=")) {
-      const url = new URL(window.location.href);
-      if (url.pathname === "/") {
-        window.history.replaceState({}, document.title, "/auth/callback" + url.search + url.hash);
-      }
-    }
-
-    return () => sub.subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
@@ -40,10 +67,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signInWithGoogle = async () => {
+    // Rediriger vers /auth/callback (ou origin) pour capter le retour Google OAuth
+    const redirectUrl = `${window.location.origin}/auth/callback`;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: redirectUrl,
+        queryParams: {
+          access_type: "offline",
+          prompt: "consent",
+        },
       },
     });
     if (error) throw error;
