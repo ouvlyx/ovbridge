@@ -496,7 +496,23 @@ export function friendlyError(error: unknown): string {
       `${code} ${message}`
     )
   ) {
-    return messages.rateLimit;
+    return "Trop de tentatives ou d'e-mails envoyés. Veuillez patienter quelques minutes.";
+  }
+
+  if (/auth session missing|session_not_found|no active session/i.test(message)) {
+    return "Aucune session de réinitialisation active. Veuillez ouvrir le lien reçu par e-mail ou saisir votre code à 6 chiffres.";
+  }
+
+  if (/same_password|new password should be different/i.test(message)) {
+    return "Le nouveau mot de passe doit être différent de l'ancien.";
+  }
+
+  if (/password should be at least|password is too short/i.test(message)) {
+    return "Le mot de passe doit contenir au moins 6 caractères.";
+  }
+
+  if (/token has expired|invalid token|otp_expired|token_expired/i.test(message)) {
+    return "Le code ou le lien a expiré. Veuillez faire une nouvelle demande.";
   }
 
   const knownMessages: Record<string, string> = {
@@ -513,10 +529,21 @@ export function friendlyError(error: unknown): string {
   };
 
   const originalMessage =
-    typeof details.message === "string" ? details.message : error;
-  if (typeof originalMessage === "string") {
+    typeof details.message === "string"
+      ? details.message
+      : typeof details.error_description === "string"
+        ? details.error_description
+        : typeof error === "string"
+          ? error
+          : null;
+
+  if (originalMessage) {
     const friendly = knownMessages[originalMessage.toLowerCase()];
     if (friendly) return friendly;
+    // Si c'est un message textuel explicite non masqué, le renvoyer
+    if (originalMessage.length < 150) {
+      return originalMessage;
+    }
   }
 
   return messages.fallback;

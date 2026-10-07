@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useAuth } from "@/features/auth";
+import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -59,8 +60,19 @@ export default function SignupPage() {
     setLoading(true);
     try {
       await signUp(values.email, values.password);
-      toast.success("Compte créé. Vérifie ta boîte mail si confirmation activée.");
-      navigate("/devices");
+
+      // Vérifier si une session active est immédiatement disponible
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (session) {
+        toast.success("Compte créé et connecté avec succès !");
+        navigate("/devices", { replace: true });
+      } else {
+        toast.success(
+          "Compte créé avec succès ! Un e-mail de confirmation a été envoyé. Veuillez vérifier votre boîte de réception."
+        );
+        navigate("/login", { replace: true });
+      }
     } catch (e: any) {
       toast.error(friendlyError(e));
     } finally {
