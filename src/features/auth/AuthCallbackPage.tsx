@@ -1,99 +1,75 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { Card } from "@/components/ui/card";
-import { LoaderCircle, CheckCircle2, XCircle } from "lucide-react";
+import { toast } from "sonner";
+import { friendlyError } from "@/lib/errors";
 
 export default function AuthCallbackPage() {
   const navigate = useNavigate();
-  const [params] = useSearchParams();
-  const [status, setStatus] = useState<"loading" | "ok" | "error">("loading");
-  const [message, setMessage] = useState("Connexion en cours…");
+  const [status, setStatus] = useState("Authentification en cours…");
 
   useEffect(() => {
-    (async () => {
+    let mounted = true;
+
+    const handleCallback = async () => {
       try {
-        // 1. Cas OAuth avec code (PKCE) : ?code=xxx
-        const code = params.get("code");
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
 
-        // 2. Cas magic link / OTP : ?token_hash=xxx&type=xxx
-        const token_hash = params.get("token_hash");
-        const type = params.get("type");
-
-        // 3. Cas fragment (#access_token=...) — fallback
-        const hash = window.location.hash;
-
-        if (code) {
-          const { error } = await supabase.auth.exchangeCodeForSession(code);
-          if (error) throw error;
-          setStatus("ok");
-          setMessage("Connexion réussie");
-          setTimeout(() => navigate("/devices", { replace: true }), 800);
-          return;
-        }
-
-        if (token_hash && type) {
-          const { error } = await supabase.auth.verifyOtp({
-            type: type as any,
-            token_hash,
-          });
-          if (error) throw error;
-          setStatus("ok");
-          setMessage("Email confirmé");
-          setTimeout(() => navigate("/devices", { replace: true }), 800);
-          return;
-        }
-
-        if (hash && hash.includes("access_token")) {
-          // Supabase JS gère ça automatiquement via detectSessionInUrl
-          // On attend juste que la session soit créée
-          await new Promise((r) => setTimeout(r, 500));
-          const { data } = await supabase.auth.getSession();
-          if (data.session) {
-            setStatus("ok");
-            setMessage("Connexion réussie");
-            setTimeout(() => navigate("/devices", { replace: true }), 800);
-            return;
+        if (data.session) {
+          if (mounted) {
+            toast.success("Connexion réussie !");
+            navigate("/devices", { replace: true });
           }
+          return;
         }
 
-        throw new Error("Aucun paramètre d'authentification trouvé");
-      } catch (e: any) {
-        console.error("[AuthCallback]", e);
-        setStatus("error");
-        setMessage(e.message ?? "Erreur d'authentification");
-        setTimeout(() => navigate("/login", { replace: true }), 3000);
+        // On écoute les changements d'état d'auth au cas où Supabase traite le hash/code
+        const { data: authSub } = supabase.auth.onAuthStateChange(
+          (_event, session) => {
+            if (session && mounted) {
+              toast.success("Connexion réussie !");
+              navigate("/devices", { replace: true });
+            }
+          }
+        );
+
+        // Si après 4 secondes aucun token valide n'a été récupéré
+        const timeout = setTimeout(() => {
+          if (mounted) {
+            setStatus("Échec de l'authentification.");
+            toast.error("Impossible d'authentifier la session Google.");
+            navigate("/login", { replace: true });
+          }
+        }, 4000);
+
+        return () => {
+          authSub.subscription.unsubscribe();
+          clearTimeout(timeout);
+        };
+      } catch (err: any) {
+        if (mounted) {
+          toast.error(friendlyError(err));
+          navigate("/login", { replace: true });
+        }
       }
-    })();
-  }, [params, navigate]);
+    };
+
+    handleCallback();
+
+    return () => {
+      mounted = false;
+    };
+  }, [navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
-      <Card className="w-full max-w-md p-6 bg-ov-surface border-ov-border text-center space-y-4">
-        {status === "loading" && (
-          <>
-            <LoaderCircle className="w-10 h-10 mx-auto text-ov-primary animate-spin" />
-            <p className="font-medium">{message}</p>
-          </>
-        )}
-
-        {status === "ok" && (
-          <>
-            <CheckCircle2 className="w-10 h-10 mx-auto text-ov-success" />
-            <p className="font-medium text-ov-success">{message}</p>
-            <p className="text-xs text-ov-muted">Redirection…</p>
-          </>
-        )}
-
-        {status === "error" && (
-          <>
-            <XCircle className="w-10 h-10 mx-auto text-ov-danger" />
-            <p className="font-medium text-ov-danger">Erreur</p>
-            <p className="text-xs text-ov-muted">{message}</p>
-            <p className="text-xs text-ov-muted">Redirection vers la connexion…</p>
-          </>
-        )}
-      </Card>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-ov-bg p-4 text-center">
+      <div className="relative flex h-10 w-10 mb-4">
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ov-primary opacity-75" />
+        <span className="relative inline-flex rounded-full h-10 w-10 bg-ov-primary" />
+      </div>
+      <h2 className="text-xl font-semibold text-ov-text mb-2">OvBridge</h2>
+      <p className="text-sm text-ov-muted animate-pulse">{status}</p>
     </div>
   );
 }
