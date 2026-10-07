@@ -135,13 +135,28 @@ export async function downloadWorkspaceFile(
     throw TransferError.downloadFailed(error?.message ?? "Téléchargement échoué", error);
   }
 
+  // Récupérer la clé publique de l'appareil émetteur/téléverseur
+  let uploaderPublicKey = me.publicKey;
+
+  if (wf.uploaded_by_device && wf.uploaded_by_device !== me.deviceId) {
+    const { data: dev } = await supabase
+      .from("ovbridge_devices")
+      .select("public_key")
+      .eq("id", wf.uploaded_by_device)
+      .maybeSingle();
+
+    if (dev?.public_key) {
+      uploaderPublicKey = dev.public_key;
+    }
+  }
+
   try {
     const buf = new Uint8Array(await data.arrayBuffer());
     const plain = await decryptFileFrom(
       buf,
       wf.encrypted_key,
       wf.nonce,
-      me.publicKey,
+      uploaderPublicKey,
       me.privateKey
     );
 
