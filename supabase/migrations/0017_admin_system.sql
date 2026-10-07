@@ -133,6 +133,82 @@ create policy "ovbridge_profiles: admins select all"
   on public.ovbridge_profiles for select
   using (public.ovbridge_get_admin_role(auth.uid()) in ('sss_admin', 'ss_admin', 's_admin', 'admin'));
 
-create policy "ovbridge_profiles: admins manage bans"
-  on public.ovbridge_profiles for update
-  using (public.ovbridge_get_admin_role(auth.uid()) in ('sss_admin', 'admin'));
+-- Fonction RPC sécurisée pour la gestion des bannissements par les administrateurs
+create or replace function public.ovbridge_admin_set_user_ban(
+  target_user_id uuid,
+  new_ban_status boolean,
+  reason text default null
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  caller_role text;
+begin
+  caller_role := public.ovbridge_get_admin_role(auth.uid());
+
+  if caller_role not in ('sss_admin', 'ss_admin', 's_admin', 'admin') then
+    raise exception 'Permission refusée: Réservé aux administrateurs.';
+  end if;
+
+  update public.ovbridge_profiles
+  set
+    is_banned = new_ban_status,
+    banned_at = case when new_ban_status then now() else null end,
+    ban_reason = case when new_ban_status then reason else null end,
+    updated_at = now()
+  where id = target_user_id;
+
+  -- Audit log
+  insert into public.ovbridge_admin_logs (admin_id, admin_role, action, target_id, details)
+  values (
+    auth.uid(),
+    caller_role,
+    case when new_ban_status then 'ban_user' else 'unban_user' end,
+    target_user_id::text,
+    jsonb_build_object('reason', reason)
+  );
+end;
+$$;
+
+-- Fonction RPC sécurisée pour la modification des rôles d'administration (SSS Admin 100% uniquement)
+create or replace function public.ovbridge_admin_set_user_role(
+  target_user_id uuid,
+  new_role text
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  caller_role text;
+begin
+  caller_role := public.ovbridge_get_admin_role(auth.uid());
+
+  if caller_role != 'sss_admin' then
+    raise exception 'Permission refusée: Seul un SSS Admin (100%%) peut attribuer des rôles d administration.';
+  end if;
+
+  if new_role not in ('sss_admin', 'ss_admin', 's_admin', 'admin', 'none') then
+    raise exception 'Rôle invalide';
+  end if;
+
+  update public.ovbridge_profiles
+  set
+    admin_role = new_role,
+    updated_at = now()
+  where id = target_user_id;
+
+  insert into public.ovbridge_admin_logs (admin_id, admin_role, action, target_id, details)
+  values (
+    auth.uid(),
+    caller_role,
+    'change_admin_role',
+    target_user_id::text,
+    jsonb_build_object('new_role', new_role)
+  );
+end;
+$$;

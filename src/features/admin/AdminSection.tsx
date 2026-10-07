@@ -90,15 +90,16 @@ export default function AdminSection({ myRole }: { myRole: AdminRole }) {
     if (!newEmail.trim()) return toast.error("Entrez une adresse email");
     setAddBusy(true);
     try {
-      // Envoyer une invitation ou inscrire le membre via l'API Supabase Auth
-      const { error } = await supabase.auth.signUp({
-        email: newEmail.trim(),
-        password: "TempPassword123!",
+      // Envoi d'une réinitialisation d'authentification / invitation par e-mail
+      const { error } = await supabase.auth.resetPasswordForEmail(newEmail.trim(), {
+        redirectTo: `${window.location.origin}/signup`,
       });
 
       if (error) throw error;
 
-      toast.success(`Membre ${newEmail} ajouté avec succès. Un email de confirmation a été envoyé.`);
+      toast.success(
+        `Invitation et lien de configuration envoyés à ${newEmail.trim()}.`
+      );
       setNewEmail("");
       setNewDisplayName("");
       setAddOpen(false);
