@@ -373,6 +373,24 @@ export default function ProfilePage() {
         </div>
       </Card>
 
+      {/* SÉCURITÉ ET CHANGER DE MOT DE PASSE */}
+      <Card className="p-5 border-ov-border space-y-4 bg-ov-surface">
+        <h2 className="text-base font-bold flex items-center gap-2">
+          <Lock className="w-4 h-4 text-ov-primary" /> Sécurité & Mot de passe
+        </h2>
+        <p className="text-xs text-ov-muted">
+          Modifiez votre mot de passe d'accès au compte.
+        </p>
+
+        <Button
+          variant="outline"
+          onClick={() => navigate("/reset-password")}
+          className="w-full border-ov-border hover:bg-ov-bg text-xs"
+        >
+          <Lock className="w-3.5 h-3.5 mr-2" /> Modifier mon mot de passe
+        </Button>
+      </Card>
+
       {/* PARAMÈTRES ET NOTIFICATIONS */}
       <Card className="p-5 border-ov-border space-y-4 bg-ov-surface">
         <h2 className="text-base font-bold flex items-center gap-2">
