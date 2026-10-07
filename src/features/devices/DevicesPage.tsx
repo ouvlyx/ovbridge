@@ -8,16 +8,12 @@ import {
   Monitor,
   QrCode,
   LogOut,
-  Send,
   Pencil,
   User,
   Ban,
   Trash2,
   MoreVertical,
   Users,
-  MessageSquare,
-  HardDrive,
-  Clipboard,
   Shield,
 } from "lucide-react";
 import SpacesPage from "@/features/spaces/SpacesPage";
@@ -40,7 +36,6 @@ import {
 import { cn } from "@/lib/utils";
 import { useDeviceAlerts } from "./useDeviceAlerts";
 import { useTransferAlerts } from "@/features/transfers/useTransferAlerts";
-import { useUnreadCount } from "@/features/transfers/useUnreadCount";
 import { fetchUserAdminRole } from "@/lib/admin";
 import type { AdminRole } from "@/types/admin";
 
@@ -73,7 +68,6 @@ export default function DevicesPage() {
 
   useDeviceAlerts(myDeviceId);
   useTransferAlerts({ currentChat: null });
-  const unread = useUnreadCount();
 
   const [tab, setTab] = useState<"devices" | "spaces">("devices");
 
@@ -310,45 +304,9 @@ export default function DevicesPage() {
             </ul>
           )}
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <Button
-              className="bg-ov-primary hover:bg-ov-primaryHover shadow-lg shadow-ov-primary/20"
-              onClick={() => navigate("/send")}
-            >
-              <Send className="w-4 h-4 mr-2" /> Envoyer
-            </Button>
-            <Button
-              variant="outline"
-              className="border-ov-border hover:bg-ov-surface relative"
-              onClick={() => navigate("/messages")}
-            >
-              <MessageSquare className="w-4 h-4 mr-2" /> Messages
-              {unread > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-ov-primary text-white text-[10px] rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 font-semibold">
-                  {unread > 99 ? "99+" : unread}
-                </span>
-              )}
-            </Button>
-            <Button
-              variant="outline"
-              className="border-ov-border hover:bg-ov-surface"
-              onClick={() => navigate("/workspace")}
-            >
-              <HardDrive className="w-4 h-4 mr-2" /> Mon espace
-            </Button>
-
-            <Button
-              variant="outline"
-              className="border-ov-border hover:bg-ov-surface"
-              onClick={() => navigate("/clipboard")}
-            >
-              <Clipboard className="w-4 h-4 mr-2" /> Presse-papiers
-            </Button>
-          </div>
-
           <Button
             variant="outline"
-            className="w-full border-dashed border-ov-border text-ov-muted hover:text-ov-text hover:border-ov-primary/50 hover:bg-ov-primary/5 transition-colors"
+            className="w-full border-dashed border-ov-border text-ov-muted hover:text-ov-text hover:border-ov-primary/50 hover:bg-ov-primary/5 transition-colors py-3"
             onClick={() => navigate("/pair")}
           >
             <QrCode className="w-4 h-4 mr-2" /> Lier un nouvel appareil

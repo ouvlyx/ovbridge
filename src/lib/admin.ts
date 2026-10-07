@@ -52,48 +52,33 @@ export async function fetchUsersForAdmin(): Promise<UserProfileAdmin[]> {
 }
 
 export async function setUserBanStatus(
-  adminId: string,
-  adminRole: AdminRole,
+  _adminId: string,
+  _adminRole: AdminRole,
   userId: string,
   banned: boolean,
   reason?: string
 ) {
-  const { error } = await supabase
-    .from("ovbridge_profiles")
-    .update({
-      is_banned: banned,
-      banned_at: banned ? new Date().toISOString() : null,
-      ban_reason: banned ? reason || "Violation des conditions d'utilisation" : null,
-    })
-    .eq("id", userId);
+  const { error } = await supabase.rpc("ovbridge_admin_set_user_ban", {
+    target_user_id: userId,
+    new_ban_status: banned,
+    reason: reason || null,
+  });
 
   if (error) throw error;
-
-  await logAdminAction(
-    adminId,
-    adminRole,
-    banned ? "BAN_USER" : "UNBAN_USER",
-    userId,
-    { reason }
-  );
 }
 
 export async function updateUserAdminRole(
-  adminId: string,
-  adminRole: AdminRole,
+  _adminId: string,
+  _adminRole: AdminRole,
   userId: string,
   newRole: AdminRole
 ) {
-  const { error } = await supabase
-    .from("ovbridge_profiles")
-    .update({ admin_role: newRole })
-    .eq("id", userId);
+  const { error } = await supabase.rpc("ovbridge_admin_set_user_role", {
+    target_user_id: userId,
+    new_role: newRole,
+  });
 
   if (error) throw error;
-
-  await logAdminAction(adminId, adminRole, "UPDATE_ADMIN_ROLE", userId, {
-    newRole,
-  });
 }
 
 // ---------- 40% S ADMIN: Moderation ----------
