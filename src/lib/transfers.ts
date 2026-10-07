@@ -32,10 +32,11 @@ export type Transfer = {
 };
 
 // ---------------------------------------------------------------------------
-// Cache local du texte envoyé (pour afficher nos propres messages en clair)
+// Cache local du texte et des fichiers envoyés (pour réouverture immédiate côté expéditeur)
 // ---------------------------------------------------------------------------
 
 const sentPlaintextCache = new Map<string, string>();
+const sentFileBlobCache = new Map<string, Blob>();
 
 export function cacheSentPlaintext(transferId: string, plaintext: string) {
   sentPlaintextCache.delete(transferId);
@@ -48,6 +49,19 @@ export function cacheSentPlaintext(transferId: string, plaintext: string) {
 
 export function getSentPlaintext(transferId: string): string | null {
   return sentPlaintextCache.get(transferId) ?? null;
+}
+
+export function cacheSentFileBlob(transferId: string, fileBlob: Blob) {
+  sentFileBlobCache.delete(transferId);
+  sentFileBlobCache.set(transferId, fileBlob);
+  if (sentFileBlobCache.size > 50) {
+    const oldestId = sentFileBlobCache.keys().next().value;
+    if (oldestId) sentFileBlobCache.delete(oldestId);
+  }
+}
+
+export function getSentFileBlob(transferId: string): Blob | null {
+  return sentFileBlobCache.get(transferId) ?? null;
 }
 
 // ---------------------------------------------------------------------------
@@ -106,18 +120,23 @@ export async function sendFile(
     });
   if (upErr) throw upErr;
 
-  const { error } = await supabase.from("ovbridge_transfers").insert({
-    user_id: userId,
-    from_device_id: me.deviceId,
-    to_device_id: recipient.id,
-    kind: "file",
-    file_path: path,
-    file_name: file.name,
-    file_size: file.size,
-    mime_type: file.type || "application/octet-stream",
-    encrypted_key: enc.encryptedKey,
-    nonce: enc.nonce,
-  });
+  const { data, error } = await supabase
+    .from("ovbridge_transfers")
+    .insert({
+      user_id: userId,
+      from_device_id: me.deviceId,
+      to_device_id: recipient.id,
+      kind: "file",
+      file_path: path,
+      file_name: file.name,
+      file_size: file.size,
+      mime_type: file.type || "application/octet-stream",
+      encrypted_key: enc.encryptedKey,
+      nonce: enc.nonce,
+    })
+    .select("id")
+    .single();
+
   if (error) {
     const { error: cleanupError } = await supabase.storage
       .from(BUCKET)
@@ -125,6 +144,8 @@ export async function sendFile(
     if (cleanupError) console.error("[sendFile] cleanup failed", cleanupError);
     throw error;
   }
+
+  if (data?.id) cacheSentFileBlob(data.id, file);
 }
 
 // ---------------------------------------------------------------------------
@@ -134,13 +155,25 @@ export async function sendFile(
 export async function decryptTransfer(
   tr: Transfer,
   me: DeviceIdentity,
-  senderPublicKey: string
+  peerPublicKey: string
 ): Promise<{ text?: string; blob?: Blob }> {
   try {
+    // Si c'est notre propre message texte en cache local
+    if (tr.from_device_id === me.deviceId && tr.kind === "text") {
+      const cached = getSentPlaintext(tr.id);
+      if (cached) return { text: cached };
+    }
+
+    // Si c'est notre propre fichier en cache local
+    if (tr.from_device_id === me.deviceId && tr.kind === "file") {
+      const cachedBlob = getSentFileBlob(tr.id);
+      if (cachedBlob) return { blob: cachedBlob };
+    }
+
     if (tr.kind === "text") {
       const text = await decryptFrom(
         { ciphertext: tr.content!, nonce: tr.nonce! },
-        senderPublicKey,
+        peerPublicKey,
         me.privateKey
       );
       return { text };
@@ -158,7 +191,7 @@ export async function decryptTransfer(
       buf,
       tr.encrypted_key!,
       tr.nonce!,
-      senderPublicKey,
+      peerPublicKey,
       me.privateKey
     );
 
@@ -278,19 +311,24 @@ export async function sendFileToSpace(
         });
       if (upErr) throw upErr;
 
-      const { error } = await supabase.from("ovbridge_transfers").insert({
-        user_id: userId,
-        from_device_id: me.deviceId,
-        to_device_id: d.id,
-        to_space_id: spaceId,
-        kind: "file",
-        file_path: path,
-        file_name: file.name,
-        file_size: file.size,
-        mime_type: file.type || "application/octet-stream",
-        encrypted_key: enc.encryptedKey,
-        nonce: enc.nonce,
-      });
+      const { data, error } = await supabase
+        .from("ovbridge_transfers")
+        .insert({
+          user_id: userId,
+          from_device_id: me.deviceId,
+          to_device_id: d.id,
+          to_space_id: spaceId,
+          kind: "file",
+          file_path: path,
+          file_name: file.name,
+          file_size: file.size,
+          mime_type: file.type || "application/octet-stream",
+          encrypted_key: enc.encryptedKey,
+          nonce: enc.nonce,
+        })
+        .select("id")
+        .single();
+
       if (error) {
         const { error: cleanupError } = await supabase.storage
           .from(BUCKET)
@@ -300,6 +338,7 @@ export async function sendFileToSpace(
         }
         throw error;
       }
+      if (data?.id) cacheSentFileBlob(data.id, file);
       sent++;
     } catch (e) {
       console.error("[sendFileToSpace] fail for device", d.id, e);
