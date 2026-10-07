@@ -159,7 +159,7 @@ export default function ChatPage() {
           [m.id]: { url, name: m.file_name ?? "fichier" },
         }));
       }
-      if (m.to_device_id === me.deviceId && !m.read_at) {
+      if (m.to_device_id === me.deviceId) {
         await markAsRead(m.id);
       }
     } catch (e: any) {
@@ -365,11 +365,16 @@ export default function ChatPage() {
                     {timeOf(m.created_at)}
                   </span>
                   {mine && (
-                    <span className="text-[10px] text-ov-muted">
-                      {m.read_at ? (
-                        <CheckCheck className="w-3 h-3 text-ov-accent" />
+                    <span className="text-[10px] text-ov-muted flex items-center gap-1">
+                      {m.opened_at || m.read_at ? (
+                        <>
+                          <CheckCheck className="w-3 h-3 text-ov-accent" />
+                          <span className="text-[9px] text-ov-accent">
+                            Ouvert à {timeOf(m.opened_at || m.read_at!)}
+                          </span>
+                        </>
                       ) : (
-                        <Check className="w-3 h-3" />
+                        <Check className="w-3 h-3 text-ov-muted" />
                       )}
                     </span>
                   )}

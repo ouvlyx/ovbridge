@@ -28,6 +28,7 @@ export type Transfer = {
   status: "pending" | "delivered" | "read" | "expired";
   created_at: string;
   read_at: string | null;
+  opened_at?: string | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -178,9 +179,18 @@ export async function decryptTransfer(
 }
 
 export async function markAsRead(transferId: string) {
+  const now = new Date().toISOString();
   await supabase
     .from("ovbridge_transfers")
-    .update({ status: "read", read_at: new Date().toISOString() })
+    .update({ status: "read", read_at: now, opened_at: now })
+    .eq("id", transferId);
+}
+
+export async function markFileAsOpened(transferId: string) {
+  const now = new Date().toISOString();
+  await supabase
+    .from("ovbridge_transfers")
+    .update({ status: "read", read_at: now, opened_at: now })
     .eq("id", transferId);
 }
 

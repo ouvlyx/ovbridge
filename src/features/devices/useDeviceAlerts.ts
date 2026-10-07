@@ -50,7 +50,9 @@ export function useDeviceAlerts(myDeviceId: string | null) {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel && channel.state !== "closed") {
+        supabase.removeChannel(channel);
+      }
     };
   }, [user, myDeviceId]);
 }

@@ -1,74 +1,104 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import { friendlyError } from "@/lib/errors";
 
 export default function AuthCallbackPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [status, setStatus] = useState("Authentification en cours…");
 
   useEffect(() => {
     let mounted = true;
 
-    const handleCallback = async () => {
-      try {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
+    const processAuth = async () => {
+      // 1. Analyser les paramètres de la requête et les hash fragments (#access_token ou ?error=)
+      const queryParams = new URLSearchParams(location.search);
+      const hashParams = new URLSearchParams(location.hash.substring(1));
 
-        if (data.session) {
-          if (mounted) {
-            toast.success("Connexion réussie !");
-            navigate("/devices", { replace: true });
-          }
-          return;
+      const errorCode = queryParams.get("error_code") || hashParams.get("error_code");
+      const errorDesc = queryParams.get("error_description") || hashParams.get("error_description");
+
+      // 2. Vérifier s'il existe déjà une session active dans le navigateur
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (session) {
+        if (mounted) {
+          toast.success("Connexion réussie ! Bienvenue sur OvBridge.");
+          navigate("/devices", { replace: true });
         }
+        return;
+      }
 
-        // On écoute les changements d'état d'auth au cas où Supabase traite le hash/code
-        const { data: authSub } = supabase.auth.onAuthStateChange(
-          (_event, session) => {
-            if (session && mounted) {
-              toast.success("Connexion réussie !");
+      // 3. Si une erreur d'état OAuth est renvoyée (ex: flow_state_already_used ou bad_oauth_state)
+      if (errorCode) {
+        if (mounted) {
+          if (errorCode === "flow_state_already_used" || errorCode === "bad_oauth_state") {
+            // L'utilisateur est peut-être déjà inscrit/connecté, retenter de récupérer la session
+            const { data: retryData } = await supabase.auth.getSession();
+            if (retryData.session) {
+              toast.success("Session authentifiée ! Redirecting…");
               navigate("/devices", { replace: true });
+              return;
             }
           }
-        );
 
-        // Si après 4 secondes aucun token valide n'a été récupéré
-        const timeout = setTimeout(() => {
-          if (mounted) {
-            setStatus("Échec de l'authentification.");
-            toast.error("Impossible d'authentifier la session Google.");
+          toast.error(
+            errorDesc
+              ? `Authentification Google : ${decodeURIComponent(errorDesc).replace(/\+/g, " ")}`
+              : "Le lien de connexion a expiré ou a déjà été utilisé. Veuillez vous ré-authentifier."
+          );
+          setStatus("Redirection vers la page de connexion…");
+          setTimeout(() => {
+            if (mounted) navigate("/login", { replace: true });
+          }, 2000);
+        }
+        return;
+      }
+
+      // 4. Écouter l'événement Supabase onAuthStateChange
+      const { data: authListener } = supabase.auth.onAuthStateChange((_event, newSession) => {
+        if (newSession && mounted) {
+          toast.success("Connexion Google réussie !");
+          navigate("/devices", { replace: true });
+        }
+      });
+
+      // Timeout de précaution si aucune session n'est détectée après 3 secondes
+      const timeout = setTimeout(async () => {
+        if (mounted) {
+          const { data: checkData } = await supabase.auth.getSession();
+          if (checkData.session) {
+            navigate("/devices", { replace: true });
+          } else {
+            toast.info("Veuillez vous connecter avec votre compte.");
             navigate("/login", { replace: true });
           }
-        }, 4000);
-
-        return () => {
-          authSub.subscription.unsubscribe();
-          clearTimeout(timeout);
-        };
-      } catch (err: any) {
-        if (mounted) {
-          toast.error(friendlyError(err));
-          navigate("/login", { replace: true });
         }
-      }
+      }, 3000);
+
+      return () => {
+        authListener.subscription.unsubscribe();
+        clearTimeout(timeout);
+      };
     };
 
-    handleCallback();
+    processAuth();
 
     return () => {
       mounted = false;
     };
-  }, [navigate]);
+  }, [navigate, location]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-ov-bg p-4 text-center">
-      <div className="relative flex h-10 w-10 mb-4">
-        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ov-primary opacity-75" />
-        <span className="relative inline-flex rounded-full h-10 w-10 bg-ov-primary" />
+    <div className="min-h-screen flex flex-col items-center justify-center bg-ov-bg p-6 text-center text-ov-text">
+      <div className="relative flex h-12 w-12 mb-4">
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-ov-primary opacity-60" />
+        <span className="relative inline-flex rounded-full h-12 w-12 bg-ov-primary/20 border border-ov-primary/40 flex items-center justify-center font-bold text-ov-primary">
+          OV
+        </span>
       </div>
-      <h2 className="text-xl font-semibold text-ov-text mb-2">OvBridge</h2>
+      <h2 className="text-xl font-bold text-ov-primary mb-1">OvBridge</h2>
       <p className="text-sm text-ov-muted animate-pulse">{status}</p>
     </div>
   );

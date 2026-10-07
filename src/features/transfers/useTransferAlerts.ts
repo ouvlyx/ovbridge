@@ -90,7 +90,9 @@ export function useTransferAlerts({ currentChat }: Options = {}) {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel && channel.state !== "closed") {
+        supabase.removeChannel(channel);
+      }
     };
   }, [user, navigate]);
 }
