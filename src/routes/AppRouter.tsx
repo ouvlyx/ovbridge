@@ -26,6 +26,7 @@ const ClipboardPage = lazy(() => import("@/features/clipboard/ClipboardPage"));
 const AdminDashboardPage = lazy(() => import("@/features/admin/AdminDashboardPage"));
 const PrivacyPolicyPage = lazy(() => import("@/features/legal/PrivacyPolicyPage"));
 const TermsPage = lazy(() => import("@/features/legal/TermsPage"));
+const NotFoundPage = lazy(() => import("@/components/NotFoundPage"));
 
 function Loading() {
   return (
@@ -74,9 +75,9 @@ export default function AppRouter() {
             </Route>
           </Route>
 
-          {/* --- Fallback --- */}
+          {/* --- Fallback / 404 --- */}
           <Route path="/" element={<Navigate to="/devices" replace />} />
-          <Route path="*" element={<Navigate to="/devices" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

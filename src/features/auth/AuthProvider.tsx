@@ -15,7 +15,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       setSession(s);
+      setLoading(false);
     });
+
+    // Nettoyer les paramètres de requête d'erreur OAuth de l'URL root if applicable
+    if (window.location.search.includes("error_code=") || window.location.hash.includes("access_token=")) {
+      const url = new URL(window.location.href);
+      if (url.pathname === "/") {
+        window.history.replaceState({}, document.title, "/auth/callback" + url.search + url.hash);
+      }
+    }
 
     return () => sub.subscription.unsubscribe();
   }, []);
