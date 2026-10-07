@@ -24,6 +24,18 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("[ErrorBoundary] Uncaught exception:", error, errorInfo);
+
+    // Ignorer ou recharger de manière transparente si le crash est dû à une extension de navigateur (ex: MozBar / Google Translate insertBefore)
+    if (
+      error.name === "NotFoundError" ||
+      error.message?.includes("insertBefore") ||
+      error.message?.includes("removeChild")
+    ) {
+      console.warn("[ErrorBoundary] Browser extension DOM mutation detected. Recovering silently…");
+      setTimeout(() => {
+        this.setState({ hasError: false, error: null });
+      }, 500);
+    }
   }
 
   public render() {
