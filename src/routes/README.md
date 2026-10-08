@@ -1,8 +1,19 @@
-# Routage de l'Application (`src/routes/`)
+# 🛣️ `src/routes/` — Routing & Route Guards
 
-Configuration de la navigation SPA avec **React Router v7**.
+This module configures application routing via React Router and enforces route-level authentication and authorization guards.
 
-## 📄 Fichiers
+---
 
-- **`AppRouter.tsx`** : Déclaration des routes publiques (`/login`, `/signup`, `/join`, `/scan`, etc.) et protégées avec chargement différé (`lazy` + `Suspense`).
-- **`ProtectedRoute.tsx`** : Garde-fou vérifiant la présence d'une session Supabase active avant d'autoriser l'accès aux pages privées.
+## 📋 File Index
+
+| File | Responsibility |
+| :--- | :--- |
+| `AppRouter.tsx` | Central React Router switcher registering public, protected, and admin routes |
+| `ProtectedRoute.tsx` | Route wrapper redirecting unauthenticated users to `/login` |
+| `AdminRoute.tsx` | Route wrapper checking caller admin role level against `minLevel` (Level 10+) before granting access to `/admin` |
+
+---
+
+## 🧭 Navigation Links
+* [⬅️ Back to Source Root (`src/`)](../README.md)
+* [🌟 Master PROJECT.md](../../PROJECT.md)

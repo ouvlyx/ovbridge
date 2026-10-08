@@ -1,17 +1,20 @@
-# Appairage d'Appareils (`src/features/pairing/`)
+# 🔗 `src/features/pairing/` — Device Pairing
 
-Gère l'introduction sécurisée et l'appairage cryptographique d'un nouvel appareil à un compte existant.
+This module facilitates cross-device pairing via single-use 6-digit tokens or QR code scanning.
 
-## 📄 Fichiers
+---
 
-- **`PairingPage.tsx`** : Génère un QR Code dynamique et un jeton textuel court (format `XXXX-XXXX`) renouvelable.
-- **`ScanPage.tsx`** : Interface de capture vidéo exploitant la caméra de l'appareil (`html5-qrcode`) pour décoder instantanément le QR code d'appairage.
-- **`JoinPage.tsx`** : Interface de saisie du jeton d'appairage permettant à un appareil récepteur de rejoindre le compte.
-- **`usePairing.ts`** : Hook React supervisant la durée de validité du jeton et sa consommation atomique.
-- **`index.ts`** : Exportations du module.
+## 📋 File Index
 
-## 🛡️ Sécurité de l'Appairage
+| File | Route | Responsibility |
+| :--- | :--- | :--- |
+| `PairingPage.tsx` | `/pair` | Displays a generated 6-digit pairing code and QR code for scanning by secondary devices |
+| `JoinPage.tsx` | `/join` | Allows a secondary device to enter a 6-digit pairing code to complete device linkage |
+| `ScanPage.tsx` | `/scan` | Camera view for scanning a primary device's pairing QR code |
+| `usePairing.ts` | — | Hook generating and consuming pairing tokens via atomic Postgres RPC functions |
 
-- Les jetons d'appairage ont une durée de vie limitée (5 minutes).
-- Les jetons sont à usage unique strict : la consommation s'effectue via une procédure stockée SQL atomique (`ovbridge_consume_pairing_token`).
-- Les erreurs de token (expiré, déjà utilisé, inconnu) déclenchent des exceptions claires `PairingError`.
+---
+
+## 🧭 Navigation Links
+* [⬅️ Back to Features Index (`src/features/`)](../README.md)
+* [🌟 Master PROJECT.md](../../PROJECT.md)

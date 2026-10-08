@@ -1,17 +1,25 @@
-# Module d'Authentification (`src/features/auth/`)
+# 🔑 `src/features/auth/` — Authentication & Recovery
 
-Gère la sécurité, la connexion, l'inscription et le maintien de la session utilisateur.
+This module handles user authentication, Google OAuth sign-in, session state management, and password recovery.
 
-## 📄 Fichiers
+---
 
-- **`AuthContext.ts`** : Définition du contexte d'authentification React et de son typage.
-- **`AuthProvider.tsx`** : Fournisseur de contexte englobant l'application, gérant les états de session et la synchronisation avec Supabase Auth.
-- **`useAuth.ts`** : Hook React permettant à n'importe quel composant d'accéder à l'utilisateur courant, à la session et aux actions (`signIn`, `signUp`, `signOut`).
-- **`LoginPage.tsx`** : Page de connexion par email et mot de passe.
-- **`SignupPage.tsx`** : Page de création de compte.
-- **`ConfirmPage.tsx`** : Page de confirmation d'email.
-- **`index.ts`** : Point d'entrée exportant les composants et hooks du module.
+## 📋 File Index
 
-## 🔒 Gestion des Erreurs
+| File | Responsibility |
+| :--- | :--- |
+| `AuthContext.ts` | React context type definitions for user session and auth methods |
+| `AuthProvider.tsx` | Supabase auth session listener and state provider with OAuth parameter parsing |
+| `useAuth.ts` | React hook exposing auth state (`user`, `session`, `loading`, `signIn`, `signUp`, `signOut`, `signInWithGoogle`) |
+| `LoginPage.tsx` | Sign-in page with email/password and branded Google OAuth button |
+| `SignupPage.tsx` | Account registration view with email confirmation guidance |
+| `ForgotPasswordPage.tsx` | Password recovery initiation view supporting reset email link and 6-digit OTP code entry |
+| `ResetPasswordPage.tsx` | Password update interface invoking `supabase.auth.updateUser({ password })` |
+| `AuthCallbackPage.tsx` | OAuth callback route handler processing tokens and session states |
+| `ConfirmPage.tsx` | Email confirmation landing view |
 
-Les erreurs d'authentification sont interceptées et converties en exceptions typées `AuthError` avec messages clairs en français pour l'utilisateur (identifiants erronés, email déjà pris, session expirée).
+---
+
+## 🧭 Navigation Links
+* [⬅️ Back to Features Index (`src/features/`)](../README.md)
+* [🌟 Master PROJECT.md](../../PROJECT.md)

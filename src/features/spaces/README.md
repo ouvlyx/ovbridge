@@ -1,17 +1,23 @@
-# Espaces Collaboratifs (`src/features/spaces/`)
+# 👥 `src/features/spaces/` — Collaborative Spaces
 
-Permet de créer des groupes d'échange (famille, amis, équipe) et d'y partager textes et fichiers chiffrés.
+This module manages collaborative group spaces, space invitations, member lists, and common space communication hubs.
 
-## 📄 Fichiers
+---
 
-- **`SpacesPage.tsx`** : Vue synthétique des espaces dont l'utilisateur est membre ou administrateur.
-- **`SpaceDetailPage.tsx`** : Gestion détaillée d'un espace (liste des membres, rôles admin/membre, invitation, suppression).
-- **`CreateSpaceDialog.tsx`** : Modale de création d'un nouvel espace.
-- **`InviteToSpaceDialog.tsx`** : Génération de code d'invitation avec expiration (24h).
-- **`JoinSpacePage.tsx`** : Interface pour rejoindre un espace via son code d'invitation.
-- **`useSpaces.ts`** : Hook React récupérant la liste des espaces avec écoute Realtime.
-- **`useSpaceDetail.ts`** : Hook React supervisant les membres et métadonnées d'un espace précis.
+## 📋 File Index
 
-## 🔒 Gestion Sécurisée des Échanges en Espace
+| File | Route | Responsibility |
+| :--- | :--- | :--- |
+| `SpacesPage.tsx` | Embedded in `/devices` | List of collaborative spaces with common public space hub banner |
+| `SpaceDetailPage.tsx` | `/spaces/:id` | Detailed space view showing space members, invitations, and file transfers |
+| `JoinSpacePage.tsx` | `/join-space` | View for accepting an invitation code to join a collaborative space |
+| `CreateSpaceDialog.tsx` | — | Modal dialog for creating a new collaborative space |
+| `InviteToSpaceDialog.tsx` | — | Modal dialog for generating shareable space invitation tokens |
+| `useSpaces.ts` | — | Hook fetching user space memberships and active spaces |
+| `useSpaceDetail.ts` | — | Hook managing members and details for a specific space |
 
-L'envoi vers un espace repose sur un modèle de fan-out sécurisé (`sendTextToSpace`, `sendFileToSpace`) : le contenu est chiffré individuellement avec la clé publique de chaque appareil actif de chaque membre de l'espace.
+---
+
+## 🧭 Navigation Links
+* [⬅️ Back to Features Index (`src/features/`)](../README.md)
+* [🌟 Master PROJECT.md](../../PROJECT.md)

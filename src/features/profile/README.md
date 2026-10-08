@@ -1,7 +1,17 @@
-# Profil Utilisateur (`src/features/profile/`)
+# 👤 `src/features/profile/` — Profile & Theme Customization
 
-Gère l'affichage et la mise à jour des paramètres du profil utilisateur.
+This module allows users to manage extended personal details, sync Google profile metadata, customize theme colors, and select interface density options.
 
-## 📄 Fichiers
+---
 
-- **`ProfilePage.tsx`** : Page de consultation du compte, modification du nom d'affichage, consultation de l'email et déconnexion.
+## 📋 File Index
+
+| File | Route | Responsibility |
+| :--- | :--- | :--- |
+| `ProfilePage.tsx` | `/profile` | Profile settings view managing extended fields (`first_name`, `last_name`, `phone_number`, `address`), Google metadata import, custom theme accent picker, UI density, and notification test controls |
+
+---
+
+## 🧭 Navigation Links
+* [⬅️ Back to Features Index (`src/features/`)](../README.md)
+* [🌟 Master PROJECT.md](../../PROJECT.md)

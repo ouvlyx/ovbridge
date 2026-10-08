@@ -1,14 +1,23 @@
-# Composants Partagés (`src/components/`)
+# 🧩 `src/components/` — UI Components & Layouts
 
-Ce dossier regroupe les composants visuels transversaux de l'application OvBridge.
+This directory contains reusable UI components, navigation layouts, error handling wrappers, and base Shadcn primitives.
 
-## 📄 Contenu
+---
 
-- **`ui/`** : Bibliothèque de composants atomiques d'interface utilisateur (boutons, badges, modales, champs de formulaire, menus déroulants).
-- **`NetworkStatusBanner.tsx`** : Bandeau d'état réseau persistant affiché automatiquement lorsque la connexion Internet de l'appareil est interrompue, alertant l'utilisateur de manière discrète sans bloquer son travail.
+## 📋 File Index
 
-## 💡 Principes de Conception
+| File | Responsibility |
+| :--- | :--- |
+| `AppLayout.tsx` | Main responsive shell rendering `DesktopSidebar` on large viewports and `BottomNavBar` on mobile |
+| `DesktopSidebar.tsx` | Persistent desktop/tablet left navigation sidebar with user session info and route links |
+| `BottomNavBar.tsx` | Fixed mobile bottom navigation bar with active route highlighting |
+| `NetworkStatusBanner.tsx` | Top banner notifying users when offline and automatically flushing the offline transfer queue |
+| `ErrorBoundary.tsx` | Top-level React error boundary catching render crashes and silently recovering from extension DOM mutations |
+| `NotFoundPage.tsx` | Branded 404 error page with quick links to home, devices, pairing, and login |
+| `ui/` | Primitive UI components (button, card, dialog, badge, input, label, dropdown-menu) |
 
-1. **Accessibilité (a11y)** : Utilisation des primitives Radix UI fournissant la gestion complète du focus clavier, des rôles ARIA et des lecteurs d'écran.
-2. **Cohérence Visuelle** : Respect de la palette de couleurs OvBridge (`ov-primary`, `ov-bg`, `ov-surface`, `ov-border`, `ov-danger`, etc.).
-3. **Isolation et Modularité** : Respect strict des contraintes React Fast Refresh pour une compilation et un rechargement à chaud optimaux.
+---
+
+## 🧭 Navigation Links
+* [⬅️ Back to Source Root (`src/`)](../README.md)
+* [🌟 Master PROJECT.md](../../PROJECT.md)

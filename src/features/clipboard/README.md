@@ -1,20 +1,19 @@
-# Presse-papiers Partagé Chiffré (`src/features/clipboard/`)
+# 📋 `src/features/clipboard/` — Shared Cross-Device Clipboard
 
-Permet de synchroniser instantanément du texte entre ses appareils personnels de manière chiffrée.
+This module manages real-time, end-to-end encrypted shared clipboard syncing between user devices.
 
-## 📄 Fichiers
+---
 
-- **`ClipboardPage.tsx`** : Interface affichant l'historique des éléments partagés, avec options de copie rapide, de suppression et d'ajout.
-- **`ShareClipboardDialog.tsx`** : Boîte de dialogue permettant de coller ou saisir du texte, intégrant une détection de sensibilité et la prévention des fuites involontaires.
-- **`useClipboard.ts`** : Hook React gérant le chargement, le déchiffrement asynchrone et l'abonnement Realtime aux nouveaux éléments.
+## 📋 File Index
 
-## 🛡️ Détection de Contenu Sensible
+| File | Responsibility |
+| :--- | :--- |
+| `ClipboardPage.tsx` | Main clipboard entry list view with sensitive data masking, manual text creation, and copy-to-clipboard actions |
+| `ShareClipboardDialog.tsx` | Modal dialog for entering new text manually or pasting system clipboard content |
+| `useClipboard.ts` | Custom hook subscribing to Supabase Realtime changes on `ovbridge_clipboard` with concurrency locks |
 
-Avant d'envoyer un élément au presse-papiers, le contenu est analysé pour détecter :
-- Clés d'API (OpenAI, AWS, GitHub)
-- Tokens JWT
-- Mots de passe et identifiants
-- Numéros de carte bancaire et IBAN
-- Clés privées PEM
+---
 
-En cas de détection, un avertissement explicite demande confirmation à l'utilisateur avant le chiffrement et l'envoi.
+## 🧭 Navigation Links
+* [⬅️ Back to Features Index (`src/features/`)](../README.md)
+* [🌟 Master PROJECT.md](../../PROJECT.md)

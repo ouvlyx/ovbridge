@@ -1,15 +1,24 @@
-# Messagerie & Transferts Sécurisés (`src/features/transfers/`)
+# 💬 `src/features/transfers/` — Messages & File Sharing
 
-Module central pour l'échange de messages et de fichiers chiffrés de bout en bout (E2E).
+This module handles real-time encrypted messaging, file transfers, chat conversations, inbox monitoring, and unread counts.
 
-## 📄 Fichiers
+---
 
-- **`ChatPage.tsx`** : Interface de messagerie instantanée fluide avec défilement automatique, envoi de pièces jointes et déchiffrement à la volée.
-- **`MessagesPage.tsx`** : Liste récapitulative des conversations directes (appareil à appareil) et collectives (espaces) avec compteur de non-lus.
-- **`InboxPage.tsx`** : Boîte de réception globale listant les transferts reçus.
-- **`SendPage.tsx`** : Interface d'envoi rapide ciblant un appareil précis.
-- **`useConversation.ts`** : Hook supervisant les messages d'un fil de discussion avec debounce et mise à jour Realtime.
-- **`useTransferAlerts.ts`** : Alertes sonores/visuelles toast lors de l'arrivée d'un nouveau transfert.
-- **`useTransfers.ts`** : Chargement et pagination des transferts.
-- **`useUnreadCount.ts`** : Compteur global de messages non lus en temps réel.
-- **`index.ts`** : Exportations du module.
+## 📋 File Index
+
+| File | Route | Responsibility |
+| :--- | :--- | :--- |
+| `MessagesPage.tsx` | `/messages` | Unified communications list displaying active direct and space conversations |
+| `SendPage.tsx` | `/send` | Direct message/file dispatch launcher with drag-and-drop file support |
+| `ChatPage.tsx` | `/messages/:kind/:id` | Real-time chat conversation view rendering encrypted texts, file attachments, and open/read checkmark receipts (`read_at`, `opened_at`) |
+| `InboxPage.tsx` | `/inbox` | List of unread incoming transfers |
+| `useConversation.ts` | — | Hook managing real-time chat messages and automatic decryption |
+| `useTransfers.ts` | — | Hook fetching raw transfer records |
+| `useTransferAlerts.ts` | — | Global realtime listener triggering universal audio, vibe, and push notifications for incoming transfers |
+| `useUnreadCount.ts` | — | Hook tracking unread transfer count for badge indicators |
+
+---
+
+## 🧭 Navigation Links
+* [⬅️ Back to Features Index (`src/features/`)](../README.md)
+* [🌟 Master PROJECT.md](../../PROJECT.md)
