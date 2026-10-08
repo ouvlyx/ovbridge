@@ -94,20 +94,29 @@ export default function WorkspacePage() {
     const me = getStoredIdentity();
     if (!me) return;
 
+    let active = true;
+
     (async () => {
       for (const f of files) {
+        if (!active) break;
         if (cachedIds.has(f.id)) continue;
         // auto-cache uniquement les fichiers < 10 Mo pour ne pas saturer
         if (f.size_bytes > 10 * 1024 * 1024) continue;
         try {
           const blob = await downloadWorkspaceFile(f, me);
-          await cacheBlob(f.id, f.name, f.mime_type, blob);
-          setCachedIds((prev) => new Set([...prev, f.id]));
+          if (active) {
+            await cacheBlob(f.id, f.name, f.mime_type, blob);
+            setCachedIds((prev) => new Set([...prev, f.id]));
+          }
         } catch {
-          // silencieux
+          // Silencieux : pas de toast intempestif en arrière-plan
         }
       }
     })();
+
+    return () => {
+      active = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [files]);
 
