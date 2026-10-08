@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Laptop,
-  Send,
   MessageSquare,
   HardDrive,
   Clipboard,
@@ -28,8 +27,7 @@ export default function DesktopSidebar() {
 
   const navItems = [
     { label: "Appareils", path: "/devices", icon: Laptop },
-    { label: "Nouvel envoi", path: "/send", icon: Send },
-    { label: "Messages", path: "/messages", icon: MessageSquare },
+    { label: "Messages & Transferts", path: "/messages", icon: MessageSquare },
     { label: "Mon espace", path: "/workspace", icon: HardDrive },
     { label: "Presse-papiers", path: "/clipboard", icon: Clipboard },
     { label: "Mon profil", path: "/profile", icon: User },

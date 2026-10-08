@@ -222,11 +222,11 @@ export default function SendPage() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => navigate("/devices")}
+          onClick={() => navigate("/messages")}
         >
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <h1 className="text-lg font-semibold">Nouvel envoi</h1>
+        <h1 className="text-lg font-semibold">Nouveau Message & Transfert</h1>
       </header>
 
       <form onSubmit={onSubmit} className="space-y-5">
