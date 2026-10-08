@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from "react-router-dom";
 import DesktopSidebar from "./DesktopSidebar";
 import BottomNavBar from "./BottomNavBar";
+import { CallProvider } from "@/features/calls/CallProvider";
 
 export default function AppLayout() {
   const location = useLocation();
@@ -19,6 +20,7 @@ export default function AppLayout() {
   }
 
   return (
+    <CallProvider>
     <div className="min-h-screen flex bg-ov-bg text-ov-text">
       <DesktopSidebar />
       <main className="flex-1 flex flex-col min-w-0 pb-16 lg:pb-0 overflow-x-hidden">
@@ -28,5 +30,6 @@ export default function AppLayout() {
       </main>
       <BottomNavBar />
     </div>
+    </CallProvider>
   );
 }

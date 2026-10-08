@@ -13,8 +13,7 @@ import {
   Phone,
   Video,
 } from "lucide-react";
-import { useCallSession } from "@/features/calls/useCallSession";
-import { CallDialog } from "@/features/calls/CallDialog";
+import { useCall } from "@/features/calls/CallContext";
 import { AudioRecorder } from "./AudioRecorder";
 import { Volume2 } from "lucide-react";
 import { toast } from "sonner";
@@ -79,7 +78,18 @@ export default function ChatPage() {
   const scopeKind = scope?.kind;
   const scopeId = scope?.id;
 
-  const call = useCallSession(scopeId, scopeKind === "space");
+  const call = useCall();
+
+  const placeCall = (type: "audio" | "video") => {
+    if (!scopeId) return;
+    if (scopeKind === "space") {
+      toast.info(
+        "Les appels de groupe ne sont pas encore disponibles. Ouvre une conversation avec un appareil pour l'appeler."
+      );
+      return;
+    }
+    void call.startCall(scopeId, type, title);
+  };
 
   useEffect(() => {
     if (!scopeKind || !scopeId) return;
@@ -275,7 +285,7 @@ export default function ChatPage() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => call.startCall("audio")}
+            onClick={() => placeCall("audio")}
             title="Appel audio chiffré"
           >
             <Phone className="w-4 h-4 text-ov-primary" />
@@ -283,7 +293,7 @@ export default function ChatPage() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => call.startCall("video")}
+            onClick={() => placeCall("video")}
             title="Appel vidéo chiffré"
           >
             <Video className="w-4 h-4 text-ov-primary" />
@@ -425,20 +435,6 @@ export default function ChatPage() {
         )}
       </div>
 
-      <CallDialog
-        open={call.callState !== "idle"}
-        callState={call.callState}
-        callType={call.callType}
-        callerName={title}
-        isMuted={call.isMuted}
-        isVideoOff={call.isVideoOff}
-        netQuality={call.netQuality}
-        localStream={call.localStream}
-        remoteStream={call.remoteStream}
-        onEndCall={call.endCall}
-        onToggleMute={call.toggleMute}
-        onToggleVideo={call.toggleVideo}
-      />
 
       <div className="p-3 sm:p-4 border-t border-ov-border bg-ov-surface sticky bottom-0">
         <p className="text-[10px] text-ov-muted mb-2">
