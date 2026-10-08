@@ -1,31 +1,28 @@
-# Architecture Source OvBridge (`src/`)
+# 📂 `src/` — Source Code Architecture & Directory Index
 
-Ce dossier regroupe le code source frontend et logique métier de l'application **OvBridge**.
+Welcome to the `src/` directory index. This folder contains the core frontend application code for **OvBridge**.
 
-## 📁 Arborescence des dossiers
+---
 
-- **`assets/`** : Ressources graphiques (icônes d'application iOS, Android, web).
-- **`components/`** : Composants React réutilisables, incluant les composants génériques d'interface utilisateur (`components/ui/`) et les bandeaux système (`NetworkStatusBanner.tsx`).
-- **`features/`** : Modules fonctionnels découpés par domaine métier :
-  - `auth` : Authentification, sessions, profils et contexte utilisateur.
-  - `clipboard` : Presse-papiers partagé chiffré de bout en bout et détection de données sensibles.
-  - `devices` : Gestion des appareils appairés, révocation, renommage et alertes.
-  - `pairing` : Appairage sécurisé via QR Code et saisie de jeton rotatif.
-  - `profile` : Consultation et modification du profil utilisateur.
-  - `spaces` : Espaces collaboratifs multifonctions (partage à plusieurs).
-  - `transfers` : Messagerie et échange de fichiers chiffrés E2E, conversations directes et de groupe.
-  - `workspace` : Espace de stockage personnel dans le cloud chiffré côté client avec quota.
-- **`lib/`** : Bibliothèque centrale d'utilitaires et logique coeur :
-  - `crypto.ts` : Fonctions cryptographiques libsodium (box, secretbox, hashing).
-  - `device.ts` : Gestion de l'identité locale, génération et conservation des paires de clés.
-  - `errors.ts` : Système d'exceptions typées (`AppError`, `NetworkError`, `AuthError`, etc.).
-  - `network.ts` : Détection hors-ligne, reprise sur reconnexion et mécanisme de relance (retry).
-  - `supabase.ts` : Client Supabase configuré pour Auth, Storage, Database et Realtime.
-  - `localCache.ts` : Cache local persistant (Capacitor natif ou mémoire web sécurisée).
-  - `qr.ts` : Validation, formatage et parsing des jetons et URLs d'appairage QR.
-- **`routes/`** : Définition des routes publiques et protégées de l'application avec `react-router-dom`.
-- **`types/`** : Définitions TypeScript globales et typages de base de données.
+## 📋 Directory Index
 
-## 🔐 Modèle de Sécurité (Zero-Knowledge)
+| Sub-Folder / File | Responsibility | Documentation Link |
+| :--- | :--- | :--- |
+| `components/` | Reusable UI components, layouts (`AppLayout`), sidebars, bottom bars, and 404/Error Boundaries | [Read `components/README.md`](./components/README.md) |
+| `features/` | Feature-based domain modules (Auth, Devices, Transfers, Spaces, Clipboard, Workspace, Admin, Profile, Pairing, Legal) | [Read `features/README.md`](./features/README.md) |
+| `lib/` | Core services, Libsodium E2E crypto, Supabase client, offline queue, notifications, and error handlers | [Read `lib/README.md`](./lib/README.md) |
+| `routes/` | React Router route definitions, protected route guards, and admin route authorization | [Read `routes/README.md`](./routes/README.md) |
+| `types/` | TypeScript interfaces for Supabase database schema and admin governance models | [Read `types/README.md`](./types/README.md) |
+| `App.tsx` | Top-level React root wrapping ErrorBoundary, AuthProvider, and NetworkStatusBanner | — |
+| `main.tsx` | Application entry point mounting React root and registering PWA service worker | — |
+| `index.css` | Global Tailwind CSS v4 directives and custom OvBridge theme variables | — |
 
-Toutes les données sensibles (textes, fichiers, presse-papiers) sont chiffrées sur l'appareil émetteur avant tout envoi vers le serveur ou stockage Supabase. Les clés privées sont conservées localement dans le stockage sécurisé de l'appareil et ne transitent jamais sur le réseau.
+---
+
+## 🧭 Navigation Links
+* [⬅️ Back to Master PROJECT.md](../../PROJECT.md)
+* [🧩 Components Documentation](./components/README.md)
+* [🚀 Features Documentation](./features/README.md)
+* [🛠️ Foundational Libraries](./lib/README.md)
+* [🛣️ App Router Documentation](./routes/README.md)
+* [📐 TypeScript Definitions](./types/README.md)

@@ -1,19 +1,32 @@
-# Bibliothèque Centrale (`src/lib/`)
+# 🛠️ `src/lib/` — Foundational Services & Utilities
 
-Regroupe les briques fondamentales techniques, cryptographiques et réseau d'OvBridge.
+This folder contains foundational services, Libsodium encryption wrappers, Supabase client configuration, offline queueing, and notification helpers.
 
-## 📄 Fichiers
+---
 
-- **`crypto.ts`** : Fonctions cryptographiques reposant sur **libsodium** (box asymétrique X25519-XSalsa20-Poly1305 pour le texte, secretbox symétrique pour les fichiers).
-- **`device.ts`** : Gestion de l'identité de l'appareil local, persistance des paires de clés et protection contre l'effacement accidentel hors-ligne.
-- **`errors.ts`** : Système complet d'exceptions typées (`AppError`, `NetworkError`, `AuthError`, `CryptoError`, `DeviceError`, `PairingError`, `TransferError`, `SpaceError`, `WorkspaceError`, `ClipboardError`) et formattage convivial (`friendlyError`).
-- **`network.ts`** : Détection réseau en temps réel (`useNetworkStatus`, `isOnline`), reconnexion automatique des sockets Realtime et relances exponentielles (`withRetry`).
-- **`supabase.ts`** : Instance initialisée du client Supabase avec persistance locale des sessions.
-- **`localCache.ts`** : Gestion du cache physique des fichiers chiffrés/déchiffrés (FS natif via Capacitor ou mémoire vive sécurisée pour le web).
-- **`spaces.ts`** : Logique métier des espaces (création, invitations, listing des appareils cibles pour le fan-out).
-- **`transfers.ts`** : Envoi et déchiffrement des textes et fichiers, agrégation des conversations et mise en cache du texte clair émis.
-- **`workspace.ts`** : Opérations sur les fichiers du coffre personnel (chiffrement, upload, download, calcul de quota).
-- **`qr.ts`** : Utilitaires de validation, nettoyage et génération d'URLs pour les codes QR d'appairage.
-- **`clipboard.ts`** : Envoi au presse-papiers sécurisé, détection heuristique de secrets et historique.
-- **`utils.ts`** : Fonction utilitaire `cn` pour la fusion de classes Tailwind via `clsx` et `tailwind-merge`.
-- **`constants.ts`** : Constantes applicatives (tailles maximales de fichiers, timeouts).
+## 📋 File Index
+
+| File | Responsibility |
+| :--- | :--- |
+| `crypto.ts` | Libsodium wrappers for local keypair generation, public key fingerprinting, text encryption (`crypto_box_easy`), and file encryption (`crypto_secretbox_easy`) |
+| `supabase.ts` | Configured Supabase JS client instance using environment variables |
+| `device.ts` | Local device registration, keypair persistence in `localStorage`, fingerprinting, and identity management |
+| `transfers.ts` | Encrypted text/file sending, fanout transfer to spaces, conversation fetching, and in-memory sent item caching |
+| `clipboard.ts` | Shared clipboard sync with regex sensitivity detector (passwords, JWTs, credit cards, API keys) |
+| `workspace.ts` | Personal storage workspace creation, E2E encrypted file uploads, downloads, and storage usage tracking |
+| `spaces.ts` | Collaborative space management and recipient device resolution for space fanout transfers |
+| `admin.ts` | Service functions wrapping Supabase RPCs for user bans, admin role changes, error logs, and audit logs |
+| `errors.ts` | 3-tier error severity classification system (`neutre`, `moyen`, `alerte`) and `friendlyError` French translator |
+| `notifications.ts` | Universal alerting combining Web Audio API sound synthesis, mobile vibration, browser Web Push, and Sonner toasts |
+| `offlineQueue.ts` | `localStorage` buffer for queuing offline transfers and auto-flushing upon network reconnection |
+| `webrtc.ts` | Helper for establishing peer-to-peer WebRTC data channels between devices |
+| `qr.ts` | QR code generation helper for pairing |
+| `utils.ts` | Tailwind CSS class merging (`cn`) helper |
+| `constants.ts` | Global constants (e.g. `MAX_FILE_SIZE_MB`) |
+| `localCache.ts` | IndexedDB / local blob storage cache for downloaded files |
+
+---
+
+## 🧭 Navigation Links
+* [⬅️ Back to Source Root (`src/`)](../README.md)
+* [🌟 Master PROJECT.md](../../PROJECT.md)

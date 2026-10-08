@@ -1,18 +1,21 @@
-# Gestion des Appareils (`src/features/devices/`)
+# 📱 `src/features/devices/` — Device Management
 
-Module de visualisation et de gestion des appareils connectés au compte OvBridge.
+This module manages registered user devices, device identity registration, device renaming, and access revocation.
 
-## 📄 Fichiers
+---
 
-- **`DevicesPage.tsx`** : Page principale listant tous les appareils enregistrés avec leur plateforme, leur date de dernière activité et leurs statuts.
-- **`RenameDeviceDialog.tsx`** : Boîte de dialogue pour personnaliser le libellé d'un appareil.
-- **`ConfirmDialog.tsx`** : Modale de confirmation pour les actions destructives ou critiques (ex: révocation).
-- **`useDevices.ts`** : Hook React gérant la liste des appareils avec synchronisation Realtime Supabase.
-- **`useDeviceAlerts.ts`** : Hook écoutant l'enregistrement de nouveaux appareils pour afficher des alertes visuelles.
-- **`index.ts`** : Exportations du module.
+## 📋 File Index
 
-## 🌐 Résilience Réseau & Hors-Ligne
+| File | Responsibility |
+| :--- | :--- |
+| `DevicesPage.tsx` | Main dashboard displaying active user devices, last seen timestamps, and pairing launcher |
+| `useDevices.ts` | Hook fetching and managing the list of active user devices |
+| `useDeviceAlerts.ts` | Realtime listener alerting users when new devices are linked to their account |
+| `RenameDeviceDialog.tsx` | Modal dialog for updating a device's display name |
+| `ConfirmDialog.tsx` | Reusable confirmation dialog for device revocation and deletion actions |
 
-Si l'appareil perd sa connexion Internet :
-- L'identité locale et la clé privée stockées sont scrupuleusement préservées.
-- Aucun appareil n'est révoqué par inadvertance lors d'un échec réseau temporaire.
+---
+
+## 🧭 Navigation Links
+* [⬅️ Back to Features Index (`src/features/`)](../README.md)
+* [🌟 Master PROJECT.md](../../PROJECT.md)

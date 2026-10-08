@@ -1,14 +1,19 @@
-# Espace de Stockage Personnel Workspace (`src/features/workspace/`)
+# 🗄️ `src/features/workspace/` — Personal Cloud Drive
 
-Espace cloud personnel sécurisé (Zero-Knowledge) pour stocker et synchroniser des documents chiffrés.
+This module manages end-to-end encrypted personal cloud storage with quota enforcement and local file caching.
 
-## 📄 Fichiers
+---
 
-- **`WorkspacePage.tsx`** : Interface de gestion des fichiers (upload, export, suppression, prévisualisation, jauge de quota).
-- **`useWorkspace.ts`** : Hook assurant l'initialisation automatique (`ensureWorkspace`) et le suivi du quota de stockage en temps réel.
-- **`useWorkspaceFiles.ts`** : Hook récupérant la liste des fichiers chiffrés avec détection d'état en cache local.
+## 📋 File Index
 
-## 💾 Quota & Stockage
+| File | Route | Responsibility |
+| :--- | :--- | :--- |
+| `WorkspacePage.tsx` | `/workspace` | Personal file drive dashboard displaying used storage quotas, file upload controls, local cache status, and file export actions |
+| `useWorkspace.ts` | — | Hook fetching or initializing the user's personal storage workspace |
+| `useWorkspaceFiles.ts` | — | Hook managing workspace file list and realtime storage updates |
 
-- Chaque utilisateur dispose d'un espace personnel avec un quota par défaut de 100 Mo.
-- La procédure stockée SQL `ovbridge_add_workspace_usage` ajuste dynamiquement l'espace consommé lors des ajouts et suppressions de fichiers.
+---
+
+## 🧭 Navigation Links
+* [⬅️ Back to Features Index (`src/features/`)](../README.md)
+* [🌟 Master PROJECT.md](../../PROJECT.md)
