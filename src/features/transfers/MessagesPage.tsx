@@ -70,15 +70,18 @@ export default function MessagesPage() {
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-lg font-semibold">Messages</h1>
+          <div>
+            <h1 className="text-lg font-bold">Messages & Transferts</h1>
+            <p className="text-xs text-ov-muted">Conversations chiffrées de bout en bout</p>
+          </div>
         </div>
         <Button
-          size="icon"
-          variant="ghost"
+          size="sm"
+          className="bg-ov-primary hover:bg-ov-primaryHover text-xs"
           onClick={() => navigate("/send")}
           title="Nouveau message"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-4 h-4 mr-1" /> Nouveau
         </Button>
       </header>
 

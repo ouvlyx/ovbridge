@@ -3,16 +3,24 @@
  * Fournit des classes d'erreur précises avec codes, messages techniques et messages utilisateur localisés.
  */
 
-export type ErrorSeverity = "info" | "warning" | "error" | "fatal";
+export type ErrorSeverityLevel = "neutre" | "moyen" | "alerte";
 
 export interface AppErrorOptions {
   code: string;
   userMessage: string;
   technicalDetails?: string;
   statusCode?: number;
-  severity?: ErrorSeverity;
+  level?: ErrorSeverityLevel;
+  severity?: string;
   cause?: unknown;
 }
+
+/**
+ * Structure de sévérité à 3 niveaux :
+ * - neutre : Information / Note passive (ex: presse-papiers vide, sauvegarde auto, file hors-ligne)
+ * - moyen : Avertissement temporaire / Réessayable (ex: quota dépassé, code expiré, limite de taux)
+ * - alerte : Erreur critique / Sécurité (ex: compte banni, appareil révoqué, échec de déchiffrement E2E)
+ */
 
 /**
  * Classe d'erreur de base pour l'application.
@@ -22,7 +30,7 @@ export class AppError extends Error {
   readonly userMessage: string;
   readonly technicalDetails?: string;
   readonly statusCode?: number;
-  readonly severity: ErrorSeverity;
+  readonly level: ErrorSeverityLevel;
 
   constructor(options: AppErrorOptions) {
     super(options.userMessage);
@@ -31,11 +39,43 @@ export class AppError extends Error {
     this.userMessage = options.userMessage;
     this.technicalDetails = options.technicalDetails;
     this.statusCode = options.statusCode;
-    this.severity = options.severity ?? "error";
+    this.level = options.level ?? "moyen";
     if (options.cause) {
       this.cause = options.cause;
     }
   }
+}
+
+/**
+ * Détermine le niveau de sévérité à 3 niveaux d'une erreur (neutre | moyen | alerte).
+ */
+export function getErrorSeverityLevel(error: unknown): ErrorSeverityLevel {
+  if (error instanceof AppError) {
+    return error.level;
+  }
+
+  const msg = String(
+    error && typeof error === "object" && "message" in error
+      ? (error as any).message
+      : error ?? ""
+  ).toLowerCase();
+
+  // Niveau Alerte (Critique)
+  if (
+    /decryption|déchiffrement|banni|banned|revoked|révoqué|unauthorized|session expired|invalid token/i.test(
+      msg
+    )
+  ) {
+    return "alerte";
+  }
+
+  // Niveau Neutre (Info)
+  if (/vide|empty|auto-cache|file d'attente|saved|information/i.test(msg)) {
+    return "neutre";
+  }
+
+  // Niveau Moyen (Avertissement par défaut)
+  return "moyen";
 }
 
 /**
