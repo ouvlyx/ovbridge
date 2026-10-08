@@ -10,7 +10,13 @@ import {
   Users,
   Smartphone,
   X,
+  Phone,
+  Video,
 } from "lucide-react";
+import { useCallSession } from "@/features/calls/useCallSession";
+import { CallDialog } from "@/features/calls/CallDialog";
+import { AudioRecorder } from "./AudioRecorder";
+import { Volume2 } from "lucide-react";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/errors";
 import { MAX_FILE_SIZE_MB } from "@/lib/constants";
@@ -72,6 +78,8 @@ export default function ChatPage() {
 
   const scopeKind = scope?.kind;
   const scopeId = scope?.id;
+
+  const call = useCallSession(scopeId, scopeKind === "space");
 
   useEffect(() => {
     if (!scopeKind || !scopeId) return;
@@ -262,6 +270,25 @@ export default function ChatPage() {
             </p>
           </div>
         </div>
+
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => call.startCall("audio")}
+            title="Appel audio chiffré"
+          >
+            <Phone className="w-4 h-4 text-ov-primary" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => call.startCall("video")}
+            title="Appel vidéo chiffré"
+          >
+            <Video className="w-4 h-4 text-ov-primary" />
+          </Button>
+        </div>
       </header>
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -305,8 +332,21 @@ export default function ChatPage() {
                 >
                   {isFile ? (
                     <div className="space-y-2 min-w-[200px]">
-                      <p className="text-xs opacity-80 font-medium">📄 {m.file_name}</p>
-                      {!d ? (
+                          <p className="text-xs opacity-80 font-medium flex items-center gap-1.5">
+                            {m.file_name?.startsWith("vocal_") ? (
+                              <>
+                                <Volume2 className="w-3.5 h-3.5 text-ov-accent" /> Message vocal
+                              </>
+                            ) : (
+                              <>📄 {m.file_name}</>
+                            )}
+                          </p>
+
+                          {d?.url && m.file_name?.startsWith("vocal_") ? (
+                            <div className="flex items-center gap-2 pt-1">
+                              <audio src={d.url} controls className="w-full h-8 rounded-lg" />
+                            </div>
+                          ) : !d ? (
                         <button
                           onClick={() => open(m)}
                           disabled={busyId === m.id}
@@ -317,7 +357,7 @@ export default function ChatPage() {
                               : "bg-ov-bg hover:bg-ov-primary/10 text-ov-primary"
                           )}
                         >
-                          {busyId === m.id ? "Déchiffrement…" : "Déchiffrer & Ouvrir"}
+                              {busyId === m.id ? "Déchiffrement…" : "Écouter / Ouvrir"}
                         </button>
                       ) : (
                         <button
@@ -385,6 +425,21 @@ export default function ChatPage() {
         )}
       </div>
 
+      <CallDialog
+        open={call.callState !== "idle"}
+        callState={call.callState}
+        callType={call.callType}
+        callerName={title}
+        isMuted={call.isMuted}
+        isVideoOff={call.isVideoOff}
+        netQuality={call.netQuality}
+        localStream={call.localStream}
+        remoteStream={call.remoteStream}
+        onEndCall={call.endCall}
+        onToggleMute={call.toggleMute}
+        onToggleVideo={call.toggleVideo}
+      />
+
       <div className="p-3 sm:p-4 border-t border-ov-border bg-ov-surface sticky bottom-0">
         <p className="text-[10px] text-ov-muted mb-2">
           Fichier : {MAX_FILE_SIZE_MB} Mo maximum
@@ -420,6 +475,30 @@ export default function ChatPage() {
           >
             <Paperclip className="w-5 h-5" />
           </Button>
+
+          <AudioRecorder
+            disabled={sending || sendLock.current}
+            onRecorded={async (vocalFile) => {
+              if (!user || !me || !scope) return;
+              try {
+                if (scope.kind === "space") {
+                  await sendFileToSpace(user.id, me, scope.id, vocalFile);
+                } else {
+                  const { data } = await supabase
+                    .from("ovbridge_devices")
+                    .select("id, name, public_key")
+                    .eq("id", scope.id)
+                    .maybeSingle();
+                  if (!data) throw new Error("Destinataire introuvable");
+                  await sendFile(user.id, me, data, vocalFile);
+                }
+                await refresh();
+                toast.success("Message vocal envoyé ✅");
+              } catch (e: any) {
+                toast.error(friendlyError(e));
+              }
+            }}
+          />
 
           <textarea
             value={input}

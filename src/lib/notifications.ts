@@ -100,8 +100,14 @@ export async function sendUniversalNotification(params: {
 
   if ("Notification" in window && Notification.permission === "granted" && document.hidden) {
     try {
-      const notif = new Notification(title, {
-        body,
+      // Masquer le contenu sensible des messages chiffrés dans la notification système
+      const sanitizedBody =
+        type === "transfer" || type === "message"
+          ? "Nouveau message chiffré reçu sur OvBridge"
+          : body;
+
+      const notif = new Notification("OvBridge", {
+        body: sanitizedBody,
         icon,
         tag: `ovbridge-${type}-${Date.now()}`,
       });

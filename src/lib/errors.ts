@@ -483,11 +483,11 @@ type ErrorDetails = {
 };
 
 const messages = {
-  fallback: "Une erreur est survenue. Réessayez.",
-  emailExists: "Cette adresse e-mail est déjà utilisée. Connectez-vous ou utilisez une autre adresse.",
-  invalidCredentials: "Adresse e-mail ou mot de passe incorrect.",
-  rateLimit: "Trop de tentatives. Patientez quelques instants avant de réessayer.",
-  network: "Connexion impossible. Vérifiez votre accès à Internet et réessayez.",
+  fallback: "Nous n'avons pas pu effectuer cette action. Veuillez réessayer dans un instant.",
+  emailExists: "Cette adresse e-mail est déjà associée à un compte. Connectez-vous ou utilisez une autre adresse.",
+  invalidCredentials: "Identifiants non reconnus. Vérifiez votre adresse e-mail et votre mot de passe.",
+  rateLimit: "Hop ! Un peu trop de tentatives. Prenez une courte pause avant de réappuyer.",
+  network: "Connexion réseau interrompue. Vos échanges seront automatiquement synchronisés dès le retour du réseau.",
 };
 
 /**
