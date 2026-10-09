@@ -10,7 +10,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    // Traitement immédiat des retours OAuth quel que soit le pathname ("/" ou "/auth/callback")
     const handleAuthRedirect = async () => {
       const href = window.location.href;
       const hasOAuthParams =
@@ -25,13 +24,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       }
 
-      // Si des paramètres OAuth sont présents sur la racine "/" ou sur une autre page
       if (hasOAuthParams) {
         if (data.session) {
-          // L'utilisateur est connecté, nettoyer les paramètres de l'URL
           window.history.replaceState({}, document.title, "/devices");
         } else if (window.location.pathname === "/") {
-          // Si non connecté mais des params OAuth existent sur "/", basculer vers /auth/callback
           window.history.replaceState(
             {},
             document.title,
@@ -66,13 +62,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   };
 
-  const signInWithGoogle = async () => {
-    // Rediriger vers /auth/callback (ou origin) pour capter le retour Google OAuth
-    const redirectUrl = `${window.location.origin}/auth/callback`;
+  const signInWithGoogle = async (redirectTo?: string) => {
+    const target = redirectTo
+      ? `${window.location.origin}${
+          redirectTo.startsWith("/") ? redirectTo : `/${redirectTo}`
+        }`
+      : `${window.location.origin}/auth/callback`;
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: redirectUrl,
+        redirectTo: target,
         queryParams: {
           access_type: "offline",
           prompt: "consent",

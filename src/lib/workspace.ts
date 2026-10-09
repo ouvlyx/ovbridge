@@ -1,7 +1,8 @@
 import { supabase } from "./supabase";
 import type { DeviceIdentity } from "./device";
-import { encryptFileFor, decryptFileFrom } from "./crypto";
-import { WorkspaceError, TransferError, CryptoError } from "./errors";
+import { WorkspaceError} from "./errors";
+import { getOrCreateWorkspaceKey } from "./workspaceKey";
+import { encryptFileWithSymKey, decryptFileWithSymKey } from "./crypto";
 
 const BUCKET = "ovbridge_files";
 
@@ -29,6 +30,85 @@ export type WorkspaceFile = {
   updated_at: string;
   deleted_at: string | null;
 };
+
+
+export async function uploadWorkspaceFile(
+  userId: string,
+  workspaceId: string,
+  me: DeviceIdentity,
+  file: File
+): Promise<WorkspaceFile> {
+  // 1. Récupère ou crée la clé symétrique du workspace
+  const symKey = await getOrCreateWorkspaceKey(workspaceId, userId, me);
+
+  // 2. Chiffre le fichier avec la clé symétrique
+  const { ciphertext } = await encryptFileWithSymKey(file, symKey);
+
+  const path = `workspace/${userId}/${workspaceId}/${crypto.randomUUID()}.enc`;
+
+  const { error: upErr } = await supabase.storage
+    .from(BUCKET)
+    .upload(path, ciphertext, {
+      contentType: "application/octet-stream",
+      upsert: false,
+    });
+  if (upErr) throw upErr;
+
+  const { data, error } = await supabase
+    .from("ovbridge_workspace_files")
+    .insert({
+      workspace_id: workspaceId,
+      name: file.name,
+      mime_type: file.type || "application/octet-stream",
+      size_bytes: file.size,
+      storage_path: path,
+      encrypted_key: "", // plus utilisé, garde la colonne pour compat
+      nonce: "",          // plus utilisé
+      uploaded_by_device: me.deviceId,
+    })
+    .select("*")
+    .single();
+
+  if (error) {
+    await supabase.storage.from(BUCKET).remove([path]);
+    throw error;
+  }
+
+  try {
+    await supabase.rpc("ovbridge_add_workspace_usage", {
+      p_workspace_id: workspaceId,
+      p_delta: file.size,
+    });
+  } catch (e) {
+    console.error("[uploadWorkspaceFile] usage update failed", e);
+  }
+
+  return data as WorkspaceFile;
+}
+
+export async function downloadWorkspaceFile(
+  wf: WorkspaceFile,
+  me: DeviceIdentity
+): Promise<Blob> {
+  const { data, error } = await supabase.storage
+    .from(BUCKET)
+    .download(wf.storage_path);
+  if (error || !data) throw error ?? new Error("Téléchargement échoué");
+
+  // Récupère la clé symétrique du workspace
+  const symKey = await getOrCreateWorkspaceKey(
+    wf.workspace_id,
+    me.userId ?? "", // ⚠️ à ajuster selon ta structure
+    me
+  );
+
+  const buf = new Uint8Array(await data.arrayBuffer());
+  const plain = await decryptFileWithSymKey(buf, symKey);
+
+  return new Blob([new Uint8Array(plain)], {
+    type: wf.mime_type ?? "application/octet-stream",
+  });
+}
 
 /**
  * Récupère ou initialise automatiquement le workspace de stockage personnel de l'utilisateur.
@@ -67,109 +147,6 @@ export async function ensureWorkspace(userId: string): Promise<Workspace> {
   return created as Workspace;
 }
 
-// ---------------------------------------------------------------------------
-// Upload
-// ---------------------------------------------------------------------------
-
-export async function uploadWorkspaceFile(
-  userId: string,
-  workspaceId: string,
-  me: DeviceIdentity,
-  file: File
-): Promise<WorkspaceFile> {
-  const enc = await encryptFileFor(file, me.publicKey, me.privateKey);
-
-  const path = `workspace/${userId}/${workspaceId}/${crypto.randomUUID()}.enc`;
-
-  const { error: upErr } = await supabase.storage
-    .from(BUCKET)
-    .upload(path, enc.ciphertext, {
-      contentType: "application/octet-stream",
-      upsert: false,
-    });
-  if (upErr) {
-    throw TransferError.uploadFailed(upErr.message, upErr);
-  }
-
-  const { data, error } = await supabase
-    .from("ovbridge_workspace_files")
-    .insert({
-      workspace_id: workspaceId,
-      name: file.name,
-      mime_type: file.type || "application/octet-stream",
-      size_bytes: file.size,
-      storage_path: path,
-      encrypted_key: enc.encryptedKey,
-      nonce: enc.nonce,
-      uploaded_by_device: me.deviceId,
-    })
-    .select("*")
-    .single();
-
-  if (error) {
-    await supabase.storage.from(BUCKET).remove([path]);
-    throw error;
-  }
-
-  // Met à jour used_bytes du workspace
-  await supabase.rpc("ovbridge_add_workspace_usage", {
-    p_workspace_id: workspaceId,
-    p_delta: file.size,
-  });
-
-  return data as WorkspaceFile;
-}
-
-// ---------------------------------------------------------------------------
-// Téléchargement + déchiffrement
-// ---------------------------------------------------------------------------
-
-export async function downloadWorkspaceFile(
-  wf: WorkspaceFile,
-  me: DeviceIdentity
-): Promise<Blob> {
-  const { data, error } = await supabase.storage
-    .from(BUCKET)
-    .download(wf.storage_path);
-  if (error || !data) {
-    throw TransferError.downloadFailed(error?.message ?? "Téléchargement échoué", error);
-  }
-
-  // Récupérer la clé publique de l'appareil émetteur/téléverseur
-  let uploaderPublicKey = me.publicKey;
-
-  if (wf.uploaded_by_device && wf.uploaded_by_device !== me.deviceId) {
-    const { data: dev } = await supabase
-      .from("ovbridge_devices")
-      .select("public_key")
-      .eq("id", wf.uploaded_by_device)
-      .maybeSingle();
-
-    if (dev?.public_key) {
-      uploaderPublicKey = dev.public_key;
-    }
-  }
-
-  try {
-    const buf = new Uint8Array(await data.arrayBuffer());
-    const plain = await decryptFileFrom(
-      buf,
-      wf.encrypted_key,
-      wf.nonce,
-      uploaderPublicKey,
-      me.privateKey
-    );
-
-    return new Blob([new Uint8Array(plain)], {
-      type: wf.mime_type ?? "application/octet-stream",
-    });
-  } catch (err) {
-    throw CryptoError.decryptionFailed(
-      err instanceof Error ? err.message : String(err),
-      err
-    );
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Suppression

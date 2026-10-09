@@ -132,3 +132,82 @@ export async function decryptFileFrom(
 
   return s.crypto_secretbox_open_easy(ct, fileNonce, symKey);
 }
+
+// ---------------------------------------------------------------------------
+// Clé symétrique pour le workspace (chiffrée par device)
+// ---------------------------------------------------------------------------
+
+/** Génère une clé symétrique aléatoire (32 octets, base64). */
+export async function generateSymKey(): Promise<string> {
+  const s = await initCrypto();
+  return s.to_base64(s.randombytes_buf(s.crypto_secretbox_KEYBYTES));
+}
+
+/** Chiffre une clé symétrique pour un device destinataire. */
+export async function encryptSymKey(
+  symKeyB64: string,
+  recipientPublicKeyB64: string,
+  senderPrivateKeyB64: string
+): Promise<{ encryptedKey: string; nonce: string }> {
+  const s = await initCrypto();
+  const nonce = s.randombytes_buf(s.crypto_box_NONCEBYTES);
+  const symKey = s.from_base64(symKeyB64);
+  const enc = s.crypto_box_easy(
+    symKey,
+    nonce,
+    s.from_base64(recipientPublicKeyB64),
+    s.from_base64(senderPrivateKeyB64)
+  );
+  return {
+    encryptedKey: s.to_base64(enc),
+    nonce: s.to_base64(nonce),
+  };
+}
+
+/** Déchiffre une clé symétrique reçue pour soi. */
+export async function decryptSymKey(
+  encryptedKeyB64: string,
+  nonceB64: string,
+  senderPublicKeyB64: string,
+  recipientPrivateKeyB64: string
+): Promise<string> {
+  const s = await initCrypto();
+  const key = s.crypto_box_open_easy(
+    s.from_base64(encryptedKeyB64),
+    s.from_base64(nonceB64),
+    s.from_base64(senderPublicKeyB64),
+    s.from_base64(recipientPrivateKeyB64)
+  );
+  return s.to_base64(key);
+}
+
+/** Chiffre un blob avec la clé symétrique. */
+export async function encryptFileWithSymKey(
+  file: File,
+  symKeyB64: string
+): Promise<{ ciphertext: Uint8Array; nonce: string }> {
+  const s = await initCrypto();
+  const raw = new Uint8Array(await file.arrayBuffer());
+  const symKey = s.from_base64(symKeyB64);
+  const nonce = s.randombytes_buf(s.crypto_secretbox_NONCEBYTES);
+  const ct = s.crypto_secretbox_easy(raw, nonce, symKey);
+
+  const blob = new Uint8Array(nonce.length + ct.length);
+  blob.set(nonce, 0);
+  blob.set(ct, nonce.length);
+
+  return { ciphertext: blob, nonce: "" }; // nonce inclus dans le blob
+}
+
+/** Déchiffre un blob avec la clé symétrique. */
+export async function decryptFileWithSymKey(
+  ciphertextWithNonce: Uint8Array,
+  symKeyB64: string
+): Promise<Uint8Array> {
+  const s = await initCrypto();
+  const nonceLen = s.crypto_secretbox_NONCEBYTES;
+  const nonce = ciphertextWithNonce.slice(0, nonceLen);
+  const ct = ciphertextWithNonce.slice(nonceLen);
+  const symKey = s.from_base64(symKeyB64);
+  return s.crypto_secretbox_open_easy(ct, nonce, symKey);
+}
