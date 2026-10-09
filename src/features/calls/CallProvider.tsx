@@ -16,14 +16,6 @@ import { CallDialog } from "./CallDialog";
 
 /* ------------------------------------------------------------------ */
 /*  Signalisation                                                      */
-/*                                                                     */
-/*  - `call-inbox:<deviceId>` : boîte d'appels entrants d'un appareil  */
-/*    (le destinataire y écoute en permanence, l'appelant y dépose     */
-/*    une invitation « invite »).                                      */
-/*  - `call:<callId>` : canal privé de l'appel (answer / reject / end) */
-/*                                                                     */
-/*  Le SDP est envoyé une seule fois, ICE déjà collecté (pas de        */
-/*  « trickle »), donc aucun candidat ne peut être perdu en route.     */
 /* ------------------------------------------------------------------ */
 
 const RING_TIMEOUT_MS = 45_000;
@@ -43,8 +35,6 @@ function buildIceServers(): RTCIceServer[] {
   const servers: RTCIceServer[] = [
     { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] },
   ];
-  // Serveur TURN optionnel : indispensable pour appeler entre deux réseaux
-  // différents derrière des NAT stricts (4G, wifi d'entreprise…).
   const turnUrl = import.meta.env.VITE_TURN_URL;
   if (turnUrl) {
     servers.push({
@@ -84,13 +74,11 @@ async function removeExistingChannel(topic: string) {
 
 let joinQueue: Promise<unknown> = Promise.resolve();
 
-/** Crée un canal, y branche les handlers puis attend qu'il soit réellement abonné. */
 function joinChannel(
   topic: string,
   register: (ch: RealtimeChannel) => void,
   onLost?: () => void
 ): Promise<RealtimeChannel> {
-  // Les abonnements sont traités un par un : jamais deux canaux sur le même topic
   const run = joinQueue.then(() => doJoinChannel(topic, register, onLost));
   joinQueue = run.catch(() => undefined);
   return run;
@@ -136,7 +124,6 @@ async function doJoinChannel(
   });
 }
 
-/** Canaux d'envoi réutilisés (boîte d'appels d'un autre appareil). */
 const senderChannels = new Map<string, { ch: RealtimeChannel; state: { ok: boolean } }>();
 
 async function sendToInbox(targetDeviceId: string, event: string, payload: object) {
@@ -193,11 +180,14 @@ export function CallProvider({ children }: { children: ReactNode }) {
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [netQuality, setNetQuality] = useState<NetQuality>("excellente");
+  const [isRemoteVideoEnabled, setIsRemoteVideoEnabled] = useState(false);
+  const [durationSec, setDurationSec] = useState(0);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
-  const [deviceId, setDeviceId] = useState<string | null>(() => getStoredIdentity()?.deviceId ?? null);
+  const [deviceId, setDeviceId] = useState<string | null>(
+    () => getStoredIdentity()?.deviceId ?? null
+  );
 
-  // Références lues depuis les callbacks temps réel (évite les closures périmées)
   const stateRef = useRef<CallState>("idle");
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const localRef = useRef<MediaStream | null>(null);
@@ -207,13 +197,14 @@ export function CallProvider({ children }: { children: ReactNode }) {
   const inviteRef = useRef<InvitePayload | null>(null);
   const ringTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const statsTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const durationTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const setCallState = useCallback((s: CallState) => {
     stateRef.current = s;
     setCallStateRaw(s);
   }, []);
 
-  /* ---------- identité de l'appareil (peut apparaître après le montage) ---------- */
+  /* ---------- identité de l'appareil ---------- */
   useEffect(() => {
     if (!user) {
       setDeviceId(null);
@@ -229,8 +220,10 @@ export function CallProvider({ children }: { children: ReactNode }) {
   const cleanup = useCallback(() => {
     if (ringTimerRef.current) clearTimeout(ringTimerRef.current);
     if (statsTimerRef.current) clearInterval(statsTimerRef.current);
+    if (durationTimerRef.current) clearInterval(durationTimerRef.current);
     ringTimerRef.current = null;
     statsTimerRef.current = null;
+    durationTimerRef.current = null;
 
     localRef.current?.getTracks().forEach((t) => t.stop());
     localRef.current = null;
@@ -239,11 +232,11 @@ export function CallProvider({ children }: { children: ReactNode }) {
     if (pcRef.current) {
       pcRef.current.ontrack = null;
       pcRef.current.onconnectionstatechange = null;
+      pcRef.current.onnegotiationneeded = null;
       pcRef.current.close();
       pcRef.current = null;
     }
 
-    // Laisse 300 ms au dernier message (« end » / « reject ») pour partir
     const ch = callChRef.current;
     callChRef.current = null;
     if (ch) setTimeout(() => void supabase.removeChannel(ch), 300);
@@ -256,6 +249,8 @@ export function CallProvider({ children }: { children: ReactNode }) {
     setIsMuted(false);
     setIsVideoOff(false);
     setNetQuality("excellente");
+    setIsRemoteVideoEnabled(false);
+    setDurationSec(0);
     setCallState("idle");
   }, [setCallState]);
 
@@ -273,7 +268,14 @@ export function CallProvider({ children }: { children: ReactNode }) {
       const remote = remoteMediaRef.current ?? new MediaStream();
       if (!remote.getTracks().includes(e.track)) remote.addTrack(e.track);
       remoteMediaRef.current = remote;
-      setRemoteStream(remote);
+      setRemoteStream(new MediaStream(remote.getTracks()));
+
+      if (e.track.kind === "video") {
+        setIsRemoteVideoEnabled(true);
+        e.track.onmute = () => setIsRemoteVideoEnabled(false);
+        e.track.onunmute = () => setIsRemoteVideoEnabled(true);
+        e.track.onended = () => setIsRemoteVideoEnabled(false);
+      }
     };
 
     pc.onconnectionstatechange = () => {
@@ -284,19 +286,29 @@ export function CallProvider({ children }: { children: ReactNode }) {
           ringTimerRef.current = null;
           setCallState("connected");
           setNetQuality("excellente");
+          if (!durationTimerRef.current) {
+            durationTimerRef.current = setInterval(() => {
+              setDurationSec((s) => s + 1);
+            }, 1000);
+          }
           if (!statsTimerRef.current) {
             statsTimerRef.current = setInterval(async () => {
               try {
                 const stats = await pc.getStats();
-                const best: { rtt?: number } = {};
+                let rtt: number | undefined;
                 stats.forEach((r) => {
-                  if (r.type === "candidate-pair" && r.nominated && r.state === "succeeded") {
-                    best.rtt = r.currentRoundTripTime;
+                  if (
+                    r.type === "candidate-pair" &&
+                    r.nominated &&
+                    r.state === "succeeded"
+                  ) {
+                    rtt = r.currentRoundTripTime;
                   }
                 });
-                const rtt = best.rtt;
                 if (typeof rtt !== "number") return;
-                setNetQuality(rtt < 0.15 ? "excellente" : rtt < 0.4 ? "moyenne" : "faible");
+                setNetQuality(
+                  rtt < 0.15 ? "excellente" : rtt < 0.4 ? "moyenne" : "faible"
+                );
               } catch {
                 /* pc fermée entre-temps */
               }
@@ -320,12 +332,46 @@ export function CallProvider({ children }: { children: ReactNode }) {
     return pc;
   }, [cleanup, sendOnCall, setCallState]);
 
+  /* ---------- gestion de la renégociation (bascule audio/vidéo) ---------- */
+  const handleRenegotiate = useCallback(
+    async (payload: { description: RTCSessionDescriptionInit }) => {
+      const pc = pcRef.current;
+      if (!pc) return;
+      try {
+        await pc.setRemoteDescription(payload.description);
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        sendOnCall("renegotiate-answer", { description: answer });
+      } catch (e) {
+        console.error("[call] renegotiate", e);
+      }
+    },
+    [sendOnCall]
+  );
+
+  const handleRenegotiateAnswer = useCallback(
+    async (payload: { description: RTCSessionDescriptionInit }) => {
+      const pc = pcRef.current;
+      if (!pc) return;
+      try {
+        if (pc.signalingState === "have-local-offer") {
+          await pc.setRemoteDescription(payload.description);
+        }
+      } catch (e) {
+        console.error("[call] renegotiate-answer", e);
+      }
+    },
+    []
+  );
+
   /* ---------- appelant ---------- */
   const startCall = useCallback(
     async (targetDeviceId: string, type: CallType, name?: string) => {
       const me = getStoredIdentity();
       if (!me) {
-        toast.error("Cet appareil n'est pas encore enregistré. Ouvre l'onglet Appareils, puis réessaie.");
+        toast.error(
+          "Cet appareil n'est pas encore enregistré. Ouvre l'onglet Appareils, puis réessaie."
+        );
         return;
       }
       if (stateRef.current !== "idle") {
@@ -337,7 +383,9 @@ export function CallProvider({ children }: { children: ReactNode }) {
         return;
       }
       if (!navigator.onLine) {
-        toast.warning("Pas de connexion Internet : l'appel est impossible pour le moment.");
+        toast.warning(
+          "Pas de connexion Internet : l'appel est impossible pour le moment."
+        );
         return;
       }
 
@@ -358,7 +406,6 @@ export function CallProvider({ children }: { children: ReactNode }) {
         localRef.current = stream;
         setLocalStream(stream);
 
-        // 1) Je rejoins le canal de l'appel AVANT d'inviter l'autre appareil
         const ch = await joinChannel(`call:${callId}`, (c) => {
           c.on("broadcast", { event: "answer" }, async ({ payload }) => {
             const pc = pcRef.current;
@@ -385,6 +432,14 @@ export function CallProvider({ children }: { children: ReactNode }) {
             toast.info("L'appel a pris fin.");
             cleanup();
           });
+          c.on("broadcast", { event: "renegotiate" }, ({ payload }) => {
+            void handleRenegotiate(payload as { description: RTCSessionDescriptionInit });
+          });
+          c.on("broadcast", { event: "renegotiate-answer" }, ({ payload }) => {
+            void handleRenegotiateAnswer(
+              payload as { description: RTCSessionDescriptionInit }
+            );
+          });
         });
         if (cancelled()) {
           void supabase.removeChannel(ch);
@@ -392,14 +447,12 @@ export function CallProvider({ children }: { children: ReactNode }) {
         }
         callChRef.current = ch;
 
-        // 2) Offre SDP complète (ICE inclus)
         const pc = createPeerConnection();
         stream.getTracks().forEach((track) => pc.addTrack(track, stream));
         await pc.setLocalDescription(await pc.createOffer());
         await waitForIceGathering(pc);
         if (cancelled()) return;
 
-        // 3) Invitation déposée dans la boîte d'appels du destinataire
         const invite: InvitePayload = {
           callId,
           from: me.deviceId,
@@ -410,7 +463,9 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
         ringTimerRef.current = setTimeout(() => {
           if (stateRef.current === "calling" && callIdRef.current === callId) {
-            toast.info("Pas de réponse. L'autre appareil doit avoir OvBridge ouvert pour recevoir l'appel.");
+            toast.info(
+              "Pas de réponse. L'autre appareil doit avoir OvBridge ouvert pour recevoir l'appel."
+            );
             sendOnCall("end", { reason: "timeout" });
             cleanup();
           }
@@ -427,7 +482,14 @@ export function CallProvider({ children }: { children: ReactNode }) {
         cleanup();
       }
     },
-    [cleanup, createPeerConnection, sendOnCall, setCallState]
+    [
+      cleanup,
+      createPeerConnection,
+      handleRenegotiate,
+      handleRenegotiateAnswer,
+      sendOnCall,
+      setCallState,
+    ]
   );
 
   /* ---------- destinataire : réponse ---------- */
@@ -451,7 +513,6 @@ export function CallProvider({ children }: { children: ReactNode }) {
       setLocalStream(stream);
 
       const pc = createPeerConnection();
-      // Ordre important : offre distante → pistes locales → réponse
       await pc.setRemoteDescription(invite.offer);
       stream.getTracks().forEach((track) => pc.addTrack(track, stream));
       await pc.setLocalDescription(await pc.createAnswer());
@@ -488,11 +549,14 @@ export function CallProvider({ children }: { children: ReactNode }) {
       if (!payload?.callId || !payload.from || !payload.offer?.sdp) return;
       if (payload.from === deviceId) return;
 
-      // Occupé : on prévient l'appelant sans sonner
       if (stateRef.current !== "idle") {
         try {
           const busy = await joinChannel(`call:${payload.callId}`, () => {});
-          await busy.send({ type: "broadcast", event: "reject", payload: { reason: "busy" } });
+          await busy.send({
+            type: "broadcast",
+            event: "reject",
+            payload: { reason: "busy" },
+          });
           setTimeout(() => void supabase.removeChannel(busy), 300);
         } catch {
           /* l'appelant finira par expirer */
@@ -500,7 +564,6 @@ export function CallProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // On ne fait sonner que pour un appareil connu (RLS : appareils du compte / des espaces partagés)
       const { data: caller } = await supabase
         .from("ovbridge_devices")
         .select("name, revoked")
@@ -523,6 +586,16 @@ export function CallProvider({ children }: { children: ReactNode }) {
             else toast.info("L'appel a pris fin.");
             cleanup();
           });
+          c.on("broadcast", { event: "renegotiate" }, ({ payload }) => {
+            void handleRenegotiate(
+              payload as { description: RTCSessionDescriptionInit }
+            );
+          });
+          c.on("broadcast", { event: "renegotiate-answer" }, ({ payload }) => {
+            void handleRenegotiateAnswer(
+              payload as { description: RTCSessionDescriptionInit }
+            );
+          });
         });
         if (callIdRef.current !== callId) {
           void supabase.removeChannel(ch);
@@ -536,7 +609,9 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
       void sendUniversalNotification({
         title: "Appel entrant",
-        body: `${caller.name ?? "Un appareil"} t'appelle (${payload.type === "video" ? "vidéo" : "audio"})`,
+        body: `${caller.name ?? "Un appareil"} t'appelle (${
+          payload.type === "video" ? "vidéo" : "audio"
+        })`,
         type: "alert",
       });
 
@@ -569,7 +644,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
       disposed = true;
       if (inbox) void supabase.removeChannel(inbox);
     };
-  }, [deviceId, cleanup, setCallState]);
+  }, [deviceId, cleanup, handleRenegotiate, handleRenegotiateAnswer, setCallState]);
 
   /* ---------- libération à la fermeture de l'app ---------- */
   useEffect(() => {
@@ -597,6 +672,74 @@ export function CallProvider({ children }: { children: ReactNode }) {
     setIsVideoOff(next);
   }, [isVideoOff]);
 
+  /* ---------- bascule audio → vidéo (local) ---------- */
+  const upgradeToVideo = useCallback(async () => {
+    const pc = pcRef.current;
+    const stream = localRef.current;
+    if (!pc || !stream) return;
+
+    if (stream.getVideoTracks().length > 0) {
+      // Vidéo déjà présente, on la réactive
+      stream.getVideoTracks().forEach((t) => (t.enabled = true));
+      setIsVideoOff(false);
+      setCallType("video");
+      return;
+    }
+
+    try {
+      const videoStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user" },
+      });
+      const videoTrack = videoStream.getVideoTracks()[0];
+      if (!videoTrack) return;
+
+      stream.addTrack(videoTrack);
+      setLocalStream(new MediaStream(stream.getTracks()));
+
+      pc.addTrack(videoTrack, stream);
+
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      sendOnCall("renegotiate", { description: offer });
+
+      setIsVideoOff(false);
+      setCallType("video");
+    } catch (err) {
+      toast.error(mediaErrorMessage(err));
+    }
+  }, [sendOnCall]);
+
+  /* ---------- bascule vidéo → audio (local) ---------- */
+  const downgradeToAudio = useCallback(async () => {
+    const pc = pcRef.current;
+    const stream = localRef.current;
+    if (!pc || !stream) return;
+
+    const videoTracks = stream.getVideoTracks();
+    videoTracks.forEach((t) => {
+      t.stop();
+      stream.removeTrack(t);
+    });
+
+    pc.getSenders().forEach((sender) => {
+      if (sender.track?.kind === "video") {
+        try {
+          pc.removeTrack(sender);
+        } catch {
+          /* ignore */
+        }
+      }
+    });
+
+    setLocalStream(new MediaStream(stream.getTracks()));
+    setCallType("audio");
+    setIsVideoOff(false);
+
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    sendOnCall("renegotiate", { description: offer });
+  }, [sendOnCall]);
+
   const value = useMemo<CallContextValue>(
     () => ({
       callState,
@@ -607,12 +750,16 @@ export function CallProvider({ children }: { children: ReactNode }) {
       netQuality,
       localStream,
       remoteStream,
+      isRemoteVideoEnabled,
+      durationSec,
       startCall,
       acceptCall,
       rejectCall,
       endCall,
       toggleMute,
       toggleVideo,
+      upgradeToVideo,
+      downgradeToAudio,
     }),
     [
       callState,
@@ -623,12 +770,16 @@ export function CallProvider({ children }: { children: ReactNode }) {
       netQuality,
       localStream,
       remoteStream,
+      isRemoteVideoEnabled,
+      durationSec,
       startCall,
       acceptCall,
       rejectCall,
       endCall,
       toggleMute,
       toggleVideo,
+      upgradeToVideo,
+      downgradeToAudio,
     ]
   );
 
