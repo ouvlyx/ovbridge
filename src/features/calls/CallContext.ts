@@ -9,19 +9,28 @@ export type CallState =
   | "connected";
 export type NetQuality = "excellente" | "moyenne" | "faible";
 
+export interface CallPeer {
+  deviceId: string;
+  name: string;
+  stream: MediaStream | null;
+  isMuted: boolean;
+  isVideoOff: boolean;
+}
+
 export interface CallContextValue {
   callState: CallState;
   callType: CallType;
   peerName: string;
-  peerAvatar?: string | null;
   isMuted: boolean;
   isVideoOff: boolean;
   netQuality: NetQuality;
   localStream: MediaStream | null;
-  remoteStream: MediaStream | null;
+  peers: CallPeer[];
   isRemoteVideoEnabled: boolean;
   durationSec: number;
+  participantCount: number;
   startCall: (targetDeviceId: string, type: CallType, name?: string) => Promise<void>;
+  startGroupCall: (roomId: string, type: CallType, name?: string) => Promise<void>;
   acceptCall: () => Promise<void>;
   rejectCall: () => void;
   endCall: () => void;

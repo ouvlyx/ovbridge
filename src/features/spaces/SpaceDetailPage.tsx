@@ -1,6 +1,17 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, UserPlus, Shield, Trash2, LogOut, MessageSquare, Clipboard, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  UserPlus,
+  Shield,
+  Trash2,
+  LogOut,
+  MessageSquare,
+  Clipboard,
+  Users,
+  Phone,
+  Video,
+} from "lucide-react";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/errors";
 import { useAuth } from "@/features/auth";
@@ -8,6 +19,8 @@ import { useSpaceDetail } from "./useSpaceDetail";
 import InviteToSpaceDialog from "./InviteToSpaceDialog";
 import ConfirmDialog from "@/features/devices/ConfirmDialog";
 import { removeMember, deleteSpace } from "@/lib/spaces";
+import { createCallRoom } from "@/lib/callRooms";
+import { useCall } from "@/features/calls/CallContext";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,12 +30,14 @@ export default function SpaceDetailPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { space, members, loading, refresh } = useSpaceDetail(id);
+  const { startGroupCall, callState } = useCall();
 
   const [tab, setTab] = useState<"members" | "clipboard">("members");
   const [inviting, setInviting] = useState(false);
   const [removing, setRemoving] = useState<string | null>(null);
   const [deletingSpace, setDeletingSpace] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [startingCall, setStartingCall] = useState<"audio" | "video" | null>(null);
 
   const me = members.find((m) => m.user_id === user?.id);
   const isAdmin = me?.role === "admin";
@@ -71,6 +86,29 @@ export default function SpaceDetailPage() {
     }
   };
 
+  const onGroupCall = async (type: "audio" | "video") => {
+    if (!user || !space) return;
+    if (callState !== "idle") {
+      toast.info("Un appel est déjà en cours.");
+      return;
+    }
+
+    setStartingCall(type);
+    try {
+      const room = await createCallRoom({
+        userId: user.id,
+        spaceId: space.id,
+        type,
+        title: space.name,
+      });
+      await startGroupCall(room.id, type, space.name);
+    } catch (e: any) {
+      toast.error(friendlyError(e));
+    } finally {
+      setStartingCall(null);
+    }
+  };
+
   if (loading || !space) {
     return (
       <div className="min-h-screen p-6 max-w-2xl mx-auto">
@@ -91,20 +129,44 @@ export default function SpaceDetailPage() {
             <p className="text-xs text-ov-muted truncate">{space.description}</p>
           )}
         </div>
-        <Button
-          size="sm"
-          onClick={() => navigate(`/messages/space/${space.id}`)}
-          className="bg-ov-primary hover:bg-ov-primaryHover text-xs"
-        >
-          <MessageSquare className="w-3.5 h-3.5 mr-1" /> Ouvrir le Chat
-        </Button>
+
+        {/* Boutons d'appel de groupe */}
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onGroupCall("audio")}
+            disabled={startingCall !== null}
+            title="Appel audio de groupe"
+          >
+            <Phone className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onGroupCall("video")}
+            disabled={startingCall !== null}
+            title="Appel vidéo de groupe"
+          >
+            <Video className="w-4 h-4" />
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => navigate(`/messages/space/${space.id}`)}
+            className="bg-ov-primary hover:bg-ov-primaryHover text-xs"
+          >
+            <MessageSquare className="w-3.5 h-3.5 mr-1" /> Chat
+          </Button>
+        </div>
       </header>
 
       <div className="flex gap-2 p-1 rounded-xl bg-ov-surface border border-ov-border">
         <button
           onClick={() => setTab("members")}
           className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors ${
-            tab === "members" ? "bg-ov-primary text-white" : "text-ov-muted hover:text-ov-text"
+            tab === "members"
+              ? "bg-ov-primary text-white"
+              : "text-ov-muted hover:text-ov-text"
           }`}
         >
           <Users className="w-3.5 h-3.5" /> Membres ({members.length})
@@ -112,10 +174,12 @@ export default function SpaceDetailPage() {
         <button
           onClick={() => setTab("clipboard")}
           className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors ${
-            tab === "clipboard" ? "bg-ov-primary text-white" : "text-ov-muted hover:text-ov-text"
+            tab === "clipboard"
+              ? "bg-ov-primary text-white"
+              : "text-ov-muted hover:text-ov-text"
           }`}
         >
-          <Clipboard className="w-3.5 h-3.5" /> Presse-papiers d'Espace
+          <Clipboard className="w-3.5 h-3.5" /> Presse-papiers
         </button>
       </div>
 
@@ -209,7 +273,8 @@ export default function SpaceDetailPage() {
           <div>
             <h3 className="font-bold text-sm">Presse-papiers partagé d'Espace</h3>
             <p className="text-xs text-ov-muted mt-1">
-              Les éléments du presse-papiers partagés dans cet espace sont synchronisés automatiquement avec tous ses membres.
+              Les éléments du presse-papiers partagés dans cet espace sont
+              synchronisés automatiquement avec tous ses membres.
             </p>
           </div>
           <Button

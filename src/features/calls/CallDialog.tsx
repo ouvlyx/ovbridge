@@ -6,12 +6,12 @@ import {
   Video,
   VideoOff,
   Signal,
-  Volume2,
-  ArrowLeft,
+  Users,
 } from "lucide-react";
 import { useCall } from "./CallContext";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { getMaxParticipants } from "@/lib/callLimits";
 
 function formatDuration(sec: number) {
   const h = Math.floor(sec / 3600);
@@ -30,6 +30,47 @@ const STATUS_LABEL = {
   connected: "",
 } as const;
 
+function PeerVideo({ stream, name }: { stream: MediaStream | null; name: string }) {
+  const ref = useRef<HTMLVideoElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  useEffect(() => {
+    if (ref.current) ref.current.srcObject = stream;
+    if (audioRef.current) audioRef.current.srcObject = stream;
+    if (stream) {
+      ref.current?.play().catch(() => {});
+      audioRef.current?.play().catch(() => {});
+    }
+  }, [stream]);
+
+  const hasVideo = stream?.getVideoTracks().some((t) => t.enabled);
+
+  return (
+    <div className="relative bg-black/60 rounded-2xl overflow-hidden aspect-video border border-white/10">
+      <audio ref={audioRef} autoPlay playsInline className="hidden" />
+      <video
+        ref={ref}
+        autoPlay
+        playsInline
+        className={cn(
+          "w-full h-full object-cover",
+          !hasVideo && "hidden"
+        )}
+      />
+      {!hasVideo && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-ov-primary to-ov-accent flex items-center justify-center text-white font-bold text-2xl">
+            {name[0]?.toUpperCase() ?? "?"}
+          </div>
+        </div>
+      )}
+      <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm rounded-full px-2 py-1">
+        <span className="text-white text-xs font-medium">{name}</span>
+      </div>
+    </div>
+  );
+}
+
 export function CallDialog() {
   const {
     callState,
@@ -39,63 +80,38 @@ export function CallDialog() {
     isVideoOff,
     netQuality,
     localStream,
-    remoteStream,
-    isRemoteVideoEnabled,
+    peers,
     durationSec,
+    participantCount,
     acceptCall,
     rejectCall,
     endCall,
     toggleMute,
-    toggleVideo,
     upgradeToVideo,
     downgradeToAudio,
   } = useCall();
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
-  const remoteVideoRef = useRef<HTMLVideoElement>(null);
-  const remoteAudioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
     if (localVideoRef.current) localVideoRef.current.srcObject = localStream;
   }, [localStream]);
 
-  useEffect(() => {
-    const video = remoteVideoRef.current;
-    const audio = remoteAudioRef.current;
-    if (video) video.srcObject = remoteStream;
-    if (audio) audio.srcObject = remoteStream;
-    if (remoteStream) {
-      if (audio) audio.play().catch(() => {});
-      if (video) video.play().catch(() => {});
-    }
-  }, [remoteStream]);
-
   if (callState === "idle") return null;
 
   const isVideo = callType === "video";
   const inCall = callState === "connecting" || callState === "connected";
+  const isGroup = peers.length > 1;
+  const maxParticipants = getMaxParticipants(callType);
   const statusLabel =
     callState === "connected"
       ? formatDuration(durationSec)
       : STATUS_LABEL[callState];
-  const showRemoteVideo = isVideo && inCall && isRemoteVideoEnabled;
 
   return (
     <div className="fixed inset-0 z-[100] bg-gradient-to-br from-ov-bg via-[#0a0e1a] to-ov-bg flex flex-col">
-      {/* Audio caché pour les appels audio et vidéo */}
-      <audio ref={remoteAudioRef} autoPlay playsInline className="hidden" />
-
-      {/* Header */}
-      <header className="flex items-center justify-between p-4 md:p-6 safe-area-top">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-white/70 hover:text-white hover:bg-white/10"
-          onClick={endCall}
-          aria-label="Réduire"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
+      <header className="flex items-center justify-between p-4 md:p-6">
+        <div className="w-10" />
 
         <div className="flex items-center gap-2">
           {inCall && (
@@ -111,27 +127,59 @@ export function CallDialog() {
               <span className="capitalize">{netQuality}</span>
             </div>
           )}
+
+          {isGroup && (
+            <div className="flex items-center gap-1.5 text-xs text-white/70 bg-white/10 px-2.5 py-1 rounded-full">
+              <Users className="w-3 h-3" />
+              <span>
+                {participantCount}/{maxParticipants}
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="w-10" />
       </header>
 
-      {/* Main */}
-      <main className="flex-1 relative overflow-hidden">
-        {/* Vidéo distante (grande) */}
-        {showRemoteVideo && (
-          <video
-            ref={remoteVideoRef}
-            autoPlay
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        )}
+      <main className="flex-1 relative overflow-hidden px-4 pb-4">
+        {inCall && peers.length > 0 ? (
+          <div
+            className={cn(
+              "grid gap-2 h-full",
+              peers.length === 1 && "grid-cols-1",
+              peers.length === 2 && "grid-cols-2",
+              peers.length === 3 && "grid-cols-2 grid-rows-2",
+              peers.length >= 4 && "grid-cols-2 grid-rows-2"
+            )}
+          >
+            {peers.slice(0, 4).map((p) => (
+              <PeerVideo key={p.deviceId} stream={p.stream} name={p.name} />
+            ))}
 
-        {/* Avatar + infos (audio, ou vidéo distante désactivée) */}
-        {!showRemoteVideo && (
+            {/* Vignette locale */}
+            {isVideo && (
+              <div className="relative bg-black/60 rounded-2xl overflow-hidden aspect-video border-2 border-ov-primary/40">
+                <video
+                  ref={localVideoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-full object-cover"
+                  style={{ transform: "scaleX(-1)" }}
+                />
+                {isVideoOff && (
+                  <div className="absolute inset-0 bg-ov-bg flex items-center justify-center">
+                    <VideoOff className="w-6 h-6 text-white/60" />
+                  </div>
+                )}
+                <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm rounded-full px-2 py-1">
+                  <span className="text-white text-xs font-medium">Vous</span>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
           <div className="flex flex-col items-center justify-center h-full gap-6 px-6">
-            {/* Avatar */}
             <div className="relative">
               <div
                 className={cn(
@@ -144,12 +192,8 @@ export function CallDialog() {
               >
                 {peerName[0]?.toUpperCase() ?? "?"}
               </div>
-              {inCall && (
-                <span className="absolute bottom-1 right-1 w-6 h-6 rounded-full bg-ov-success border-4 border-ov-bg" />
-              )}
             </div>
 
-            {/* Nom + statut */}
             <div className="text-center space-y-2">
               <h2 className="text-2xl md:text-3xl font-semibold text-white">
                 {peerName}
@@ -158,70 +202,18 @@ export function CallDialog() {
                 {statusLabel || "\u00A0"}
               </p>
             </div>
-
-            {/* Indicateur audio */}
-            {inCall && (
-              <div className="flex items-center gap-2 text-white/50 text-xs">
-                <Volume2 className="w-3.5 h-3.5" />
-                <span>Chiffré de bout en bout</span>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Vidéo locale (petite, en overlay) */}
-        {isVideo && inCall && (
-          <div
-            className={cn(
-              "absolute z-10 rounded-2xl overflow-hidden shadow-2xl border-2 border-white/10",
-              "w-28 h-40 md:w-40 md:h-56",
-              "bottom-4 right-4 md:bottom-6 md:right-6"
-            )}
-          >
-            <video
-              ref={localVideoRef}
-              autoPlay
-              playsInline
-              muted
-              className="w-full h-full object-cover mirror"
-              style={{ transform: "scaleX(-1)" }}
-            />
-            {isVideoOff && (
-              <div className="absolute inset-0 bg-ov-bg flex items-center justify-center">
-                <VideoOff className="w-6 h-6 text-white/60" />
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Overlay nom en haut si vidéo distante affichée */}
-        {showRemoteVideo && (
-          <div className="absolute top-4 left-4 md:top-6 md:left-6 z-10">
-            <div className="bg-black/40 backdrop-blur-md rounded-full px-3 py-1.5 flex items-center gap-2">
-              <span className="text-white text-sm font-medium">{peerName}</span>
-              <span className="text-white/60 text-xs font-mono">
-                {statusLabel}
-              </span>
-            </div>
           </div>
         )}
       </main>
 
-      {/* Contrôles */}
-      <footer className="p-6 md:p-8 safe-area-bottom">
+      <footer className="p-6 md:p-8">
         {callState === "incoming" ? (
-          /* Écran de sonnerie */
           <div className="flex items-center justify-center gap-12 md:gap-20">
             <div className="flex flex-col items-center gap-3">
               <Button
                 size="icon"
                 onClick={rejectCall}
-                aria-label="Refuser"
-                className={cn(
-                  "rounded-full w-16 h-16 md:w-20 md:h-20",
-                  "bg-ov-danger hover:bg-ov-danger/90 text-white",
-                  "shadow-lg shadow-ov-danger/30"
-                )}
+                className="rounded-full w-16 h-16 md:w-20 md:h-20 bg-ov-danger hover:bg-ov-danger/90 shadow-lg shadow-ov-danger/30"
               >
                 <PhoneOff className="w-7 h-7 md:w-8 md:h-8" />
               </Button>
@@ -232,27 +224,15 @@ export function CallDialog() {
               <Button
                 size="icon"
                 onClick={() => void acceptCall()}
-                aria-label="Répondre"
-                className={cn(
-                  "rounded-full w-16 h-16 md:w-20 md:h-20",
-                  "bg-ov-success hover:bg-ov-success/90 text-white",
-                  "shadow-lg shadow-ov-success/30",
-                  "animate-pulse"
-                )}
+                className="rounded-full w-16 h-16 md:w-20 md:h-20 bg-ov-success hover:bg-ov-success/90 shadow-lg shadow-ov-success/30 animate-pulse"
               >
-                {isVideo ? (
-                  <Video className="w-7 h-7 md:w-8 md:h-8" />
-                ) : (
-                  <Mic className="w-7 h-7 md:w-8 md:h-8" />
-                )}
+                <Video className="w-7 h-7 md:w-8 md:h-8" />
               </Button>
-              <span className="text-white/60 text-xs">Répondre</span>
+              <span className="text-white/60 text-xs">Rejoindre</span>
             </div>
           </div>
         ) : (
-          /* Contrôles en appel */
           <div className="flex items-center justify-center gap-3 md:gap-5">
-            {/* Micro */}
             <ControlButton
               active={!isMuted}
               onClick={toggleMute}
@@ -261,20 +241,12 @@ export function CallDialog() {
               {isMuted ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
             </ControlButton>
 
-            {/* Bascule vidéo (indépendante) */}
             {inCall && (
               <ControlButton
                 active={isVideo && !isVideoOff}
                 onClick={() => {
-                  if (isVideo) {
-                    if (isVideoOff) {
-                      toggleVideo();
-                    } else {
-                      void downgradeToAudio();
-                    }
-                  } else {
-                    void upgradeToVideo();
-                  }
+                  if (isVideo) void downgradeToAudio();
+                  else void upgradeToVideo();
                 }}
                 label={isVideo ? "Passer en audio" : "Passer en vidéo"}
               >
@@ -286,16 +258,10 @@ export function CallDialog() {
               </ControlButton>
             )}
 
-            {/* Raccrocher */}
             <Button
               size="icon"
               onClick={endCall}
-              aria-label="Raccrocher"
-              className={cn(
-                "rounded-full w-16 h-16 md:w-16 md:h-16",
-                "bg-ov-danger hover:bg-ov-danger/90 text-white",
-                "shadow-lg shadow-ov-danger/30"
-              )}
+              className="rounded-full w-16 h-16 bg-ov-danger hover:bg-ov-danger/90 shadow-lg shadow-ov-danger/30"
             >
               <PhoneOff className="w-7 h-7" />
             </Button>
@@ -306,7 +272,6 @@ export function CallDialog() {
   );
 }
 
-/* ---------- Bouton de contrôle circulaire ---------- */
 function ControlButton({
   active,
   onClick,

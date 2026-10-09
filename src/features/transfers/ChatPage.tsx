@@ -6,19 +6,22 @@ import {
   Paperclip,
   Check,
   CheckCheck,
-  Download,
   Users,
   Smartphone,
   X,
   Phone,
   Video,
+  MoreVertical,
+  Smile,
 } from "lucide-react";
 import { useCall } from "@/features/calls/CallContext";
 import { AudioRecorder } from "./AudioRecorder";
-import { Volume2 } from "lucide-react";
+import { MessageMedia } from "./MessageMedia";
+import { MediaViewer, type MediaItem } from "./MediaViewer";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/errors";
 import { MAX_FILE_SIZE_MB } from "@/lib/constants";
+import { getMediaKind } from "@/lib/mediaType";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/features/auth";
 import { getStoredIdentity } from "@/lib/device";
@@ -46,6 +49,24 @@ function timeOf(iso: string) {
   });
 }
 
+function dayLabel(iso: string) {
+  const d = new Date(iso);
+  const today = new Date();
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+  const same = (a: Date, b: Date) =>
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate();
+  if (same(d, today)) return "Aujourd'hui";
+  if (same(d, yesterday)) return "Hier";
+  return d.toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "long",
+    year: d.getFullYear() !== today.getFullYear() ? "numeric" : undefined,
+  });
+}
+
 export default function ChatPage() {
   const { kind, id } = useParams<{ kind: Kind; id: string }>();
   const navigate = useNavigate();
@@ -63,12 +84,17 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [sending, setSending] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  // Verrou SYNCHRONE anti-double-envoi
+  // Viewer média
+  const [viewerItems, setViewerItems] = useState<MediaItem[]>([]);
+  const [viewerIndex, setViewerIndex] = useState(0);
+  const [viewerOpen, setViewerOpen] = useState(false);
+
   const sendLock = useRef(false);
-
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const me = getStoredIdentity();
 
@@ -77,14 +103,13 @@ export default function ChatPage() {
 
   const scopeKind = scope?.kind;
   const scopeId = scope?.id;
-
   const call = useCall();
 
   const placeCall = (type: "audio" | "video") => {
     if (!scopeId) return;
     if (scopeKind === "space") {
       toast.info(
-        "Les appels de groupe ne sont pas encore disponibles. Ouvre une conversation avec un appareil pour l'appeler."
+        "Les appels de groupe ne sont pas encore disponibles ici. Ouvre une conversation avec un appareil."
       );
       return;
     }
@@ -124,7 +149,13 @@ export default function ChatPage() {
     }
   }, [messages.length]);
 
-  // Marque comme lu + déchiffre automatiquement les derniers messages reçus
+  useEffect(() => {
+    if (!textareaRef.current) return;
+    const el = textareaRef.current;
+    el.style.height = "auto";
+    el.style.height = Math.min(el.scrollHeight, 128) + "px";
+  }, [input]);
+
   useEffect(() => {
     if (!me) return;
 
@@ -150,7 +181,7 @@ export default function ChatPage() {
           setDecrypted((prev) => ({ ...prev, [m.id]: { text: res.text } }));
         }
       } catch {
-        // silencieux
+        /* silencieux */
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -194,6 +225,29 @@ export default function ChatPage() {
     a.href = d.url;
     a.download = d.name ?? "fichier";
     a.click();
+  };
+
+  const openViewer = (currentId: string) => {
+    const items: MediaItem[] = [];
+    let idx = 0;
+    messages.forEach((m) => {
+      const d = decrypted[m.id];
+      if (!d?.url || !d.name) return;
+      const kind = getMediaKind(m.mime_type, m.file_name);
+      if (kind === "audio" || kind === "other") return;
+      if (m.id === currentId) idx = items.length;
+      items.push({
+        id: m.id,
+        url: d.url,
+        name: d.name,
+        mimeType: m.mime_type,
+        sizeBytes: m.file_size,
+      });
+    });
+    if (items.length === 0) return;
+    setViewerItems(items);
+    setViewerIndex(idx);
+    setViewerOpen(true);
   };
 
   const send = async () => {
@@ -254,9 +308,18 @@ export default function ChatPage() {
     }
   };
 
+  const grouped: { day: string; items: ConversationMessage[] }[] = [];
+  messages.forEach((m) => {
+    const day = dayLabel(m.created_at);
+    const last = grouped[grouped.length - 1];
+    if (!last || last.day !== day) grouped.push({ day, items: [m] });
+    else last.items.push(m);
+  });
+
   return (
-    <div className="min-h-screen flex flex-col w-full max-w-4xl mx-auto bg-ov-bg border-x border-ov-border">
-      <header className="flex items-center gap-3 p-4 border-b border-ov-border bg-ov-surface sticky top-0 z-10">
+    <div className="h-screen flex flex-col bg-[#0a0e1a]">
+      {/* ============ HEADER ============ */}
+      <header className="flex items-center gap-3 px-3 sm:px-4 py-2.5 sm:py-3 bg-ov-surface/95 backdrop-blur-md border-b border-ov-border sticky top-0 z-20">
         <Button
           variant="ghost"
           size="icon"
@@ -264,31 +327,44 @@ export default function ChatPage() {
             if (window.history.length > 1) navigate(-1);
             else navigate("/messages", { replace: true });
           }}
+          className="shrink-0"
         >
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          {kind === "space" ? (
-            <Users className="w-5 h-5 text-ov-primary shrink-0" />
-          ) : (
-            <Smartphone className="w-5 h-5 text-ov-accent shrink-0" />
-          )}
+
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div
+            className={cn(
+              "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
+              kind === "space"
+                ? "bg-gradient-to-br from-ov-primary to-ov-primaryHover text-white"
+                : "bg-gradient-to-br from-ov-accent to-ov-primary text-white"
+            )}
+          >
+            {kind === "space" ? (
+              <Users className="w-5 h-5" />
+            ) : (
+              <Smartphone className="w-5 h-5" />
+            )}
+          </div>
           <div className="min-w-0">
-            <p className="font-semibold truncate">{title}</p>
-            <p className="text-[10px] text-ov-muted">
-              {kind === "space" ? "Espace partagé" : "Conversation directe"}
+            <p className="font-semibold truncate text-[15px]">{title}</p>
+            <p className="text-[11px] text-ov-muted truncate">
+              {kind === "space"
+                ? "Espace partagé · chiffré E2E"
+                : "Appareil lié · chiffré E2E"}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="hidden sm:flex items-center gap-1">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => placeCall("audio")}
             title="Appel audio chiffré"
           >
-            <Phone className="w-4 h-4 text-ov-primary" />
+            <Phone className="w-5 h-5 text-ov-primary" />
           </Button>
           <Button
             variant="ghost"
@@ -296,162 +372,186 @@ export default function ChatPage() {
             onClick={() => placeCall("video")}
             title="Appel vidéo chiffré"
           >
-            <Video className="w-4 h-4 text-ov-primary" />
+            <Video className="w-5 h-5 text-ov-primary" />
           </Button>
+        </div>
+
+        <div className="sm:hidden relative">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-label="Menu"
+          >
+            <MoreVertical className="w-5 h-5" />
+          </Button>
+          {menuOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-30"
+                onClick={() => setMenuOpen(false)}
+              />
+              <div className="absolute right-0 top-12 z-40 bg-ov-surface border border-ov-border rounded-xl shadow-xl overflow-hidden min-w-[160px]">
+                <button
+                  className="w-full px-4 py-3 text-left text-sm flex items-center gap-2 hover:bg-ov-bg"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    placeCall("audio");
+                  }}
+                >
+                  <Phone className="w-4 h-4 text-ov-primary" /> Appel audio
+                </button>
+                <button
+                  className="w-full px-4 py-3 text-left text-sm flex items-center gap-2 hover:bg-ov-bg border-t border-ov-border"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    placeCall("video");
+                  }}
+                >
+                  <Video className="w-4 h-4 text-ov-primary" /> Appel vidéo
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </header>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
+      {/* ============ MESSAGES ============ */}
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto px-3 sm:px-6 py-4 space-y-1 scroll-smooth"
+      >
         {loading ? (
-          <p className="text-sm text-ov-muted text-center">Chargement…</p>
+          <p className="text-sm text-ov-muted text-center py-8">Chargement…</p>
         ) : messages.length === 0 ? (
-          <p className="text-sm text-ov-muted text-center py-8">
-            Aucun message. Commencez la conversation.
-          </p>
+          <div className="text-center py-16 space-y-3">
+            <div className="w-16 h-16 rounded-full bg-ov-primary/10 flex items-center justify-center mx-auto">
+              <Smile className="w-8 h-8 text-ov-primary" />
+            </div>
+            <p className="text-sm text-ov-muted">
+              Aucun message. Commencez la conversation.
+            </p>
+          </div>
         ) : (
-          messages.map((m) => {
-            const d = decrypted[m.id];
-            const isFile = m.kind === "file";
-            const mine = m.is_mine;
+          grouped.map((group) => (
+            <div key={group.day} className="space-y-1">
+              <div className="flex justify-center my-4">
+                <span className="bg-ov-surface border border-ov-border text-ov-muted text-[11px] px-3 py-1 rounded-full">
+                  {group.day}
+                </span>
+              </div>
 
-            const myOwnText =
-              mine && m.kind === "text" ? getSentPlaintext(m.id) : null;
-            const displayText = d?.text ?? myOwnText;
+              {group.items.map((m) => {
+                const d = decrypted[m.id];
+                const isFile = m.kind === "file";
+                const mine = m.is_mine;
 
-            return (
-              <div
-                key={m.id}
-                className={cn(
-                  "flex flex-col max-w-[85%] sm:max-w-[70%]",
-                  mine ? "self-end items-end ml-auto" : "items-start"
-                )}
-              >
-                {!mine && (
-                  <p className="text-[10px] text-ov-muted mb-0.5 px-2">
-                    {m.sender_name}
-                  </p>
-                )}
+                const myOwnText =
+                  mine && m.kind === "text" ? getSentPlaintext(m.id) : null;
+                const displayText = d?.text ?? myOwnText;
 
-                <div
-                  className={cn(
-                    "rounded-2xl px-3.5 py-2.5 text-sm break-words shadow-sm",
-                    mine
-                      ? "bg-ov-primary text-white rounded-br-md"
-                      : "bg-ov-surface border border-ov-border text-ov-text rounded-bl-md"
-                  )}
-                >
-                  {isFile ? (
-                    <div className="space-y-2 min-w-[200px]">
-                          <p className="text-xs opacity-80 font-medium flex items-center gap-1.5">
-                            {m.file_name?.startsWith("vocal_") ? (
-                              <>
-                                <Volume2 className="w-3.5 h-3.5 text-ov-accent" /> Message vocal
-                              </>
-                            ) : (
-                              <>📄 {m.file_name}</>
-                            )}
-                          </p>
+                return (
+                  <div
+                    key={m.id}
+                    className={cn(
+                      "flex flex-col max-w-[85%] sm:max-w-[65%]",
+                      mine ? "self-end items-end ml-auto" : "items-start"
+                    )}
+                  >
+                    {!mine && kind === "space" && (
+                      <p className="text-[10px] text-ov-accent font-medium mb-1 px-2">
+                        {m.sender_name}
+                      </p>
+                    )}
 
-                          {d?.url && m.file_name?.startsWith("vocal_") ? (
-                            <div className="flex items-center gap-2 pt-1">
-                              <audio src={d.url} controls className="w-full h-8 rounded-lg" />
-                            </div>
-                          ) : !d ? (
+                    <div
+                      className={cn(
+                        "rounded-2xl px-3 py-2 text-sm break-words shadow-sm relative",
+                        mine
+                          ? "bg-gradient-to-br from-ov-primary to-ov-primaryHover text-white rounded-br-sm"
+                          : "bg-ov-surface border border-ov-border text-ov-text rounded-bl-sm"
+                      )}
+                    >
+                      {isFile ? (
+                        <MessageMedia
+                          name={m.file_name ?? "fichier"}
+                          mimeType={m.mime_type}
+                          sizeBytes={m.file_size}
+                          url={d?.url ?? null}
+                          mine={mine}
+                          busy={busyId === m.id}
+                          onOpen={() => {
+                            if (d?.url) openViewer(m.id);
+                            else open(m);
+                          }}
+                          onDownload={() => download(m)}
+                        />
+                      ) : displayText ? (
+                        <p className="whitespace-pre-wrap leading-relaxed">
+                          {displayText}
+                        </p>
+                      ) : mine ? (
+                        <p className="text-xs italic opacity-70">
+                          Message envoyé
+                        </p>
+                      ) : (
                         <button
                           onClick={() => open(m)}
                           disabled={busyId === m.id}
                           className={cn(
-                            "text-xs px-2.5 py-1.5 rounded-lg w-full font-medium transition-colors",
-                            mine
-                              ? "bg-white/20 hover:bg-white/30 text-white"
-                              : "bg-ov-bg hover:bg-ov-primary/10 text-ov-primary"
+                            "text-xs italic px-1",
+                            mine ? "text-white/80" : "text-ov-muted"
                           )}
                         >
-                              {busyId === m.id ? "Déchiffrement…" : "Écouter / Ouvrir"}
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => download(m)}
-                          className={cn(
-                            "text-xs px-2.5 py-1.5 rounded-lg w-full flex items-center justify-center gap-1.5 font-medium transition-colors",
-                            mine
-                              ? "bg-white/20 hover:bg-white/30 text-white"
-                              : "bg-ov-bg hover:bg-ov-primary/10 text-ov-primary"
-                          )}
-                        >
-                          <Download className="w-3.5 h-3.5" /> Télécharger
+                          {busyId === m.id
+                            ? "Déchiffrement…"
+                            : "🔒 Ouvrir le message"}
                         </button>
                       )}
-                    </div>
-                  ) : displayText ? (
-                    <p className="whitespace-pre-wrap">{displayText}</p>
-                  ) : mine ? (
-                    <p className="text-xs italic text-white/80">
-                      Message envoyé (contenu local indisponible)
-                    </p>
-                  ) : (
-                    <button
-                      onClick={() => open(m)}
-                      disabled={busyId === m.id}
-                      className={cn(
-                        "text-xs italic px-1",
-                        mine ? "text-white/80" : "text-ov-muted"
-                      )}
-                    >
-                      {busyId === m.id
-                        ? "Déchiffrement…"
-                        : "🔒 Ouvrir le message"}
-                    </button>
-                  )}
-                </div>
 
-                <div
-                  className={cn(
-                    "flex items-center gap-1 mt-0.5 px-2",
-                    mine ? "flex-row-reverse" : ""
-                  )}
-                >
-                  <span className="text-[10px] text-ov-muted">
-                    {timeOf(m.created_at)}
-                  </span>
-                  {mine && (
-                    <span className="text-[10px] text-ov-muted flex items-center gap-1">
-                      {m.opened_at || m.read_at ? (
-                        <>
-                          <CheckCheck className="w-3 h-3 text-ov-accent" />
-                          <span className="text-[9px] text-ov-accent">
-                            Ouvert à {timeOf(m.opened_at || m.read_at!)}
-                          </span>
-                        </>
-                      ) : (
-                        <Check className="w-3 h-3 text-ov-muted" />
-                      )}
-                    </span>
-                  )}
-                </div>
-              </div>
-            );
-          })
+                      <div
+                        className={cn(
+                          "flex items-center gap-1 justify-end mt-1",
+                          mine ? "text-white/70" : "text-ov-muted"
+                        )}
+                      >
+                        <span className="text-[10px]">
+                          {timeOf(m.created_at)}
+                        </span>
+                        {mine && (
+                          <>
+                            {m.opened_at || m.read_at ? (
+                              <CheckCheck className="w-3.5 h-3.5 text-ov-accent" />
+                            ) : (
+                              <Check className="w-3.5 h-3.5" />
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ))
         )}
       </div>
 
-
-      <div className="p-3 sm:p-4 border-t border-ov-border bg-ov-surface sticky bottom-0">
-        <p className="text-[10px] text-ov-muted mb-2">
-          Fichier : {MAX_FILE_SIZE_MB} Mo maximum
-        </p>
+      {/* ============ BARRE D'ENVOI ============ */}
+      <div className="px-3 sm:px-4 py-2.5 sm:py-3 bg-ov-surface/95 backdrop-blur-md border-t border-ov-border sticky bottom-0 z-10">
         {file && (
-          <div className="flex items-center gap-2 mb-2 px-2 py-1 bg-ov-bg rounded-lg">
-            <Paperclip className="w-3 h-3 text-ov-muted" />
+          <div className="flex items-center gap-2 mb-2 px-3 py-2 bg-ov-bg rounded-xl border border-ov-border">
+            <Paperclip className="w-4 h-4 text-ov-primary" />
             <span className="text-xs truncate flex-1">{file.name}</span>
             <button
-              aria-label="Retirer le fichier sélectionné"
+              aria-label="Retirer"
               onClick={() => {
                 setFile(null);
                 if (fileInputRef.current) fileInputRef.current.value = "";
               }}
+              className="text-ov-muted hover:text-ov-danger"
             >
-              <X className="w-3 h-3 text-ov-muted" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         )}
@@ -463,11 +563,13 @@ export default function ChatPage() {
             className="hidden"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
           />
+
           <Button
             variant="ghost"
             size="icon"
             aria-label="Joindre un fichier"
             onClick={() => fileInputRef.current?.click()}
+            className="shrink-0"
           >
             <Paperclip className="w-5 h-5" />
           </Button>
@@ -497,31 +599,40 @@ export default function ChatPage() {
           />
 
           <textarea
+            ref={textareaRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                e.stopPropagation();
                 if (!sendLock.current && !sending) send();
               }
             }}
             rows={1}
             placeholder="Message…"
-            className="flex-1 resize-none rounded-xl border border-ov-border bg-ov-bg px-3 py-2 text-sm text-ov-text focus:outline-none focus:ring-2 focus:ring-ov-primary max-h-32"
+            className="flex-1 resize-none rounded-2xl border border-ov-border bg-ov-bg px-4 py-2.5 text-sm text-ov-text focus:outline-none focus:ring-2 focus:ring-ov-primary max-h-32 min-h-[44px]"
           />
 
           <Button
             size="icon"
-            aria-label="Envoyer le message"
+            aria-label="Envoyer"
             onClick={send}
             disabled={sending || sendLock.current || (!input.trim() && !file)}
-            className="bg-ov-primary hover:bg-ov-primaryHover shrink-0"
+            className="bg-ov-primary hover:bg-ov-primaryHover shrink-0 w-11 h-11 rounded-full"
           >
             <Send className="w-4 h-4" />
           </Button>
         </div>
       </div>
+
+      {/* ============ VIEWER MÉDIA ============ */}
+      {viewerOpen && viewerItems.length > 0 && (
+        <MediaViewer
+          items={viewerItems}
+          initialIndex={viewerIndex}
+          onClose={() => setViewerOpen(false)}
+        />
+      )}
     </div>
   );
 }

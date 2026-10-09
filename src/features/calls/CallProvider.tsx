@@ -1,22 +1,26 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { getStoredIdentity } from "@/lib/device";
-import { sendUniversalNotification } from "@/lib/notifications";
 import { useAuth } from "@/features/auth/useAuth";
+import { leaveCallRoom, endCallRoom, joinCallRoom } from "@/lib/callRooms";
 import {
   CallContext,
   type CallContextValue,
   type CallState,
   type CallType,
   type NetQuality,
+  type CallPeer,
 } from "./CallContext";
 import { CallDialog } from "./CallDialog";
-
-/* ------------------------------------------------------------------ */
-/*  Signalisation                                                      */
-/* ------------------------------------------------------------------ */
 
 const RING_TIMEOUT_MS = 45_000;
 const ICE_GATHER_TIMEOUT_MS = 3_500;
@@ -27,8 +31,11 @@ type SdpPayload = { type: RTCSdpType; sdp: string };
 type InvitePayload = {
   callId: string;
   from: string;
+  fromName?: string;
   type: CallType;
   offer: SdpPayload;
+  isGroup?: boolean;
+  roomId?: string;
 };
 
 function buildIceServers(): RTCIceServer[] {
@@ -110,7 +117,11 @@ async function doJoinChannel(
         resolve(ch);
         return;
       }
-      if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+      if (
+        status === "CHANNEL_ERROR" ||
+        status === "TIMED_OUT" ||
+        status === "CLOSED"
+      ) {
         if (!settled) {
           settled = true;
           clearTimeout(timer);
@@ -150,7 +161,7 @@ async function sendToInbox(targetDeviceId: string, event: string, payload: objec
 function mediaErrorMessage(err: unknown): string {
   const name = err instanceof DOMException ? err.name : "";
   if (name === "NotAllowedError" || name === "SecurityError") {
-    return "Accès refusé : autorise le micro (et la caméra) dans les réglages du navigateur.";
+    return "Accès refusé : autorise le micro (et la caméra) dans les réglages.";
   }
   if (name === "NotFoundError" || name === "OverconstrainedError") {
     return "Aucun micro ou aucune caméra détecté sur cet appareil.";
@@ -180,31 +191,42 @@ export function CallProvider({ children }: { children: ReactNode }) {
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [netQuality, setNetQuality] = useState<NetQuality>("excellente");
-  const [isRemoteVideoEnabled, setIsRemoteVideoEnabled] = useState(false);
   const [durationSec, setDurationSec] = useState(0);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
-  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+  const [peers, setPeers] = useState<CallPeer[]>([]);
   const [deviceId, setDeviceId] = useState<string | null>(
     () => getStoredIdentity()?.deviceId ?? null
   );
 
   const stateRef = useRef<CallState>("idle");
-  const pcRef = useRef<RTCPeerConnection | null>(null);
   const localRef = useRef<MediaStream | null>(null);
-  const remoteMediaRef = useRef<MediaStream | null>(null);
   const callIdRef = useRef<string | null>(null);
+  const roomIdRef = useRef<string | null>(null);
+  const isGroupRef = useRef(false);
   const callChRef = useRef<RealtimeChannel | null>(null);
   const inviteRef = useRef<InvitePayload | null>(null);
   const ringTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const statsTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const durationTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Une connexion par peer
+  const peerConnsRef = useRef<
+    Map<
+      string,
+      {
+        pc: RTCPeerConnection;
+        stream: MediaStream;
+        name: string;
+        remoteStream: MediaStream;
+      }
+    >
+  >(new Map());
+
   const setCallState = useCallback((s: CallState) => {
     stateRef.current = s;
     setCallStateRaw(s);
   }, []);
 
-  /* ---------- identité de l'appareil ---------- */
   useEffect(() => {
     if (!user) {
       setDeviceId(null);
@@ -216,7 +238,22 @@ export function CallProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(timer);
   }, [user]);
 
-  /* ---------- nettoyage complet ---------- */
+  /* ---------- mise à jour UI peers ---------- */
+  const refreshPeersUi = useCallback(() => {
+    const list: CallPeer[] = [];
+    peerConnsRef.current.forEach((entry, peerDeviceId) => {
+      list.push({
+        deviceId: peerDeviceId,
+        name: entry.name,
+        stream: entry.remoteStream,
+        isMuted: false,
+        isVideoOff: false,
+      });
+    });
+    setPeers(list);
+  }, []);
+
+  /* ---------- cleanup complet ---------- */
   const cleanup = useCallback(() => {
     if (ringTimerRef.current) clearTimeout(ringTimerRef.current);
     if (statsTimerRef.current) clearInterval(statsTimerRef.current);
@@ -227,29 +264,35 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
     localRef.current?.getTracks().forEach((t) => t.stop());
     localRef.current = null;
-    remoteMediaRef.current = null;
 
-    if (pcRef.current) {
-      pcRef.current.ontrack = null;
-      pcRef.current.onconnectionstatechange = null;
-      pcRef.current.onnegotiationneeded = null;
-      pcRef.current.close();
-      pcRef.current = null;
-    }
+    peerConnsRef.current.forEach(({ pc, remoteStream }) => {
+      pc.ontrack = null;
+      pc.onconnectionstatechange = null;
+      pc.close();
+      remoteStream.getTracks().forEach((t) => t.stop());
+    });
+    peerConnsRef.current.clear();
 
     const ch = callChRef.current;
     callChRef.current = null;
     if (ch) setTimeout(() => void supabase.removeChannel(ch), 300);
 
+    // Quitte la salle si on était en groupe
+    if (roomIdRef.current) {
+      const roomId = roomIdRef.current;
+      void leaveCallRoom(roomId).catch(() => {});
+    }
+
     callIdRef.current = null;
+    roomIdRef.current = null;
+    isGroupRef.current = false;
     inviteRef.current = null;
 
     setLocalStream(null);
-    setRemoteStream(null);
+    setPeers([]);
     setIsMuted(false);
     setIsVideoOff(false);
     setNetQuality("excellente");
-    setIsRemoteVideoEnabled(false);
     setDurationSec(0);
     setCallState("idle");
   }, [setCallState]);
@@ -260,32 +303,30 @@ export function CallProvider({ children }: { children: ReactNode }) {
     void ch.send({ type: "broadcast", event, payload }).catch(() => {});
   }, []);
 
-  /* ---------- RTCPeerConnection ---------- */
-  const createPeerConnection = useCallback(() => {
-    const pc = new RTCPeerConnection({ iceServers: buildIceServers() });
+  /* ---------- création d'une peer connection ---------- */
+  const createPeerConnection = useCallback(
+    (peerDeviceId: string, peerNameStr: string) => {
+      const existing = peerConnsRef.current.get(peerDeviceId);
+      if (existing) return existing.pc;
 
-    pc.ontrack = (e) => {
-      const remote = remoteMediaRef.current ?? new MediaStream();
-      if (!remote.getTracks().includes(e.track)) remote.addTrack(e.track);
-      remoteMediaRef.current = remote;
-      setRemoteStream(new MediaStream(remote.getTracks()));
+      const remoteStream = new MediaStream();
+      const pc = new RTCPeerConnection({ iceServers: buildIceServers() });
 
-      if (e.track.kind === "video") {
-        setIsRemoteVideoEnabled(true);
-        e.track.onmute = () => setIsRemoteVideoEnabled(false);
-        e.track.onunmute = () => setIsRemoteVideoEnabled(true);
-        e.track.onended = () => setIsRemoteVideoEnabled(false);
-      }
-    };
+      pc.ontrack = (e) => {
+        if (!remoteStream.getTracks().includes(e.track)) {
+          remoteStream.addTrack(e.track);
+        }
+        refreshPeersUi();
+      };
 
-    pc.onconnectionstatechange = () => {
-      if (pcRef.current !== pc) return;
-      switch (pc.connectionState) {
-        case "connected":
-          if (ringTimerRef.current) clearTimeout(ringTimerRef.current);
-          ringTimerRef.current = null;
+      pc.onconnectionstatechange = () => {
+        if (pc.connectionState === "connected") {
+          // Démarre la durée + le monitoring réseau dès la 1ʳᵉ connexion
+          if (ringTimerRef.current) {
+            clearTimeout(ringTimerRef.current);
+            ringTimerRef.current = null;
+          }
           setCallState("connected");
-          setNetQuality("excellente");
           if (!durationTimerRef.current) {
             durationTimerRef.current = setInterval(() => {
               setDurationSec((s) => s + 1);
@@ -309,220 +350,255 @@ export function CallProvider({ children }: { children: ReactNode }) {
                 setNetQuality(
                   rtt < 0.15 ? "excellente" : rtt < 0.4 ? "moyenne" : "faible"
                 );
-              } catch {
-                /* pc fermée entre-temps */
-              }
+              } catch {}
             }, 3_000);
           }
-          break;
-        case "disconnected":
-          setNetQuality("faible");
-          break;
-        case "failed":
-          toast.error("La connexion de l'appel a échoué. Vérifie ta connexion Internet.");
-          sendOnCall("end", { reason: "failed" });
-          cleanup();
-          break;
-        default:
-          break;
-      }
-    };
-
-    pcRef.current = pc;
-    return pc;
-  }, [cleanup, sendOnCall, setCallState]);
-
-  /* ---------- gestion de la renégociation (bascule audio/vidéo) ---------- */
-  const handleRenegotiate = useCallback(
-    async (payload: { description: RTCSessionDescriptionInit }) => {
-      const pc = pcRef.current;
-      if (!pc) return;
-      try {
-        await pc.setRemoteDescription(payload.description);
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-        sendOnCall("renegotiate-answer", { description: answer });
-      } catch (e) {
-        console.error("[call] renegotiate", e);
-      }
-    },
-    [sendOnCall]
-  );
-
-  const handleRenegotiateAnswer = useCallback(
-    async (payload: { description: RTCSessionDescriptionInit }) => {
-      const pc = pcRef.current;
-      if (!pc) return;
-      try {
-        if (pc.signalingState === "have-local-offer") {
-          await pc.setRemoteDescription(payload.description);
+        } else if (pc.connectionState === "failed") {
+          toast.error(`Connexion perdue avec ${peerNameStr}`);
+          closePeer(peerDeviceId);
         }
-      } catch (e) {
-        console.error("[call] renegotiate-answer", e);
+      };
+
+      // Ajoute les pistes locales
+      const stream = localRef.current;
+      if (stream) {
+        stream.getTracks().forEach((track) => pc.addTrack(track, stream));
       }
+
+      peerConnsRef.current.set(peerDeviceId, {
+        pc,
+        stream: stream ?? new MediaStream(),
+        name: peerNameStr,
+        remoteStream,
+      });
+      refreshPeersUi();
+
+      return pc;
     },
-    []
+    [refreshPeersUi, setCallState]
   );
 
-  /* ---------- appelant ---------- */
+  const closePeer = useCallback(
+    (peerDeviceId: string) => {
+      const entry = peerConnsRef.current.get(peerDeviceId);
+      if (!entry) return;
+      entry.pc.ontrack = null;
+      entry.pc.onconnectionstatechange = null;
+      entry.pc.close();
+      entry.remoteStream.getTracks().forEach((t) => t.stop());
+      peerConnsRef.current.delete(peerDeviceId);
+      refreshPeersUi();
+    },
+    [refreshPeersUi]
+  );
+
+  /* ---------- appelant : 1:1 ---------- */
   const startCall = useCallback(
     async (targetDeviceId: string, type: CallType, name?: string) => {
       const me = getStoredIdentity();
       if (!me) {
-        toast.error(
-          "Cet appareil n'est pas encore enregistré. Ouvre l'onglet Appareils, puis réessaie."
-        );
+        toast.error("Appareil non enregistré");
         return;
       }
       if (stateRef.current !== "idle") {
-        toast.info("Un appel est déjà en cours.");
+        toast.info("Appel déjà en cours");
         return;
       }
       if (targetDeviceId === me.deviceId) {
-        toast.info("Tu ne peux pas t'appeler toi-même.");
+        toast.info("Impossible de s'appeler soi-même");
         return;
       }
-      if (!navigator.onLine) {
-        toast.warning(
-          "Pas de connexion Internet : l'appel est impossible pour le moment."
-        );
-        return;
-      }
-
       const callId = crypto.randomUUID();
       callIdRef.current = callId;
+      isGroupRef.current = false;
       setCallType(type);
       setPeerName(name ?? "Appareil");
       setCallState("calling");
 
-      const cancelled = () => callIdRef.current !== callId;
-
       try {
         const stream = await getMedia(type);
-        if (cancelled()) {
-          stream.getTracks().forEach((t) => t.stop());
-          return;
-        }
         localRef.current = stream;
         setLocalStream(stream);
 
         const ch = await joinChannel(`call:${callId}`, (c) => {
           c.on("broadcast", { event: "answer" }, async ({ payload }) => {
-            const pc = pcRef.current;
-            if (!pc || pc.signalingState !== "have-local-offer") return;
+            const peerDeviceId = payload.from as string;
+            const entry = peerConnsRef.current.get(peerDeviceId);
+            if (!entry || entry.pc.signalingState !== "have-local-offer") return;
             try {
-              await pc.setRemoteDescription(payload.answer as SdpPayload);
+              await entry.pc.setRemoteDescription(payload.answer as SdpPayload);
               setCallState("connecting");
             } catch (e) {
-              console.error("[call] setRemoteDescription(answer)", e);
-              toast.error("Échec de la négociation de l'appel.");
-              sendOnCall("end", { reason: "negotiation" });
-              cleanup();
+              console.error(e);
             }
           });
-          c.on("broadcast", { event: "reject" }, ({ payload }) => {
-            toast.info(
-              payload?.reason === "busy"
-                ? "Ton correspondant est déjà en appel."
-                : "Appel refusé."
-            );
+          c.on("broadcast", { event: "reject" }, () => {
+            toast.info("Appel refusé");
             cleanup();
           });
           c.on("broadcast", { event: "end" }, () => {
-            toast.info("L'appel a pris fin.");
+            toast.info("Appel terminé");
             cleanup();
           });
-          c.on("broadcast", { event: "renegotiate" }, ({ payload }) => {
-            void handleRenegotiate(payload as { description: RTCSessionDescriptionInit });
-          });
-          c.on("broadcast", { event: "renegotiate-answer" }, ({ payload }) => {
-            void handleRenegotiateAnswer(
-              payload as { description: RTCSessionDescriptionInit }
-            );
-          });
         });
-        if (cancelled()) {
-          void supabase.removeChannel(ch);
-          return;
-        }
         callChRef.current = ch;
 
-        const pc = createPeerConnection();
-        stream.getTracks().forEach((track) => pc.addTrack(track, stream));
+        const pc = createPeerConnection(targetDeviceId, name ?? "Appareil");
         await pc.setLocalDescription(await pc.createOffer());
         await waitForIceGathering(pc);
-        if (cancelled()) return;
 
         const invite: InvitePayload = {
           callId,
           from: me.deviceId,
+          fromName: name,
           type,
           offer: toSdp(pc.localDescription),
         };
         await sendToInbox(targetDeviceId, "invite", invite);
 
         ringTimerRef.current = setTimeout(() => {
-          if (stateRef.current === "calling" && callIdRef.current === callId) {
-            toast.info(
-              "Pas de réponse. L'autre appareil doit avoir OvBridge ouvert pour recevoir l'appel."
-            );
-            sendOnCall("end", { reason: "timeout" });
+          if (stateRef.current === "calling") {
+            toast.info("Pas de réponse");
             cleanup();
           }
         }, RING_TIMEOUT_MS);
       } catch (err) {
-        if (cancelled()) return;
-        console.error("[call] startCall", err);
-        const msg = String((err as Error)?.message ?? "");
-        toast.error(
-          msg.startsWith("signaling")
-            ? "Impossible de joindre le serveur d'appel. Vérifie ta connexion."
-            : mediaErrorMessage(err)
-        );
+        console.error(err);
+        toast.error(mediaErrorMessage(err));
         cleanup();
       }
     },
-    [
-      cleanup,
-      createPeerConnection,
-      handleRenegotiate,
-      handleRenegotiateAnswer,
-      sendOnCall,
-      setCallState,
-    ]
+    [cleanup, createPeerConnection, setCallState]
   );
 
-  /* ---------- destinataire : réponse ---------- */
+  /* ---------- appelant : groupe ---------- */
+  const startGroupCall = useCallback(
+    async (roomId: string, type: CallType, name?: string) => {
+      const me = getStoredIdentity();
+      if (!me) {
+        toast.error("Appareil non enregistré");
+        return;
+      }
+
+      const callId = `room:${roomId}`;
+      callIdRef.current = callId;
+      roomIdRef.current = roomId;
+      isGroupRef.current = true;
+      setCallType(type);
+      setPeerName(name ?? "Appel de groupe");
+      setCallState("calling");
+
+      try {
+        await joinCallRoom(roomId, user!.id);
+
+        const stream = await getMedia(type);
+        localRef.current = stream;
+        setLocalStream(stream);
+
+        const ch = await joinChannel(`call:${callId}`, (c) => {
+          c.on("broadcast", { event: "invite" }, async ({ payload }) => {
+            // Un nouveau participant arrive : on lui envoie notre offre
+            await handleGroupIncoming(payload as InvitePayload);
+          });
+          c.on("broadcast", { event: "answer" }, async ({ payload }) => {
+            const peerDeviceId = payload.from as string;
+            const entry = peerConnsRef.current.get(peerDeviceId);
+            if (!entry || entry.pc.signalingState !== "have-local-offer") return;
+            try {
+              await entry.pc.setRemoteDescription(payload.answer as SdpPayload);
+            } catch (e) {
+              console.error(e);
+            }
+          });
+          c.on("broadcast", { event: "end" }, ({ payload }) => {
+            const peerDeviceId = payload.from as string;
+            closePeer(peerDeviceId);
+          });
+        });
+        callChRef.current = ch;
+
+        // J'annonce mon arrivée
+        await ch.send({
+          type: "broadcast",
+          event: "invite",
+          payload: {
+            callId,
+            from: me.deviceId,
+            fromName: name,
+            type,
+            offer: null,
+            isGroup: true,
+            roomId,
+          },
+        });
+
+        setCallState("connecting");
+      } catch (err) {
+        console.error(err);
+        toast.error(mediaErrorMessage(err));
+        cleanup();
+      }
+    },
+    [cleanup, closePeer, setCallState, user]
+  );
+
+  /* ---------- traiter une invitation de groupe ---------- */
+  const handleGroupIncoming = useCallback(
+    async (payload: InvitePayload) => {
+      if (!payload.from || payload.from === getStoredIdentity()?.deviceId) return;
+      const me = getStoredIdentity();
+      if (!me) return;
+
+      // Qui doit initier ? Le device avec l'ID le plus petit pour éviter les doublons
+      const shouldInitiate = me.deviceId < payload.from;
+
+      if (!shouldInitiate) return; // L'autre initiera
+
+      try {
+        const pc = createPeerConnection(payload.from, payload.fromName ?? "Participant");
+        await pc.setLocalDescription(await pc.createOffer());
+        await waitForIceGathering(pc);
+        sendOnCall("invite", {
+          callId: callIdRef.current,
+          from: me.deviceId,
+          fromName: getStoredIdentity()?.deviceId,
+          type: callType,
+          offer: toSdp(pc.localDescription),
+          isGroup: true,
+          roomId: roomIdRef.current,
+        });
+      } catch (e) {
+        console.error("[group] initiate", e);
+      }
+    },
+    [callType, createPeerConnection, sendOnCall]
+  );
+
+  /* ---------- accepter (1:1) ---------- */
   const acceptCall = useCallback(async () => {
     const invite = inviteRef.current;
     if (!invite || stateRef.current !== "incoming") return;
-    const callId = invite.callId;
-    const cancelled = () => callIdRef.current !== callId;
-
+    
     if (ringTimerRef.current) clearTimeout(ringTimerRef.current);
     ringTimerRef.current = null;
     setCallState("connecting");
 
     try {
       const stream = await getMedia(invite.type);
-      if (cancelled()) {
-        stream.getTracks().forEach((t) => t.stop());
-        return;
-      }
       localRef.current = stream;
       setLocalStream(stream);
 
-      const pc = createPeerConnection();
+      const pc = createPeerConnection(invite.from, invite.fromName ?? "Appelant");
       await pc.setRemoteDescription(invite.offer);
-      stream.getTracks().forEach((track) => pc.addTrack(track, stream));
       await pc.setLocalDescription(await pc.createAnswer());
       await waitForIceGathering(pc);
-      if (cancelled()) return;
 
-      sendOnCall("answer", { answer: toSdp(pc.localDescription) });
+      sendOnCall("answer", {
+        answer: toSdp(pc.localDescription),
+        from: getStoredIdentity()?.deviceId,
+      });
     } catch (err) {
-      if (cancelled()) return;
-      console.error("[call] acceptCall", err);
+      console.error(err);
       toast.error(mediaErrorMessage(err));
       sendOnCall("reject", { reason: "error" });
       cleanup();
@@ -535,32 +611,56 @@ export function CallProvider({ children }: { children: ReactNode }) {
   }, [cleanup, sendOnCall]);
 
   const endCall = useCallback(() => {
-    sendOnCall("end", { reason: "hangup" });
+    sendOnCall("end", { from: getStoredIdentity()?.deviceId });
+    if (roomIdRef.current) {
+      void endCallRoom(roomIdRef.current).catch(() => {});
+    }
     cleanup();
   }, [cleanup, sendOnCall]);
 
-  /* ---------- destinataire : écoute permanente des invitations ---------- */
+  /* ---------- écoute des invitations ---------- */
   useEffect(() => {
     if (!deviceId) return;
     let disposed = false;
     let inbox: RealtimeChannel | null = null;
 
     const onInvite = async (payload: InvitePayload) => {
-      if (!payload?.callId || !payload.from || !payload.offer?.sdp) return;
+      if (!payload?.callId || !payload.from) return;
       if (payload.from === deviceId) return;
 
+      // Groupe : rejoindre la salle
+      if (payload.isGroup && payload.roomId) {
+        if (stateRef.current !== "idle") return;
+
+        const { data: caller } = await supabase
+          .from("ovbridge_devices")
+          .select("name, revoked")
+          .eq("id", payload.from)
+          .maybeSingle();
+        if (disposed || !caller || caller.revoked) return;
+
+        const callId = payload.callId;
+        callIdRef.current = callId;
+        roomIdRef.current = payload.roomId;
+        isGroupRef.current = true;
+        setCallType(payload.type);
+        setPeerName(caller.name ?? "Appel de groupe");
+        setCallState("incoming");
+        inviteRef.current = payload;
+        return;
+      }
+
+      // 1:1 : sonnerie normale
       if (stateRef.current !== "idle") {
         try {
           const busy = await joinChannel(`call:${payload.callId}`, () => {});
           await busy.send({
             type: "broadcast",
             event: "reject",
-            payload: { reason: "busy" },
+            payload: { reason: "busy", from: deviceId },
           });
           setTimeout(() => void supabase.removeChannel(busy), 300);
-        } catch {
-          /* l'appelant finira par expirer */
-        }
+        } catch {}
         return;
       }
 
@@ -570,31 +670,19 @@ export function CallProvider({ children }: { children: ReactNode }) {
         .eq("id", payload.from)
         .maybeSingle();
       if (disposed || !caller || caller.revoked) return;
-      if (stateRef.current !== "idle") return;
 
-      const callId = payload.callId;
-      callIdRef.current = callId;
+      callIdRef.current = payload.callId;
       inviteRef.current = payload;
-      setCallType(payload.type === "video" ? "video" : "audio");
+      setCallType(payload.type);
       setPeerName(caller.name ?? "Appareil");
       setCallState("incoming");
 
+      const callId = payload.callId;
       try {
         const ch = await joinChannel(`call:${callId}`, (c) => {
           c.on("broadcast", { event: "end" }, () => {
-            if (stateRef.current === "incoming") toast.info("Appel manqué.");
-            else toast.info("L'appel a pris fin.");
+            toast.info("Appel terminé");
             cleanup();
-          });
-          c.on("broadcast", { event: "renegotiate" }, ({ payload }) => {
-            void handleRenegotiate(
-              payload as { description: RTCSessionDescriptionInit }
-            );
-          });
-          c.on("broadcast", { event: "renegotiate-answer" }, ({ payload }) => {
-            void handleRenegotiateAnswer(
-              payload as { description: RTCSessionDescriptionInit }
-            );
           });
         });
         if (callIdRef.current !== callId) {
@@ -607,17 +695,9 @@ export function CallProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      void sendUniversalNotification({
-        title: "Appel entrant",
-        body: `${caller.name ?? "Un appareil"} t'appelle (${
-          payload.type === "video" ? "vidéo" : "audio"
-        })`,
-        type: "alert",
-      });
-
       ringTimerRef.current = setTimeout(() => {
         if (stateRef.current === "incoming" && callIdRef.current === callId) {
-          toast.info("Appel manqué.");
+          toast.info("Appel manqué");
           cleanup();
         }
       }, RING_TIMEOUT_MS);
@@ -636,7 +716,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         }
         inbox = ch;
       } catch (e) {
-        console.warn("[call] boîte d'appels indisponible", e);
+        console.warn("[call] boîte indisponible", e);
       }
     })();
 
@@ -644,12 +724,14 @@ export function CallProvider({ children }: { children: ReactNode }) {
       disposed = true;
       if (inbox) void supabase.removeChannel(inbox);
     };
-  }, [deviceId, cleanup, handleRenegotiate, handleRenegotiateAnswer, setCallState]);
+  }, [deviceId, cleanup, setCallState]);
 
-  /* ---------- libération à la fermeture de l'app ---------- */
+  /* ---------- unload ---------- */
   useEffect(() => {
     const onUnload = () => {
-      if (stateRef.current !== "idle") sendOnCall("end", { reason: "closed" });
+      if (stateRef.current !== "idle") {
+        sendOnCall("end", { from: getStoredIdentity()?.deviceId });
+      }
     };
     window.addEventListener("pagehide", onUnload);
     return () => {
@@ -672,35 +754,34 @@ export function CallProvider({ children }: { children: ReactNode }) {
     setIsVideoOff(next);
   }, [isVideoOff]);
 
-  /* ---------- bascule audio → vidéo (local) ---------- */
   const upgradeToVideo = useCallback(async () => {
-    const pc = pcRef.current;
     const stream = localRef.current;
-    if (!pc || !stream) return;
-
+    if (!stream) return;
     if (stream.getVideoTracks().length > 0) {
-      // Vidéo déjà présente, on la réactive
       stream.getVideoTracks().forEach((t) => (t.enabled = true));
       setIsVideoOff(false);
       setCallType("video");
       return;
     }
-
     try {
       const videoStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user" },
       });
-      const videoTrack = videoStream.getVideoTracks()[0];
-      if (!videoTrack) return;
-
-      stream.addTrack(videoTrack);
+      const track = videoStream.getVideoTracks()[0];
+      if (!track) return;
+      stream.addTrack(track);
       setLocalStream(new MediaStream(stream.getTracks()));
 
-      pc.addTrack(videoTrack, stream);
-
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-      sendOnCall("renegotiate", { description: offer });
+      // Ajoute à toutes les connexions
+      for (const [, entry] of peerConnsRef.current) {
+        entry.pc.addTrack(track, stream);
+        const offer = await entry.pc.createOffer();
+        await entry.pc.setLocalDescription(offer);
+        sendOnCall("renegotiate", {
+          from: getStoredIdentity()?.deviceId,
+          description: offer,
+        });
+      }
 
       setIsVideoOff(false);
       setCallType("video");
@@ -709,36 +790,37 @@ export function CallProvider({ children }: { children: ReactNode }) {
     }
   }, [sendOnCall]);
 
-  /* ---------- bascule vidéo → audio (local) ---------- */
   const downgradeToAudio = useCallback(async () => {
-    const pc = pcRef.current;
     const stream = localRef.current;
-    if (!pc || !stream) return;
+    if (!stream) return;
 
-    const videoTracks = stream.getVideoTracks();
-    videoTracks.forEach((t) => {
+    stream.getVideoTracks().forEach((t) => {
       t.stop();
       stream.removeTrack(t);
     });
 
-    pc.getSenders().forEach((sender) => {
-      if (sender.track?.kind === "video") {
-        try {
-          pc.removeTrack(sender);
-        } catch {
-          /* ignore */
+    for (const [, entry] of peerConnsRef.current) {
+      entry.pc.getSenders().forEach((sender) => {
+        if (sender.track?.kind === "video") {
+          try {
+            entry.pc.removeTrack(sender);
+          } catch {}
         }
-      }
-    });
+      });
+      const offer = await entry.pc.createOffer();
+      await entry.pc.setLocalDescription(offer);
+      sendOnCall("renegotiate", {
+        from: getStoredIdentity()?.deviceId,
+        description: offer,
+      });
+    }
 
     setLocalStream(new MediaStream(stream.getTracks()));
     setCallType("audio");
     setIsVideoOff(false);
-
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-    sendOnCall("renegotiate", { description: offer });
   }, [sendOnCall]);
+
+  const participantCount = peers.length + (callState !== "idle" ? 1 : 0);
 
   const value = useMemo<CallContextValue>(
     () => ({
@@ -749,10 +831,14 @@ export function CallProvider({ children }: { children: ReactNode }) {
       isVideoOff,
       netQuality,
       localStream,
-      remoteStream,
-      isRemoteVideoEnabled,
+      peers,
+      isRemoteVideoEnabled: peers.some((p) =>
+        p.stream?.getVideoTracks().some((t) => t.enabled)
+      ),
       durationSec,
+      participantCount,
       startCall,
+      startGroupCall,
       acceptCall,
       rejectCall,
       endCall,
@@ -769,10 +855,11 @@ export function CallProvider({ children }: { children: ReactNode }) {
       isVideoOff,
       netQuality,
       localStream,
-      remoteStream,
-      isRemoteVideoEnabled,
+      peers,
       durationSec,
+      participantCount,
       startCall,
+      startGroupCall,
       acceptCall,
       rejectCall,
       endCall,
