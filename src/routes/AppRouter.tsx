@@ -28,6 +28,9 @@ const PrivacyPolicyPage = lazy(() => import("@/features/legal/PrivacyPolicyPage"
 const TermsPage = lazy(() => import("@/features/legal/TermsPage"));
 const NotFoundPage = lazy(() => import("@/components/NotFoundPage"));
 
+const SpacesPage = lazy(() => import("@/features/spaces/SpacesPage"));
+
+
 function Loading() {
   return (
     <div className="min-h-screen flex items-center justify-center text-ov-muted text-sm">
@@ -67,6 +70,10 @@ export default function AppRouter() {
               <Route path="/messages/:kind/:id" element={<ChatPage />} />
               <Route path="/workspace" element={<WorkspacePage />} />
               <Route path="/clipboard" element={<ClipboardPage />} />
+
+              // Route protégée :
+              <Route path="/spaces" element={<SpacesPage />} />
+
 
               {/* --- Console Admin (Niveau min 10) --- */}
               <Route element={<AdminRoute minLevel={10} />}>

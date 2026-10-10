@@ -8,9 +8,7 @@ import {
 
 /**
  * Récupère la clé symétrique du workspace pour cet appareil.
- * Si elle n'existe pas :
- *  - Si c'est le 1er appareil : en génère une et la stocke pour soi
- *  - Sinon : essaie de la récupérer depuis un autre appareil du compte
+ * Si elle n'existe pas : la génère et la partage à tous les devices du compte.
  */
 export async function getOrCreateWorkspaceKey(
   workspaceId: string,
@@ -20,46 +18,30 @@ export async function getOrCreateWorkspaceKey(
   // 1. Cherche ma clé existante
   const { data: existing } = await supabase
     .from("ovbridge_workspace_keys")
-    .select("encrypted_key, nonce, device_id")
+    .select("encrypted_key, nonce, wrapped_by_device_id")
     .eq("workspace_id", workspaceId)
     .eq("device_id", me.deviceId)
     .maybeSingle();
 
-  if (existing) {
-    // Récupère la clé publique de l'appareil qui a créé la clé
+  if (existing?.encrypted_key && existing.wrapped_by_device_id) {
+    // Récupère la clé publique de l'appareil qui a chiffré pour moi
     const { data: senderDevice } = await supabase
       .from("ovbridge_devices")
       .select("public_key")
-      .eq("id", existing.device_id)
+      .eq("id", existing.wrapped_by_device_id)
       .maybeSingle();
 
-    if (!senderDevice) throw new Error("Appareil source introuvable");
-
-    return await decryptSymKey(
-      existing.encrypted_key,
-      existing.nonce,
-      senderDevice.public_key,
-      me.privateKey
-    );
+    if (senderDevice?.public_key) {
+      return await decryptSymKey(
+        existing.encrypted_key,
+        existing.nonce,
+        senderDevice.public_key,
+        me.privateKey
+      );
+    }
   }
 
-  // 2. Cherche une clé existante chez un autre appareil du compte
-  const { data: peerKey } = await supabase
-    .from("ovbridge_workspace_keys")
-    .select("encrypted_key, nonce, device_id")
-    .eq("workspace_id", workspaceId)
-    .neq("device_id", me.deviceId)
-    .limit(1)
-    .maybeSingle();
-
-  if (peerKey) {
-    // On doit demander à cet appareil de nous envoyer la clé déchiffrée
-    // Pour l'instant, on va créer une nouvelle clé et re-chiffrer tous les fichiers
-    // → plus simple : générer une nouvelle clé et la partager
-    return await createAndShareSymKey(workspaceId, userId, me);
-  }
-
-  // 3. Aucune clé nulle part → génère la première
+  // 2. Aucune clé valide pour moi → en génère une et la partage
   return await createAndShareSymKey(workspaceId, userId, me);
 }
 
@@ -73,7 +55,6 @@ async function createAndShareSymKey(
 ): Promise<string> {
   const symKey = await generateSymKey();
 
-  // Récupère tous les appareils du compte (non révoqués)
   const { data: devices } = await supabase
     .from("ovbridge_devices")
     .select("id, public_key")
@@ -84,7 +65,6 @@ async function createAndShareSymKey(
     throw new Error("Aucun appareil trouvé");
   }
 
-  // Chiffre la clé pour chaque appareil
   const rows = await Promise.all(
     devices.map(async (d: any) => {
       const { encryptedKey, nonce } = await encryptSymKey(
@@ -97,11 +77,11 @@ async function createAndShareSymKey(
         device_id: d.id,
         encrypted_key: encryptedKey,
         nonce,
+        wrapped_by_device_id: me.deviceId,
       };
     })
   );
 
-  // Upsert (au cas où une clé existe déjà)
   const { error } = await supabase
     .from("ovbridge_workspace_keys")
     .upsert(rows, { onConflict: "workspace_id,device_id" });
@@ -112,8 +92,7 @@ async function createAndShareSymKey(
 }
 
 /**
- * Enregistre la clé symétrique pour un nouvel appareil qui vient de se lier.
- * À appeler quand un device s'ajoute au compte.
+ * Enregistre la clé symétrique pour un nouvel appareil.
  */
 export async function shareWorkspaceKeyWithNewDevice(
   workspaceId: string,
@@ -143,6 +122,7 @@ export async function shareWorkspaceKeyWithNewDevice(
         device_id: newDeviceId,
         encrypted_key: encryptedKey,
         nonce,
+        wrapped_by_device_id: me.deviceId,
       },
       { onConflict: "workspace_id,device_id" }
     );

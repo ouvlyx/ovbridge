@@ -159,7 +159,7 @@ export default function DevicesPage() {
             <User className="w-5 h-5" />
           </Button>
           <Button variant="ghost" size="sm" onClick={signOut}>
-            <LogOut className="w-4 h-4 mr-2" /> Déconnexion
+            <LogOut className="w-4 h-4 mr-2" />
           </Button>
         </div>
       </header>

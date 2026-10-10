@@ -29,6 +29,7 @@ export type WorkspaceFile = {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+  is_blocked: boolean; 
 };
 
 
@@ -165,4 +166,13 @@ export async function deleteWorkspaceFile(wf: WorkspaceFile) {
     p_workspace_id: wf.workspace_id,
     p_delta: -wf.size_bytes,
   });
+}
+
+/** Bloque ou débloque un fichier (empêche le téléchargement par d'autres appareils). */
+export async function toggleBlockFile(wf: WorkspaceFile, blocked: boolean) {
+  const { error } = await supabase
+    .from("ovbridge_workspace_files")
+    .update({ is_blocked: blocked })
+    .eq("id", wf.id);
+  if (error) throw error;
 }
