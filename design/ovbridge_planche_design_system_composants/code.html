@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="fr"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "primary-fixed": "#e6deff", "on-secondary-fixed-variant": "#005047", "surface-bright": "#38393e", "surface-container-high": "#292a2e", "primary": "#cabeff", "background": "#121317", "inverse-primary": "#603ce2", "on-error-container": "#ffdad6", "on-tertiary-container": "#003116", "on-background": "#e3e2e8", "error": "#ffb4ab", "primary-container": "#947dff", "outline-variant": "#484555", "surface-container-lowest": "#0d0e12", "on-primary-container": "#2a0088", "on-surface": "#e3e2e8", "tertiary-fixed": "#5fff9a", "surface": "#121317", "surface-container": "#1e1f24", "surface-variant": "#343439", "on-primary-fixed-variant": "#4816cb", "secondary-fixed-dim": "#00dfc6", "inverse-on-surface": "#2f3035", "on-tertiary-fixed-variant": "#005228", "primary-fixed-dim": "#cabeff", "surface-tint": "#cabeff", "on-error": "#690005", "on-secondary-container": "#006156", "error-container": "#93000a", "secondary": "#6fffe8", "tertiary-container": "#00a657", "surface-container-highest": "#343439", "on-tertiary-fixed": "#00210c", "tertiary-fixed-dim": "#1be37c", "on-secondary": "#003730", "on-primary": "#31009a", "on-tertiary": "#00391a", "surface-dim": "#121317", "on-primary-fixed": "#1c0062", "secondary-container": "#00e5cc", "surface-container-low": "#1a1b20", "secondary-fixed": "#41fce2", "inverse-surface": "#e3e2e8", "outline": "#938ea1", "on-surface-variant": "#c9c4d8", "on-secondary-fixed": "#00201b", "tertiary": "#1be37c" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "margin-desktop": "32px", "margin-tablet": "24px", "gutter-tablet": "16px", "gutter-desktop": "20px", "space-xl": "24px", "gutter": "12px", "space-sm": "8px", "space-lg": "16px", "space-md": "12px", "space-xs": "4px", "margin": "16px" }, "fontFamily": { "headline-xl": ["Geist"], "title-sm": ["Geist"], "code-md": ["JetBrains Mono"], "body-sm": ["Geist"], "code-sm": ["JetBrains Mono"], "body-lg": ["Geist"], "headline-lg": ["Geist"], "headline-md": ["Geist"], "label-caps": ["JetBrains Mono"], "headline-xl-mobile": ["Geist"], "body-md": ["Geist"] }, "fontSize": { "headline-xl": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.03em", "fontWeight": "600" }], "title-sm": ["16px", { "lineHeight": "22px", "letterSpacing": "-0.01em", "fontWeight": "500" }], "code-md": ["13px", { "lineHeight": "18px", "letterSpacing": "-0.01em", "fontWeight": "400" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "code-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "400" }], "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }], "headline-lg": ["24px", { "lineHeight": "30px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "headline-md": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.015em", "fontWeight": "500" }], "label-caps": ["10px", { "lineHeight": "12px", "letterSpacing": "0.08em", "fontWeight": "500" }], "headline-xl-mobile": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.025em", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }] } } } }</script><style>@layer base{html,body{width:100vw;min-height:100vh;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe"><div class="h-16 px-margin flex items-center justify-between"><div class="flex items-center gap-space-xs"><button aria-label="Retour" class="w-11 h-11 -ml-space-xs flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" onclick="history.back()"><span class="material-symbols-outlined text-[20px]">arrow_back_ios_new</span></button><h1 class="font-title-sm text-title-sm text-on-surface tracking-tight truncate max-w-[210px]">Design System Board</h1></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="flex-1 flex flex-col relative w-full px-margin pt-16 pb-safe bg-surface"><div class="flex flex-col w-full pb-12 gap-space-xl text-on-surface">
+<!-- Entête de Présentation du Kit -->
+<div class="relative overflow-hidden rounded-xl bg-surface-container-low p-space-lg shadow-sm">
+<div class="absolute -right-8 -top-8 w-40 h-40 rounded-full bg-primary-container/20 blur-3xl pointer-events-none"></div>
+<div class="absolute -left-6 -bottom-6 w-32 h-32 rounded-full bg-secondary-container/15 blur-2xl pointer-events-none"></div>
+<div class="relative flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-sm">
+<span class="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-code-sm text-code-sm">v2.4.0-stable</span>
+<span class="flex items-center gap-1 font-label-caps text-label-caps text-secondary uppercase tracking-wider">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+          Spécification Active
+        </span>
+</div>
+<h2 class="font-headline-xl-mobile text-headline-xl-mobile text-on-surface tracking-tight mt-1">
+        Système de Design OvBridge
+      </h2>
+<p class="font-body-md text-body-md text-on-surface-variant">
+        Matrice visuelle, jetons cryptographiques, élévations spatiales et composants d'interface pair-à-pair.
+      </p>
+</div>
+</div>
+<!-- 1. Section : Palette de Couleurs -->
+<section class="flex flex-col gap-space-md">
+<div class="flex items-baseline justify-between">
+<h3 class="font-headline-md text-headline-md text-on-surface">1. Palette de Couleurs</h3>
+<span class="font-code-sm text-code-sm text-outline">HEX &amp; TOKENS</span>
+</div>
+<!-- Couleurs Principales & Alertes -->
+<div class="grid grid-cols-2 gap-gutter">
+<!-- Violet Primaire -->
+<div class="flex flex-col gap-space-xs p-space-sm rounded-xl bg-surface-container">
+<div class="h-14 w-full rounded-lg bg-primary-container shadow-[0_0_24px_-4px_rgba(148,125,255,0.45)] flex items-end justify-end p-1.5">
+<span class="font-code-sm text-code-sm text-on-primary-container bg-surface-container-lowest/80 px-1.5 py-0.5 rounded">Primary</span>
+</div>
+<div class="flex flex-col">
+<span class="font-title-sm text-title-sm text-on-surface">Violet Primaire</span>
+<span class="font-code-sm text-code-sm text-primary">#7C5CFF</span>
+</div>
+</div>
+<!-- Cyan Accent -->
+<div class="flex flex-col gap-space-xs p-space-sm rounded-xl bg-surface-container">
+<div class="h-14 w-full rounded-lg bg-secondary-container shadow-[0_0_24px_-4px_rgba(0,229,204,0.4)] flex items-end justify-end p-1.5">
+<span class="font-code-sm text-code-sm text-on-secondary-container bg-surface-container-lowest/80 px-1.5 py-0.5 rounded">Secondary</span>
+</div>
+<div class="flex flex-col">
+<span class="font-title-sm text-title-sm text-on-surface">Cyan Accent</span>
+<span class="font-code-sm text-code-sm text-secondary">#00E5CC</span>
+</div>
+</div>
+<!-- Vert Succès -->
+<div class="flex flex-col gap-space-xs p-space-sm rounded-xl bg-surface-container">
+<div class="h-14 w-full rounded-lg bg-tertiary-container shadow-[0_0_20px_-6px_rgba(0,166,87,0.35)] flex items-end justify-end p-1.5">
+<span class="font-code-sm text-code-sm text-on-tertiary-container bg-surface-container-lowest/80 px-1.5 py-0.5 rounded">Success</span>
+</div>
+<div class="flex flex-col">
+<span class="font-title-sm text-title-sm text-on-surface">Vert Succès</span>
+<span class="font-code-sm text-code-sm text-tertiary">#10B981</span>
+</div>
+</div>
+<!-- Rouge Danger -->
+<div class="flex flex-col gap-space-xs p-space-sm rounded-xl bg-surface-container">
+<div class="h-14 w-full rounded-lg bg-error-container shadow-[0_0_20px_-6px_rgba(147,0,10,0.4)] flex items-end justify-end p-1.5">
+<span class="font-code-sm text-code-sm text-on-error-container bg-surface-container-lowest/80 px-1.5 py-0.5 rounded">Error</span>
+</div>
+<div class="flex flex-col">
+<span class="font-title-sm text-title-sm text-on-surface">Rouge Danger</span>
+<span class="font-code-sm text-code-sm text-error">#FF453A</span>
+</div>
+</div>
+</div>
+<!-- Surfaces Sombres -->
+<div class="flex flex-col gap-space-xs p-space-md rounded-xl bg-surface-container-low">
+<span class="font-label-caps text-label-caps uppercase text-outline mb-1">Stratification Abyssale (Surfaces)</span>
+<div class="grid grid-cols-4 gap-2">
+<div class="flex flex-col items-center gap-1">
+<div class="h-10 w-full rounded-lg bg-surface-container-lowest"></div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">#08090D</span>
+</div>
+<div class="flex flex-col items-center gap-1">
+<div class="h-10 w-full rounded-lg bg-surface-dim"></div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">#0F1117</span>
+</div>
+<div class="flex flex-col items-center gap-1">
+<div class="h-10 w-full rounded-lg bg-surface-container"></div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">#161923</span>
+</div>
+<div class="flex flex-col items-center gap-1">
+<div class="h-10 w-full rounded-lg bg-surface-container-high"></div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">#1E2230</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 2. Section : Échelle Typographique -->
+<section class="flex flex-col gap-space-md">
+<div class="flex items-baseline justify-between">
+<h3 class="font-headline-md text-headline-md text-on-surface">2. Échelle Typographique</h3>
+<span class="font-code-sm text-code-sm text-outline">GEIST &amp; JB MONO</span>
+</div>
+<div class="flex flex-col gap-space-sm p-space-md rounded-xl bg-surface-container-low">
+<!-- Display -->
+<div class="flex flex-col pb-2">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-primary">Display / Headline XL</span>
+<span class="font-code-sm text-code-sm text-outline">28px · Semibold</span>
+</div>
+<p class="font-headline-xl-mobile text-headline-xl-mobile text-on-surface">OvBridge Spatial 28px</p>
+</div>
+<!-- H1 -->
+<div class="flex flex-col pb-2">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-primary">H1 / Headline LG</span>
+<span class="font-code-sm text-code-sm text-outline">22px · Semibold</span>
+</div>
+<p class="font-headline-lg text-headline-lg text-on-surface">Titre Section 22px</p>
+</div>
+<!-- H2 -->
+<div class="flex flex-col pb-2">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-primary">H2 / Headline MD</span>
+<span class="font-code-sm text-code-sm text-outline">18px · Medium</span>
+</div>
+<p class="font-headline-md text-headline-md text-on-surface">Sous-titre 18px</p>
+</div>
+<!-- Body -->
+<div class="flex flex-col pb-2">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-primary">Corps de texte / Body MD</span>
+<span class="font-code-sm text-code-sm text-outline">14px · Regular</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface">Corps de texte standard 14px optimisé pour la lecture nocturne et l'ergonomie mobile.</p>
+</div>
+<!-- Small / Caption -->
+<div class="flex flex-col pb-2">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-primary">Légende / Body SM</span>
+<span class="font-code-sm text-code-sm text-outline">12px · Regular</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Légende et métadonnées 12px pour annotations d'intégrité.</p>
+</div>
+<!-- Monospace -->
+<div class="flex flex-col p-space-sm rounded-lg bg-surface-container-lowest">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-secondary">Code MD / Cryptographie</span>
+<span class="font-code-sm text-code-sm text-outline">13px · JetBrains</span>
+</div>
+<p class="font-code-md text-code-md text-secondary truncate mt-1">Clé Curve25519 · 7e3b9f42d1098a54c601fe023a88bc3d</p>
+</div>
+</div>
+</section>
+<!-- 3. Section : Boutons & Actions -->
+<section class="flex flex-col gap-space-md">
+<div class="flex items-baseline justify-between">
+<h3 class="font-headline-md text-headline-md text-on-surface">3. Boutons &amp; Actions</h3>
+<span class="font-code-sm text-code-sm text-outline">3 TAILLES · PILULE</span>
+</div>
+<div class="flex flex-col gap-space-md p-space-md rounded-xl bg-surface-container-low">
+<!-- Grands Boutons (LG - 44px) -->
+<div class="flex flex-col gap-space-xs">
+<span class="font-label-caps text-label-caps uppercase text-outline">Format Large (44px)</span>
+<div class="flex flex-col gap-space-xs">
+<button class="w-full h-11 px-5 rounded-full bg-primary-container text-on-primary-fixed font-title-sm text-title-sm flex items-center justify-center gap-2 shadow-[0_0_28px_-6px_rgba(124,92,255,0.6)] active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined text-[18px]">lock</span>
+            Action Principale Sécurisée
+          </button>
+<button class="w-full h-11 px-5 rounded-full bg-surface-container text-on-surface font-title-sm text-title-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-sm">
+<span class="material-symbols-outlined text-[18px]">sync_alt</span>
+            Action Secondaire Découverte
+          </button>
+</div>
+</div>
+<!-- Boutons Moyens (MD - 38px) -->
+<div class="flex flex-col gap-space-xs">
+<span class="font-label-caps text-label-caps uppercase text-outline">Format Médium (38px)</span>
+<div class="grid grid-cols-2 gap-space-xs">
+<button class="h-9 px-4 rounded-full bg-error-container/20 text-error font-body-md text-body-md flex items-center justify-center gap-1.5 active:scale-[0.98]">
+<span class="material-symbols-outlined text-[16px]">cancel</span>
+            Révocation
+          </button>
+<button class="h-9 px-4 rounded-full bg-surface-variant/40 text-secondary font-body-md text-body-md flex items-center justify-center gap-1.5 active:scale-[0.98]">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+            Fantôme
+          </button>
+</div>
+</div>
+<!-- Boutons Compacts (SM - 30px) -->
+<div class="flex flex-col gap-space-xs">
+<span class="font-label-caps text-label-caps uppercase text-outline">Format Compact (30px)</span>
+<div class="flex items-center gap-space-xs">
+<button class="h-7 px-3 rounded-full bg-primary text-on-primary font-code-sm text-code-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+            Pair
+          </button>
+<button class="h-7 px-3 rounded-full bg-surface-container-high text-on-surface font-code-sm text-code-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">share</span>
+            Diffuser
+          </button>
+<button class="h-7 px-3 rounded-full bg-error text-on-error font-code-sm text-code-sm flex items-center gap-1 ml-auto">
+<span class="material-symbols-outlined text-[14px]">delete</span>
+            Purge
+          </button>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. Section : Champs de Saisie (Inputs) -->
+<section class="flex flex-col gap-space-md">
+<div class="flex items-baseline justify-between">
+<h3 class="font-headline-md text-headline-md text-on-surface">4. Champs de Saisie</h3>
+<span class="font-code-sm text-code-sm text-outline">ÉTATS &amp; RETOURS</span>
+</div>
+<div class="flex flex-col gap-space-md p-space-md rounded-xl bg-surface-container-low">
+<!-- État Par Défaut -->
+<div class="flex flex-col gap-1">
+<label class="font-code-sm text-code-sm text-on-surface-variant">État Par Défaut</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined text-outline absolute left-3 text-[18px]">search</span>
+<input class="w-full h-11 pl-10 pr-3 rounded-xl bg-surface-container text-body-md font-body-md text-on-surface placeholder:text-outline-variant outline-none" placeholder="Rechercher ou saisir une clé..." readonly="" type="text" value=""/>
+</div>
+</div>
+<!-- État Focus / Actif -->
+<div class="flex flex-col gap-1">
+<label class="font-code-sm text-code-sm text-secondary">État Actif / Focus (Lueur Cryptographique)</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined text-secondary absolute left-3 text-[18px]">terminal</span>
+<input class="w-full h-11 pl-10 pr-3 rounded-xl bg-surface-container-high text-code-md font-code-md text-secondary shadow-[0_0_20px_-3px_rgba(0,229,204,0.3)] outline-none" readonly="" type="text" value="ed25519://node-bravo.mesh"/>
+</div>
+</div>
+<!-- État Erreur -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<label class="font-code-sm text-code-sm text-error">État d'Erreur</label>
+<span class="font-code-sm text-code-sm text-error flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]">error</span> Clé d'empreinte invalide
+          </span>
+</div>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined text-error absolute left-3 text-[18px]">vpn_key_alert</span>
+<input class="w-full h-11 pl-10 pr-3 rounded-xl bg-error-container/30 text-code-md font-code-md text-on-error-container shadow-[0_0_16px_-4px_rgba(255,91,91,0.4)] outline-none" readonly="" type="text" value="0x99A8-CORRUPTED-STREAM"/>
+</div>
+</div>
+</div>
+</section>
+<!-- 5. Section : Cartes & Surfaces (Containers) -->
+<section class="flex flex-col gap-space-md">
+<div class="flex items-baseline justify-between">
+<h3 class="font-headline-md text-headline-md text-on-surface">5. Cartes &amp; Surfaces</h3>
+<span class="font-code-sm text-code-sm text-outline">HIÉRARCHIE Z-INDEX</span>
+</div>
+<!-- Carte Standard -->
+<div class="flex flex-col gap-space-xs p-space-md rounded-xl bg-surface-container shadow-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-outline text-[20px]">inventory_2</span>
+<span class="font-title-sm text-title-sm text-on-surface">Carte Standard (Niveau 1)</span>
+</div>
+<span class="font-code-sm text-code-sm text-outline">Surface Base</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+        Structure neutre de groupement d'informations passives ou de journaux d'audit archivés.
+      </p>
+</div>
+<!-- Carte Surélevée Glassmorphic -->
+<div class="relative overflow-hidden flex flex-col gap-space-xs p-space-md rounded-xl bg-surface-bright/50 backdrop-blur-md shadow-lg">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[20px]">layers</span>
+<span class="font-title-sm text-title-sm text-on-surface">Carte Surélevée (Niveau 2)</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container/20 text-secondary font-code-sm text-code-sm">Élévation +2</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface">
+        Surface interactive au survol simulant une lévitation contrôlée par réfraction translucide.
+      </p>
+</div>
+<!-- Carte Hero Dégradée -->
+<div class="relative overflow-hidden flex flex-col gap-space-sm p-space-lg rounded-xl bg-gradient-to-br from-primary-container/40 via-surface-container to-surface-container-lowest shadow-[0_0_35px_-8px_rgba(124,92,255,0.45)]">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/20 text-primary-fixed">
+<span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+<span class="font-label-caps text-label-caps uppercase">Canal Sécurisé Hero</span>
+</div>
+<span class="material-symbols-outlined text-primary text-[22px]">verified_user</span>
+</div>
+<div class="flex flex-col">
+<h4 class="font-headline-md text-headline-md text-on-surface">Pont P2P Quanta 01</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+          Liaison synchrone active chiffrée avec chiffrement de bout en bout et zéro télémétrie.
+        </p>
+</div>
+</div>
+</section>
+<!-- 6. Section : Badges & Statuts -->
+<section class="flex flex-col gap-space-md">
+<div class="flex items-baseline justify-between">
+<h3 class="font-headline-md text-headline-md text-on-surface">6. Badges &amp; Statuts</h3>
+<span class="font-code-sm text-code-sm text-outline">CHIPS SÉMANTIQUES</span>
+</div>
+<div class="grid grid-cols-2 gap-space-xs p-space-md rounded-xl bg-surface-container-low">
+<!-- Succès -->
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-tertiary-container/20 text-tertiary">
+<span class="w-2 h-2 rounded-full bg-tertiary shadow-[0_0_8px_#10B981]"></span>
+<span class="font-code-sm text-code-sm">Nœud Synchronisé</span>
+</div>
+<!-- Danger -->
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-error-container/20 text-error">
+<span class="w-2 h-2 rounded-full bg-error shadow-[0_0_8px_#FF453A]"></span>
+<span class="font-code-sm text-code-sm">Lien Interrompu</span>
+</div>
+<!-- Avertissement -->
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-variant text-secondary-fixed">
+<span class="w-2 h-2 rounded-full bg-secondary-fixed shadow-[0_0_8px_#F59E0B]"></span>
+<span class="font-code-sm text-code-sm">Attente Accord</span>
+</div>
+<!-- Primaire / Sécurité -->
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-container/20 text-primary">
+<span class="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_#7C5CFF]"></span>
+<span class="font-code-sm text-code-sm">E2EE Verrouillé</span>
+</div>
+</div>
+</section>
+<!-- 7. Section : Avatars & Présence -->
+<section class="flex flex-col gap-space-md">
+<div class="flex items-baseline justify-between">
+<h3 class="font-headline-md text-headline-md text-on-surface">7. Avatars &amp; Présence</h3>
+<span class="font-code-sm text-code-sm text-outline">MAILLAGE PAIR</span>
+</div>
+<div class="flex items-center justify-between p-space-md rounded-xl bg-surface-container-low">
+<!-- Avatar Dégradé Monogramme + Statut Vert -->
+<div class="flex flex-col items-center gap-1">
+<div class="relative w-12 h-12 rounded-full bg-gradient-to-tr from-primary via-primary-container to-secondary flex items-center justify-center shadow-md">
+<span class="font-headline-md text-headline-md text-on-primary-fixed font-bold">A</span>
+<span class="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-tertiary-container border-2 border-surface shadow-[0_0_6px_#10B981]"></span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Alpha</span>
+</div>
+<!-- Avatar Photo Réelle avec Anneau P2P -->
+<div class="flex flex-col items-center gap-1">
+<div class="relative p-0.5 rounded-full bg-gradient-to-r from-secondary via-primary to-secondary animate-pulse">
+<img class="w-11 h-11 rounded-full object-cover" data-alt="Close up futuristic portrait of a technical engineer with faint purple and cyan ambient lighting reflecting on glasses and dark background, neo cyber minimalist aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQ2UwcHqwNplL4C8Ocqniw98F9hWWGTbqm8khHL9RKOpbjm9wNyfaarttKMoo60hafar_44VZSDN7kDyazlRpNmoh8nFBDF58lONB1XgLnQ1ryzn7iLTDM_9VrIu1-2azjXgwm6vHI66FA7pqnlbDdQn-sZrWL-M6YBJpNyLfYwx4wLW9ZSX4wXIr1U50TfCy_bs787WoWLM-Yg5Du6CMyvlqaiCepPlrSFXZqsi32Abc1Hl1j0V5S9w"/>
+<span class="absolute top-0 right-0 w-3 h-3 rounded-full bg-secondary"></span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Nexus</span>
+</div>
+<!-- Pile d'Avatars de Groupe -->
+<div class="flex flex-col items-center gap-1">
+<div class="flex items-center -space-x-3.5">
+<img class="w-8 h-8 rounded-full object-cover shadow-sm" data-alt="Portrait avatar of a digital designer with deep blue and purple mood lighting, minimalist studio dark setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9sGAov2iWmWFIoS_ZCnPp4qZsAQkW3BAwjnpLvqbYpNgkc16ZEWWQtbLFGayWPpvWzo8XdZhF4bbDdm_bEQCa8V_tAHSkPTcrJy1rx7BrBriHsM6nyftAH1BXHLpQo_V6UMmt_b2eBBcTPTJKD0HupfevmaM3Yi_3nmNDSeulo9N24LB9BoUtQJNxqOVhOtWNxwAeupGtbsor5cBHhmI8wpAmQQ0-oMG-EYP0gKxkMxjtXLMQQPZQhg"/>
+<img class="w-8 h-8 rounded-full object-cover shadow-sm" data-alt="Portrait avatar of a software developer in high contrast nocturnal ambient light with soft emerald rim light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnxyOIbt0jnbWKnEIDocHt5BDXikSNSVW8vJrgbjlNjGkVkzt9CLIB_vdV_sDE945BKrhDKSL79rFFdKajeFEaYBFlfo0k8e6x7DxTP_U7Is3Jxe6kaluXpiWzLWwA0n5zPOhQoMhvniZoZdaS-iP5y-BRpIieUINnjlrGLJTZzUHbtZGs188fxM3hmhuEKiq9dsEidsg9jUOPwJs7p42WM7z-UfULYl23SZz1_3aRuKpLHmjew5Ds6w"/>
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center font-code-sm text-code-sm text-primary shadow-sm">
+            +3
+          </div>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Maillage</span>
+</div>
+</div>
+</section>
+<!-- 8. Section : Icônes Système -->
+<section class="flex flex-col gap-space-md">
+<div class="flex items-baseline justify-between">
+<h3 class="font-headline-md text-headline-md text-on-surface">8. Icônes Système</h3>
+<span class="font-code-sm text-code-sm text-outline">VECTORIEL ÉPURÉ</span>
+</div>
+<div class="grid grid-cols-3 gap-gutter p-space-md rounded-xl bg-surface-container-low">
+<!-- Shield -->
+<div class="flex flex-col items-center gap-1 p-2 rounded-lg bg-surface-container">
+<span class="material-symbols-outlined text-primary text-[22px]">shield</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Shield</span>
+</div>
+<!-- Laptop -->
+<div class="flex flex-col items-center gap-1 p-2 rounded-lg bg-surface-container">
+<span class="material-symbols-outlined text-secondary text-[22px]">laptop_mac</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Laptop</span>
+</div>
+<!-- Message -->
+<div class="flex flex-col items-center gap-1 p-2 rounded-lg bg-surface-container">
+<span class="material-symbols-outlined text-on-surface text-[22px]">forum</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Message</span>
+</div>
+<!-- Upload -->
+<div class="flex flex-col items-center gap-1 p-2 rounded-lg bg-surface-container">
+<span class="material-symbols-outlined text-primary text-[22px]">upload</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Upload</span>
+</div>
+<!-- Lock -->
+<div class="flex flex-col items-center gap-1 p-2 rounded-lg bg-surface-container">
+<span class="material-symbols-outlined text-tertiary text-[22px]">lock</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Lock</span>
+</div>
+<!-- QR Code -->
+<div class="flex flex-col items-center gap-1 p-2 rounded-lg bg-surface-container">
+<span class="material-symbols-outlined text-secondary text-[22px]">qr_code_2</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">QR Code</span>
+</div>
+<!-- Download -->
+<div class="flex flex-col items-center gap-1 p-2 rounded-lg bg-surface-container">
+<span class="material-symbols-outlined text-on-surface text-[22px]">download</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Download</span>
+</div>
+<!-- Trash -->
+<div class="flex flex-col items-center gap-1 p-2 rounded-lg bg-surface-container">
+<span class="material-symbols-outlined text-error text-[22px]">delete_forever</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Trash</span>
+</div>
+<!-- Settings -->
+<div class="flex flex-col items-center gap-1 p-2 rounded-lg bg-surface-container">
+<span class="material-symbols-outlined text-on-surface text-[22px]">settings</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Settings</span>
+</div>
+</div>
+</section>
+<!-- Note de Clôture & Signature Système -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-lowest text-on-surface-variant">
+<span class="font-code-sm text-code-sm">OvBridge Core Token Registry</span>
+<span class="font-code-sm text-code-sm text-secondary">SHA-256 Validated</span>
+</div>
+</div></main></body></html>

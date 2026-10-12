@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OvBridge — Onboarding 4/4</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            bgDark: '#08090D',
+            surface: '#0F1117',
+            surfaceRaised: '#161923',
+            borderSubtle: '#1E2230',
+            borderStrong: '#2A2F40',
+            primaryViolet: '#7C5CFF',
+            primaryGlow: '#9B87FF',
+            accentCyan: '#00E5CC',
+            neonGreen: '#22E67E',
+            textPrimary: '#F5F6FA',
+            textSecondary: '#9096A6',
+            textMuted: '#5A6172',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Geist', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #08090D;
+      color: #F5F6FA;
+      font-family: 'Inter', sans-serif;
+    }
+    .glow-violet {
+      box-shadow: 0 0 50px -10px rgba(124, 92, 255, 0.45), 0 0 30px -10px rgba(155, 135, 255, 0.3);
+    }
+    .btn-green-glow {
+      box-shadow: 0 0 35px -6px rgba(34, 230, 126, 0.5);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-0 md:p-6 bg-[#040507]">
+  <!-- Mobile Container 375x812 -->
+  <main class="w-[375px] h-[812px] bg-[#08090D] relative flex flex-col justify-between overflow-hidden shadow-2xl rounded-[36px] border border-[#1E2230] p-6 selection:bg-[#22E67E]/30">
+    <!-- Ambient background glows -->
+    <div class="absolute -bottom-10 -right-10 w-72 h-72 rounded-full bg-[#7C5CFF]/20 blur-3xl pointer-events-none"></div>
+    <div class="absolute -top-16 -left-16 w-60 h-60 rounded-full bg-[#22E67E]/10 blur-3xl pointer-events-none"></div>
+
+    <!-- Top Bar -->
+    <header class="relative z-10 flex items-center justify-between pt-2">
+      <button class="text-[13px] font-medium text-[#9096A6] hover:text-[#F5F6FA] flex items-center gap-1.5 py-1 px-2.5 rounded-full hover:bg-[#161923] transition-colors">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+        </svg>
+        <span>Retour</span>
+      </button>
+      <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#22E67E]/10 border border-[#22E67E]/30 text-[11px] font-mono text-[#22E67E]">
+        Prêt
+      </span>
+    </header>
+
+    <!-- Center Content -->
+    <section class="relative z-10 flex flex-col items-center text-center my-auto px-1">
+      <!-- 120px Icon container: Users (violet tinted) -->
+      <div class="relative w-[120px] h-[120px] rounded-[32px] p-[1px] bg-gradient-to-br from-[#7C5CFF] via-[#9B87FF] to-[#7C5CFF]/40 glow-violet mb-8 transition-transform duration-300 hover:scale-105">
+        <div class="w-full h-full bg-[#0F1117] rounded-[31px] flex items-center justify-center relative overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-br from-[#7C5CFF]/25 to-transparent opacity-80"></div>
+          <!-- Users Icon -->
+          <svg class="w-14 h-14 text-[#9B87FF] relative z-10" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+          </svg>
+        </div>
+      </div>
+
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#161923] border border-[#1E2230] mb-3">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#7C5CFF]"></span>
+        <span class="text-[11px] font-mono font-medium text-[#7C5CFF] tracking-wide uppercase">Étape finale // Déploiement</span>
+      </div>
+
+      <h1 class="font-display font-semibold text-[24px] leading-[32px] text-[#F5F6FA] mb-1.5">
+        Espaces Collaboratifs
+      </h1>
+      
+      <p class="text-[13px] leading-[18px] font-medium text-[#00E5CC] mb-3 tracking-wide">
+        Partagez en équipe
+      </p>
+
+      <p class="text-[14px] leading-[22px] text-[#9096A6] max-w-[310px]">
+        Créez des espaces de groupe avec vos collaborateurs pour échanger fichiers et messages.
+      </p>
+    </section>
+
+    <!-- Bottom Controls -->
+    <footer class="relative z-10 flex flex-col gap-5 pb-2">
+      <!-- 4 dots indicator (step 4 active) -->
+      <div class="flex items-center justify-center gap-2" aria-label="Pagination étape 4 sur 4">
+        <span class="w-2 h-2 rounded-full bg-[#1E2230]"></span>
+        <span class="w-2 h-2 rounded-full bg-[#1E2230]"></span>
+        <span class="w-2 h-2 rounded-full bg-[#1E2230]"></span>
+        <span class="w-7 h-2 rounded-full bg-[#22E67E] transition-all duration-300"></span>
+      </div>
+
+      <!-- Primary button (Success green) -->
+      <button class="w-full h-[52px] rounded-2xl bg-gradient-to-r from-[#22E67E] to-[#1CD06E] text-[#08090D] font-semibold text-[15px] flex items-center justify-center gap-2 btn-green-glow hover:opacity-95 active:scale-[0.98] transition-all">
+        <span>✓ Commencer l'expérience</span>
+      </button>
+
+      <!-- Secondary links: Précédent / Passer -->
+      <div class="flex items-center justify-between px-2 pt-1">
+        <button class="text-[13px] text-[#9096A6] hover:text-[#F5F6FA] transition-colors flex items-center gap-1">
+          <span>← Précédent</span>
+        </button>
+        <span class="text-[#2A2F40]">|</span>
+        <a href="#passer" class="text-[13px] text-[#5A6172] hover:text-[#9096A6] transition-colors">
+          Passer
+        </a>
+      </div>
+    </footer>
+  </main>
+</body>
+</html>

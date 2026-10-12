@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="fr"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=JetBrains+Mono:wght@100..900&display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "on-secondary": "#003730", "inverse-on-surface": "#2f3035", "on-surface-variant": "#c9c4d8", "surface": "#121317", "on-primary-fixed-variant": "#4816cb", "surface-bright": "#38393e", "primary-fixed": "#e6deff", "inverse-surface": "#e3e2e8", "surface-variant": "#343439", "on-secondary-container": "#006156", "tertiary-fixed": "#5fff9a", "primary": "#cabeff", "surface-container-highest": "#343439", "on-secondary-fixed-variant": "#005047", "on-tertiary-fixed-variant": "#005228", "primary-container": "#947dff", "on-tertiary": "#00391a", "surface-container-high": "#292a2e", "on-error": "#690005", "background": "#121317", "tertiary-fixed-dim": "#1be37c", "on-tertiary-container": "#003116", "on-surface": "#e3e2e8", "primary-fixed-dim": "#cabeff", "secondary-container": "#00e5cc", "surface-container-low": "#1a1b20", "error-container": "#93000a", "surface-tint": "#cabeff", "error": "#ffb4ab", "on-secondary-fixed": "#00201b", "surface-container": "#1e1f24", "secondary-fixed": "#41fce2", "outline-variant": "#484555", "on-primary-container": "#2a0088", "on-primary": "#31009a", "on-primary-fixed": "#1c0062", "on-background": "#e3e2e8", "surface-dim": "#121317", "on-error-container": "#ffdad6", "surface-container-lowest": "#0d0e12", "outline": "#938ea1", "secondary": "#6fffe8", "tertiary": "#1be37c", "inverse-primary": "#603ce2", "secondary-fixed-dim": "#00dfc6", "on-tertiary-fixed": "#00210c", "tertiary-container": "#00a657" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "margin": "16px", "gutter-desktop": "20px", "gutter-tablet": "16px", "space-xl": "24px", "space-lg": "16px", "space-md": "12px", "gutter": "12px", "space-xs": "4px", "space-sm": "8px", "margin-desktop": "32px", "margin-tablet": "24px" }, fontFamily: { "headline-xl-mobile": ["Geist"], "label-caps": ["JetBrains Mono"], "headline-md": ["Geist"], "body-md": ["Geist"], "body-sm": ["Geist"], "headline-xl": ["Geist"], "headline-lg": ["Geist"], "code-md": ["JetBrains Mono"], "code-sm": ["JetBrains Mono"], "title-sm": ["Geist"], "body-lg": ["Geist"] }, fontSize: { "headline-xl-mobile": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.025em", "fontWeight": "600" }], "label-caps": ["10px", { "lineHeight": "12px", "letterSpacing": "0.08em", "fontWeight": "500" }], "headline-md": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.015em", "fontWeight": "500" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "headline-xl": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.03em", "fontWeight": "600" }], "headline-lg": ["24px", { "lineHeight": "30px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "code-md": ["13px", { "lineHeight": "18px", "letterSpacing": "-0.01em", "fontWeight": "400" }], "code-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "400" }], "title-sm": ["16px", { "lineHeight": "22px", "letterSpacing": "-0.01em", "fontWeight": "500" }], "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }] } } } };</script><style>@layer base{html,body{width:100%;margin:0;padding:0;background-color:#121317;color:#e3e2e8;overscroll-behavior-y:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-on-surface min-h-screen flex flex-col antialiased selection:bg-secondary-container/20 selection:text-secondary"><header class="fixed top-0 inset-x-0 z-50 bg-surface-container-lowest/80 backdrop-blur-xl pt-safe shadow-[0_1px_16px_rgba(0,0,0,0.45)]"><div class="h-16 px-margin flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm min-w-0"><img alt="OvBridge Logo" class="h-8 w-auto object-contain shrink-0" src="https://lh3.googleusercontent.com/aida/AEtjO1VsGivpuDUA11jaMSa6sYshoBRhbHd1K1ODd1RM9PTOKwyqjNHys3cz1vNCGdiw6cYCSU5ezXWqAIDuwcjtmi1ytTsdApEDuBMnzWS0JgIWL8FEcice-vDjHslgN9W7bPHR7GVpqIHSy1iEmgk26frnZTcW465DgRr_O1ek1S1zCky5vtL9akW5z6drkiofR0Xb_5gYqIjAGZQNk65Tc9Uzhh5c8jXVtAlN8okZlMetVgarXBF2Jur79c_0"/><div class="flex flex-col min-w-0"><div class="flex items-center gap-space-xs"><span class="font-title-sm text-title-sm text-on-surface font-semibold tracking-tight">OvBridge</span><span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-surface-container-high/90 text-secondary-container font-label-caps text-label-caps"><span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse shadow-[0_0_8px_rgba(27,227,124,0.8)]"></span>Chiffré E2E</span></div><span class="font-code-sm text-code-sm text-on-surface-variant truncate">Presse Papier</span></div></div><div class="flex items-center gap-space-sm shrink-0"><button aria-label="Profil utilisateur" class="w-11 h-11 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high transition-colors focus:outline-none focus:ring-1 focus:ring-secondary-container/50"><img alt="Profile" class="w-8 h-8 rounded-full object-cover ring-1 ring-outline-variant/30" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAvB5YIUzmhtw5lFiavlVcxk3pZf5BVSQMyu_XBEMp1ur79duWkyTAfq5qVa57zt-DQFZdyOllf8B3SCnONSDle5uDdPwz9AY4nRQtskFc3tYw_lPPXwmzP93W0j8mKWVHxAPvUyCR8jIjnnUeDB2SX_6zajANbf3XukY0xZ4Y7wlc3kMRXUuB8busc7U1fsmJPGB7ESuQyfZGe5pPYOKy7vixK8K-8j0LFcGjn1ZAWDthUZyIbuxTF-Q"/></button></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-24 bg-surface"><div class="flex flex-col w-full px-margin pb-space-xl gap-space-lg select-none">
+<!-- Status & Sync Mesh Overview -->
+<section class="flex flex-col w-full bg-surface-container rounded-xl p-space-md shadow-md gap-space-sm relative overflow-hidden">
+<div class="absolute -top-10 -right-10 w-32 h-32 bg-secondary-container/10 rounded-full blur-2xl pointer-events-none"></div>
+<div class="flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="relative flex items-center justify-center w-8 h-8 rounded-full bg-surface-container-high text-tertiary">
+<span class="material-symbols-outlined text-[18px]">sync_saved_locally</span>
+<span class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-tertiary shadow-[0_0_8px_rgba(27,227,124,0.9)] animate-ping"></span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-sm text-title-sm text-on-surface truncate">Synchronisation instantanée</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+            Canal pair-à-pair actif
+          </span>
+</div>
+</div>
+<button aria-pressed="true" class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full bg-primary-container p-0.5 transition-colors duration-200 ease-in-out focus:outline-none" id="sync-switch" type="button">
+<span class="translate-x-5 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-on-primary shadow-sm transition duration-200 ease-in-out" id="sync-knob"></span>
+</button>
+</div>
+<!-- Info pill (Zero-Knowledge) -->
+<div class="flex items-center gap-1.5 px-space-sm py-1 rounded-lg bg-surface-container-low text-secondary-container">
+<span class="material-symbols-outlined text-[14px]">verified_user</span>
+<span class="font-label-caps text-label-caps tracking-wider truncate">Divulgation nulle (ZKP) • Purge auto sous 24h</span>
+</div>
+<!-- Device peers connected -->
+<div class="flex items-center gap-1.5 overflow-x-auto pt-1 no-scrollbar">
+<span class="font-label-caps text-label-caps text-on-surface-variant shrink-0 mr-1">Nœuds :</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-high font-code-sm text-code-sm text-on-surface shrink-0">
+<span class="material-symbols-outlined text-[12px] text-tertiary">laptop_mac</span>
+        MacBook Pro
+      </span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-high font-code-sm text-code-sm text-on-surface shrink-0">
+<span class="material-symbols-outlined text-[12px] text-tertiary">tablet_mac</span>
+        iPad Pro
+      </span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-high font-code-sm text-code-sm text-on-surface shrink-0">
+<span class="material-symbols-outlined text-[12px] text-tertiary">terminal</span>
+        Linux Arch
+      </span>
+</div>
+</section>
+<!-- Live Memory Vault Hero Card -->
+<section class="flex flex-col w-full bg-surface-container rounded-xl p-space-md shadow-xl gap-space-md relative overflow-hidden">
+<!-- Subtle glow indicator -->
+<div class="absolute inset-0 bg-gradient-to-br from-primary-container/15 via-transparent to-secondary-container/10 pointer-events-none"></div>
+<div class="flex items-start justify-between gap-space-sm relative">
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-error-container/40 text-error font-label-caps text-label-caps">
+<span class="w-1.5 h-1.5 rounded-full bg-error animate-pulse"></span>
+            Clé Secrète / Token
+          </span>
+<span class="font-code-sm text-code-sm text-secondary">Mémoire vive</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 truncate">
+          Copié sur <strong class="text-on-surface font-medium">MacBook Pro M3 Max</strong> • 12 sec
+        </p>
+</div>
+<button class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-high hover:bg-surface-container-highest text-error font-label-caps text-label-caps transition-colors" id="burn-btn" title="Détruire immédiatement">
+<span class="material-symbols-outlined text-[14px]">local_fire_department</span>
+        Brûler
+      </button>
+</div>
+<!-- Code Preview Box -->
+<div class="relative flex flex-col p-space-md rounded-lg bg-surface-container-lowest gap-space-xs shadow-inner">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-code-sm text-code-sm tracking-wider">JETON D'ACCÈS API MAILLAGE</span>
+<div class="flex items-center gap-space-xs">
+<button aria-label="Masquer ou afficher le jeton" class="p-1 rounded hover:bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors" id="toggle-token-btn">
+<span class="material-symbols-outlined text-[16px]" id="eye-icon">visibility</span>
+</button>
+<button aria-label="Copier le jeton" class="p-1 rounded hover:bg-surface-container text-secondary hover:text-secondary-fixed-dim transition-colors" id="copy-hero-btn">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+</button>
+</div>
+</div>
+<div class="font-code-md text-code-md text-secondary tracking-tight select-all break-all" id="token-preview">
+        ovb_live_sec_89d3429fa03b11847e92c
+      </div>
+</div>
+<!-- Quick action buttons -->
+<div class="grid grid-cols-2 gap-space-sm pt-1 relative">
+<button class="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-full bg-primary text-on-primary font-title-sm text-title-sm shadow-md hover:bg-primary-container transition-all active:scale-[0.98]" id="paste-current-btn">
+<span class="material-symbols-outlined text-[18px]">assignment_turned_in</span>
+<span>Coller ici</span>
+</button>
+<button class="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-full bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-title-sm text-title-sm transition-all active:scale-[0.98]" id="broadcast-btn">
+<span class="material-symbols-outlined text-[18px]">cell_tower</span>
+<span>Diffuser</span>
+</button>
+</div>
+</section>
+<!-- Filter Pills Bar -->
+<nav aria-label="Filtres du presse-papier" class="flex items-center gap-space-xs overflow-x-auto pb-1 no-scrollbar -mx-margin px-margin">
+<button class="filter-tab px-3 py-1.5 rounded-full bg-secondary-container text-on-secondary-container font-label-caps text-label-caps whitespace-nowrap transition-colors" data-category="all">
+      Tous (18)
+    </button>
+<button class="filter-tab px-3 py-1.5 rounded-full bg-surface-container text-on-surface-variant hover:text-on-surface font-label-caps text-label-caps whitespace-nowrap transition-colors" data-category="text">
+      Texte & Liens (9)
+    </button>
+<button class="filter-tab px-3 py-1.5 rounded-full bg-surface-container text-on-surface-variant hover:text-on-surface font-label-caps text-label-caps whitespace-nowrap transition-colors" data-category="code">
+      Code & Tokens (5)
+    </button>
+<button class="filter-tab px-3 py-1.5 rounded-full bg-surface-container text-on-surface-variant hover:text-on-surface font-label-caps text-label-caps whitespace-nowrap transition-colors" data-category="media">
+      Images (3)
+    </button>
+<button class="filter-tab px-3 py-1.5 rounded-full bg-surface-container text-on-surface-variant hover:text-on-surface font-label-caps text-label-caps whitespace-nowrap transition-colors" data-category="pinned">
+      Épinglés (1)
+    </button>
+</nav>
+<!-- Synced Vault Feed -->
+<section aria-label="Historique des éléments synchronisés" class="flex flex-col gap-space-sm w-full">
+<div class="flex items-center justify-between px-1">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Activité récente chiffrée</span>
+<span class="font-code-sm text-code-sm text-secondary">4 nouveaux éléments</span>
+</div>
+<!-- Item 1: TypeScript / Rust snippet -->
+<article class="flex flex-col w-full bg-surface-container rounded-xl p-space-md gap-space-sm shadow-sm hover:bg-surface-container-high transition-colors">
+<div class="flex items-center justify-between text-on-surface-variant">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="material-symbols-outlined text-[16px] text-primary">data_object</span>
+<span class="font-code-sm text-code-sm truncate">MacBook Pro • Il y a 6 min</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="p-1 rounded text-on-surface-variant hover:text-secondary transition-colors" title="Épingler">
+<span class="material-symbols-outlined text-[18px]">push_pin</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-on-surface transition-colors" title="Copier">
+<span class="material-symbols-outlined text-[18px]">content_copy</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-error transition-colors" title="Supprimer">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-lowest font-code-sm text-code-sm text-on-surface overflow-x-auto leading-relaxed">
+<span class="text-primary-container">const</span> ovBridge = <span class="text-primary-container">await</span> OvBridge.<span class="text-secondary">connectMesh</span>({ peerId: <span class="text-tertiary">'node_7c'</span> });
+      </div>
+</article>
+<!-- Item 2: Secure URL -->
+<article class="flex flex-col w-full bg-surface-container rounded-xl p-space-md gap-space-sm shadow-sm hover:bg-surface-container-high transition-colors">
+<div class="flex items-center justify-between text-on-surface-variant">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="material-symbols-outlined text-[16px] text-secondary">link</span>
+<span class="font-code-sm text-code-sm truncate">iPhone 15 Pro • Il y a 18 min</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="p-1 rounded text-secondary transition-colors" title="Épinglé">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">push_pin</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-on-surface transition-colors" title="Copier">
+<span class="material-symbols-outlined text-[18px]">content_copy</span>
+</button>
+</div>
+</div>
+<a class="flex items-center gap-space-sm p-space-sm rounded-lg bg-surface-container-lowest hover:bg-surface-container-high/60 transition-colors group" href="https://linear.app/ovbridge" rel="noopener noreferrer" target="_blank">
+<div class="flex items-center justify-center w-7 h-7 rounded bg-surface-container text-secondary shrink-0">
+<span class="material-symbols-outlined text-[16px]">open_in_new</span>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<span class="font-title-sm text-title-sm text-on-surface truncate group-hover:text-secondary transition-colors">Linear • OV-104 Tunnel spatial</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant truncate">linear.app/ovbridge/issue/OV-104/spatial-tunnel</span>
+</div>
+</a>
+</article>
+<!-- Item 3: Color Palette Swatches -->
+<article class="flex flex-col w-full bg-surface-container rounded-xl p-space-md gap-space-sm shadow-sm hover:bg-surface-container-high transition-colors">
+<div class="flex items-center justify-between text-on-surface-variant">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="material-symbols-outlined text-[16px] text-tertiary">palette</span>
+<span class="font-code-sm text-code-sm truncate">iPad Pro • Il y a 45 min</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="p-1 rounded text-on-surface-variant hover:text-on-surface transition-colors" title="Copier la palette">
+<span class="material-symbols-outlined text-[18px]">content_copy</span>
+</button>
+<button class="p-1 rounded text-on-surface-variant hover:text-error transition-colors" title="Supprimer">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col gap-space-xs">
+<span class="font-body-sm text-body-sm text-on-surface">Tokens d'interface d'ambiance</span>
+<div class="grid grid-cols-4 gap-2 pt-1">
+<div class="flex flex-col items-center gap-1">
+<div class="w-full h-10 rounded-lg bg-primary-container shadow-sm flex items-center justify-center">
+<span class="font-code-sm text-code-sm text-on-primary font-medium opacity-80">7C</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">#7C5CFF</span>
+</div>
+<div class="flex flex-col items-center gap-1">
+<div class="w-full h-10 rounded-lg bg-secondary-container shadow-sm flex items-center justify-center">
+<span class="font-code-sm text-code-sm text-on-secondary font-medium opacity-80">00</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">#00E5CC</span>
+</div>
+<div class="flex flex-col items-center gap-1">
+<div class="w-full h-10 rounded-lg bg-surface-container-lowest shadow-sm flex items-center justify-center">
+<span class="font-code-sm text-code-sm text-on-surface-variant font-medium opacity-80">08</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">#08090D</span>
+</div>
+<div class="flex flex-col items-center gap-1">
+<div class="w-full h-10 rounded-lg bg-tertiary shadow-sm flex items-center justify-center">
+<span class="font-code-sm text-code-sm text-on-tertiary font-medium opacity-80">22</span>
+</div>
+<span class="font-code-sm text-code-sm text-on-surface-variant">#22E67E</span>
+</div>
+</div>
+</div>
+</article>
+<!-- Item 4: Encrypted Obfuscated Password -->
+<article class="flex flex-col w-full bg-surface-container rounded-xl p-space-md gap-space-sm shadow-sm hover:bg-surface-container-high transition-colors">
+<div class="flex items-center justify-between text-on-surface-variant">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="material-symbols-outlined text-[16px] text-error">lock</span>
+<span class="font-code-sm text-code-sm truncate">Workstation Linux • Il y a 2h</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-high font-label-caps text-label-caps text-secondary-container">
+<span class="material-symbols-outlined text-[12px]">fingerprint</span>
+            FaceID
+          </span>
+</div>
+</div>
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-lowest">
+<div class="flex items-center gap-1.5 font-code-md text-code-md tracking-widest text-on-surface-variant">
+<span>••••••••••••••••</span>
+<span class="font-label-caps text-label-caps text-error bg-error-container/30 px-1.5 py-0.5 rounded">SENSIBLE</span>
+</div>
+<button class="flex items-center gap-1 px-2 py-1 rounded bg-surface-container text-on-surface font-label-caps text-label-caps hover:bg-surface-container-high transition-colors" id="auth-reveal-btn">
+<span class="material-symbols-outlined text-[14px]">key</span>
+          Déverrouiller
+        </button>
+</div>
+</article>
+</section>
+<!-- Clear & Vault Management Bar -->
+<footer class="flex items-center justify-between gap-space-sm pt-2">
+<button class="flex items-center gap-1.5 px-4 py-2 rounded-full bg-surface-container hover:bg-error-container/20 text-on-surface-variant hover:text-error font-body-sm text-body-sm transition-colors active:scale-95" id="clear-vault-btn">
+<span class="material-symbols-outlined text-[16px]">cleaning_services</span>
+<span>Purger le coffre</span>
+</button>
+<button class="flex items-center gap-1.5 px-4 py-2 rounded-full bg-surface-container-high hover:bg-surface-container-highest text-secondary font-body-sm text-body-sm transition-colors active:scale-95" id="add-snippet-btn">
+<span class="material-symbols-outlined text-[16px]">add_circle</span>
+<span>Nouvelle entrée chiffrée</span>
+</button>
+</footer>
+<!-- Toast Notification Slot -->
+<div class="fixed top-20 inset-x-margin z-50 flex items-center justify-between gap-2 p-3 rounded-xl bg-surface-container-highest text-on-surface shadow-2xl opacity-0 pointer-events-none transition-all duration-300 transform -translate-y-2" id="toast-notify">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-secondary">check_circle</span>
+<span class="font-body-sm text-body-sm" id="toast-message">Copié dans le presse-papier local.</span>
+</div>
+<span class="font-label-caps text-label-caps text-secondary-container">OvBridge E2E</span>
+</div>
+</div>
+<script>
+  (function initClipboardVault() {
+    const toast = document.getElementById('toast-notify');
+    const toastMessage = document.getElementById('toast-message');
+    let toastTimer = null;
+
+    function showToast(message) {
+      if (toastTimer) clearTimeout(toastTimer);
+      toastMessage.textContent = message;
+      toast.classList.remove('opacity-0', '-translate-y-2', 'pointer-events-none');
+      toast.classList.add('opacity-100', 'translate-y-0');
+      toastTimer = setTimeout(() => {
+        toast.classList.add('opacity-0', '-translate-y-2', 'pointer-events-none');
+        toast.classList.remove('opacity-100', 'translate-y-0');
+      }, 2400);
+    }
+
+    // Toggle live sync
+    const syncSwitch = document.getElementById('sync-switch');
+    const syncKnob = document.getElementById('sync-knob');
+    let isSyncActive = true;
+    syncSwitch.addEventListener('click', () => {
+      isSyncActive = !isSyncActive;
+      if (isSyncActive) {
+        syncSwitch.classList.replace('bg-surface-container-highest', 'bg-primary-container');
+        syncKnob.classList.add('translate-x-5');
+        showToast('Synchronisation universelle réactivée.');
+      } else {
+        syncSwitch.classList.replace('bg-primary-container', 'bg-surface-container-highest');
+        syncKnob.classList.remove('translate-x-5');
+        showToast('Presse-papier en pause (mode hors-ligne).');
+      }
+    });
+
+    // Toggle Token Obfuscation
+    const tokenPreview = document.getElementById('token-preview');
+    const toggleTokenBtn = document.getElementById('toggle-token-btn');
+    const eyeIcon = document.getElementById('eye-icon');
+    let isHidden = false;
+    toggleTokenBtn.addEventListener('click', () => {
+      isHidden = !isHidden;
+      if (isHidden) {
+        tokenPreview.textContent = '••••••••••••••••••••••••••••••••';
+        eyeIcon.textContent = 'visibility_off';
+      } else {
+        tokenPreview.textContent = 'ovb_live_sec_89d3429fa03b11847e92c';
+        eyeIcon.textContent = 'visibility';
+      }
+    });
+
+    // Copy Hero Action
+    const copyHeroBtn = document.getElementById('copy-hero-btn');
+    copyHeroBtn.addEventListener('click', () => {
+      navigator.clipboard?.writeText('ovb_live_sec_89d3429fa03b11847e92c').catch(() => {});
+      showToast('Clé secrète copiée sur iPhone');
+    });
+
+    // Paste Action
+    const pasteBtn = document.getElementById('paste-current-btn');
+    pasteBtn.addEventListener('click', () => {
+      showToast('Élément collé dans la mémoire vive de l’iPhone.');
+    });
+
+    // Broadcast Action
+    const broadcastBtn = document.getElementById('broadcast-btn');
+    broadcastBtn.addEventListener('click', () => {
+      showToast('Diffusion forcée à 3 terminaux via relais pair-à-pair.');
+    });
+
+    // Burn Action
+    const burnBtn = document.getElementById('burn-btn');
+    burnBtn.addEventListener('click', () => {
+      tokenPreview.textContent = '[Entrée détruite de manière irréversible]';
+      tokenPreview.classList.add('text-error');
+      showToast('Jeton chiffré effacé de tous les nœuds.');
+    });
+
+    // Reveal password mock FaceID
+    const authBtn = document.getElementById('auth-reveal-btn');
+    authBtn.addEventListener('click', () => {
+      showToast('Authentification biométrique validée.');
+      authBtn.parentElement.querySelector('span:first-child').textContent = 'k9$Zq#9vLx!2024';
+      authBtn.remove();
+    });
+
+    // Clear Vault
+    const clearBtn = document.getElementById('clear-vault-btn');
+    clearBtn.addEventListener('click', () => {
+      showToast('Presse-papier synchronisé purgé avec succès.');
+    });
+
+    // Add note
+    const addSnippetBtn = document.getElementById('add-snippet-btn');
+    addSnippetBtn.addEventListener('click', () => {
+      showToast('Prêt pour la saisie chiffrée ZKP.');
+    });
+
+    // Filter pills toggling
+    const filterTabs = document.querySelectorAll('.filter-tab');
+    filterTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        filterTabs.forEach(t => {
+          t.classList.remove('bg-secondary-container', 'text-on-secondary-container');
+          t.classList.add('bg-surface-container', 'text-on-surface-variant');
+        });
+        tab.classList.remove('bg-surface-container', 'text-on-surface-variant');
+        tab.classList.add('bg-secondary-container', 'text-on-secondary-container');
+        showToast(`Filtre activé : ${tab.textContent.trim()}`);
+      });
+    });
+  })();
+</script></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface-container-lowest/85 backdrop-blur-xl shadow-[0_-4px_24px_rgba(0,0,0,0.6)]" data-active-classes="text-secondary bg-surface-container/70 shadow-[0_0_24px_-4px_rgba(0,229,204,0.3)]"><div class="flex items-center justify-around h-20 px-space-xs"><a class="flex flex-col items-center justify-center gap-1 w-16 h-14 rounded-xl text-on-surface-variant hover:text-on-surface transition-all duration-200 select-none" data-path="appareils" href="#"><span class="material-symbols-outlined text-[22px]">devices</span><span class="font-label-caps text-label-caps tracking-wider">Appareils</span></a><a class="flex flex-col items-center justify-center gap-1 w-16 h-14 rounded-xl text-on-surface-variant hover:text-on-surface transition-all duration-200 select-none" data-path="fichiers" href="#"><span class="material-symbols-outlined text-[22px]">folder</span><span class="font-label-caps text-label-caps tracking-wider">Fichiers</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-1 w-16 h-14 rounded-xl transition-all duration-200 select-none text-secondary bg-surface-container/70 shadow-[0_0_24px_-4px_rgba(0,229,204,0.3)]" data-path="presse-papier" href="#"><span class="material-symbols-outlined text-[22px]">content_paste</span><span class="font-label-caps text-label-caps tracking-wider">Presse-pap.</span></a><a class="flex flex-col items-center justify-center gap-1 w-16 h-14 rounded-xl text-on-surface-variant hover:text-on-surface transition-all duration-200 select-none" data-path="activite" href="#"><span class="material-symbols-outlined text-[22px]">shield</span><span class="font-label-caps text-label-caps tracking-wider">Activité</span></a></div></nav></body></html>

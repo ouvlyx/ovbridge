@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="fr"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "tertiary-fixed": "#5fff9a", "error": "#ffb4ab", "primary-fixed-dim": "#cabeff", "surface-variant": "#343439", "primary-fixed": "#e6deff", "error-container": "#93000a", "on-primary": "#31009a", "on-background": "#e3e2e8", "secondary": "#6fffe8", "on-tertiary-fixed": "#00210c", "on-primary-fixed": "#1c0062", "on-error-container": "#ffdad6", "on-primary-fixed-variant": "#4816cb", "on-tertiary": "#00391a", "surface-dim": "#121317", "surface-container-high": "#292a2e", "secondary-fixed": "#41fce2", "surface-bright": "#38393e", "inverse-surface": "#e3e2e8", "on-tertiary-container": "#003116", "outline": "#938ea1", "surface-container-lowest": "#0d0e12", "on-surface-variant": "#c9c4d8", "on-secondary-fixed": "#00201b", "surface-container-low": "#1a1b20", "on-tertiary-fixed-variant": "#005228", "on-secondary": "#003730", "on-primary-container": "#2a0088", "surface-container-highest": "#343439", "inverse-primary": "#603ce2", "tertiary": "#1be37c", "on-surface": "#e3e2e8", "surface-tint": "#cabeff", "secondary-fixed-dim": "#00dfc6", "primary": "#cabeff", "tertiary-fixed-dim": "#1be37c", "outline-variant": "#484555", "background": "#121317", "primary-container": "#947dff", "on-error": "#690005", "tertiary-container": "#00a657", "inverse-on-surface": "#2f3035", "surface-container": "#1e1f24", "secondary-container": "#00e5cc", "on-secondary-fixed-variant": "#005047", "on-secondary-container": "#006156", "surface": "#121317" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "gutter-tablet": "16px", "space-lg": "16px", "space-md": "12px", "space-sm": "8px", "margin-tablet": "24px", "space-xs": "4px", "gutter-desktop": "20px", "margin": "16px", "margin-desktop": "32px", "space-xl": "24px", "gutter": "12px" }, "fontFamily": { "body-md": ["Geist"], "title-sm": ["Geist"], "headline-lg": ["Geist"], "body-lg": ["Geist"], "headline-md": ["Geist"], "body-sm": ["Geist"], "code-md": ["JetBrains Mono"], "headline-xl-mobile": ["Geist"], "code-sm": ["JetBrains Mono"], "label-caps": ["JetBrains Mono"], "headline-xl": ["Geist"] }, "fontSize": { "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "title-sm": ["16px", { "lineHeight": "22px", "letterSpacing": "-0.01em", "fontWeight": "500" }], "headline-lg": ["24px", { "lineHeight": "30px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }], "headline-md": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.015em", "fontWeight": "500" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "code-md": ["13px", { "lineHeight": "18px", "letterSpacing": "-0.01em", "fontWeight": "400" }], "headline-xl-mobile": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.025em", "fontWeight": "600" }], "code-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "400" }], "label-caps": ["10px", { "lineHeight": "12px", "letterSpacing": "0.08em", "fontWeight": "500" }], "headline-xl": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.03em", "fontWeight": "600" }] } } } };</script><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface font-body-md text-body-md flex flex-col min-h-screen selection:bg-primary-container selection:text-on-primary"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.4)]"><div class="h-16 px-margin flex items-center justify-between"><div class="flex items-center gap-space-sm"><div class="w-2.5 h-2.5 rounded-full bg-secondary shadow-[0_0_12px_rgba(111,255,232,0.8)] animate-pulse"></div><h1 class="text-title-sm font-title-sm tracking-tight text-on-surface">Reseau Appareils</h1></div><div class="flex items-center gap-space-sm"><span class="px-space-xs py-0.5 rounded-full bg-surface-container-high text-secondary-fixed text-label-caps font-label-caps uppercase">E2EE ACTIVE</span><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-24 bg-surface min-h-screen"><div class="flex flex-col w-full px-margin pb-space-xl gap-space-lg">
+<!-- Header Sticky Local (In-flow subheader complementaire) -->
+<div class="sticky top-16 z-40 -mx-margin px-margin py-space-sm bg-surface-container-lowest/90 backdrop-blur-xl flex items-center justify-between shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="flex items-center gap-1.5 shrink-0">
+<span class="font-headline-md text-headline-md tracking-tight text-on-surface font-semibold">Ov<span class="text-primary-fixed-dim">Bridge</span></span>
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-tertiary"></span>
+</span>
+</div>
+<span class="text-outline-variant select-none">/</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant truncate">alex@ovbridge.io</span>
+</div>
+<div class="flex items-center gap-1 shrink-0">
+<button aria-label="État de sécurité" class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-secondary hover:text-secondary-fixed transition-colors">
+<span class="material-symbols-outlined text-[17px]">verified_user</span>
+</button>
+<button aria-label="Profil utilisateur" class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[17px]">account_circle</span>
+</button>
+<button aria-label="Déconnexion" class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[17px]">logout</span>
+</button>
+</div>
+</div>
+<!-- Contrôle Segmenté Pilule -->
+<div class="p-1 rounded-full bg-surface-container-lowest flex items-center justify-between">
+<button class="flex-1 py-1.5 px-space-md rounded-full bg-primary-container text-on-primary flex items-center justify-center gap-space-xs font-title-sm text-title-sm shadow-[0_0_20px_rgba(148,125,255,0.4)] transition-all">
+<span>Appareils</span>
+<span class="px-1.5 py-0.2 rounded-full bg-surface-container-lowest/40 text-on-primary text-label-caps font-label-caps">1</span>
+</button>
+<button class="flex-1 py-1.5 px-space-md rounded-full bg-transparent text-on-surface-variant flex items-center justify-center gap-space-xs font-title-sm text-title-sm hover:text-on-surface transition-all">
+<span>Collaborateurs</span>
+<span class="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>
+</button>
+</div>
+<!-- Carte Hero : Votre Pont Chiffré (État 1 Nœud) -->
+<div class="relative overflow-hidden rounded-xl bg-surface-container p-space-lg shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
+<!-- Gradient highlight corner glow -->
+<div class="absolute -top-12 -right-12 w-36 h-36 rounded-full bg-primary/20 blur-2xl pointer-events-none"></div>
+<div class="absolute -bottom-10 -left-10 w-28 h-28 rounded-full bg-secondary/15 blur-2xl pointer-events-none"></div>
+<div class="relative flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-secondary tracking-widest flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+          Votre pont chiffré
+        </span>
+<span class="px-space-xs py-0.5 rounded-full bg-surface-container-high text-tertiary-fixed font-code-sm text-code-sm">STANDALONE</span>
+</div>
+<div class="flex items-baseline gap-space-xs">
+<span class="text-[44px] leading-none font-headline-xl font-bold text-on-surface">1</span>
+<span class="font-body-md text-body-md text-on-surface-variant">appareil connecté sur le maillage local</span>
+</div>
+<!-- Barre de progression de maillage (30%) -->
+<div class="flex flex-col gap-1.5 pt-space-xs">
+<div class="w-full h-2 rounded-full bg-surface-container-lowest overflow-hidden flex">
+<div class="h-full w-[30%] bg-gradient-to-r from-primary-container via-primary to-secondary rounded-full shadow-[0_0_12px_rgba(111,255,232,0.6)]"></div>
+</div>
+<div class="flex items-center justify-between font-code-sm text-code-sm">
+<span class="text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px] animate-spin">sync</span>
+            En attente de nœud pair
+          </span>
+<span class="text-outline">Chiffrement autonome actif</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Section Accès Rapide (Grille 2x2) -->
+<div class="flex flex-col gap-space-sm">
+<span class="font-label-caps text-label-caps text-outline uppercase tracking-wider px-1">Accès rapide</span>
+<div class="grid grid-cols-2 gap-space-sm">
+<!-- Item 1 -->
+<div class="p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container-high transition-colors flex items-center gap-space-sm cursor-pointer group">
+<div class="w-9 h-9 rounded-full bg-primary-container/20 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px] text-primary">forum</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-sm text-title-sm text-on-surface truncate group-hover:text-primary transition-colors">Messages</span>
+<span class="font-code-sm text-code-sm text-outline">Chiffrement E2E</span>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container-high transition-colors flex items-center gap-space-sm cursor-pointer group">
+<div class="w-9 h-9 rounded-full bg-secondary/15 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px] text-secondary">cloud_queue</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-sm text-title-sm text-on-surface truncate group-hover:text-secondary transition-colors">Espace</span>
+<span class="font-code-sm text-code-sm text-outline">Volatile • 0 Go</span>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container-high transition-colors flex items-center gap-space-sm cursor-pointer group">
+<div class="w-9 h-9 rounded-full bg-tertiary/15 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px] text-tertiary">content_paste_go</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-sm text-title-sm text-on-surface truncate group-hover:text-tertiary transition-colors">Presse-papiers</span>
+<span class="font-code-sm text-code-sm text-outline">En pause</span>
+</div>
+</div>
+<!-- Item 4 -->
+<div class="p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container-high transition-colors flex items-center gap-space-sm cursor-pointer group">
+<div class="w-9 h-9 rounded-full bg-surface-variant flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px] text-secondary-fixed">inbox</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-sm text-title-sm text-on-surface truncate group-hover:text-secondary-fixed transition-colors">Réception</span>
+<span class="font-code-sm text-code-sm text-outline">Canal prêt</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Section Mes Appareils -->
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between px-1">
+<span class="font-label-caps text-label-caps text-outline uppercase tracking-wider">Mes appareils (1)</span>
+<span class="font-code-sm text-code-sm text-primary">Topologie : Étoile</span>
+</div>
+<!-- Carte Appareil Unique Actuel -->
+<div class="relative overflow-hidden rounded-xl bg-surface-container p-space-md shadow-md flex items-center justify-between">
+<!-- Accent vertical gauche violet -->
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-primary-container"></div>
+<div class="flex items-center gap-space-md pl-space-xs min-w-0">
+<div class="w-11 h-11 rounded-lg bg-surface-container-high flex items-center justify-center shrink-0 text-primary">
+<span class="material-symbols-outlined text-[26px]">laptop_mac</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="font-title-sm text-title-sm text-on-surface font-medium truncate">MacBook Pro M3 Max</span>
+<span class="px-1.5 py-0.5 rounded-full bg-tertiary/15 text-tertiary font-code-sm text-code-sm flex items-center gap-1 shrink-0">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> Actif
+            </span>
+</div>
+<div class="flex items-center gap-space-xs pt-0.5">
+<span class="font-code-sm text-code-sm text-outline font-mono truncate">SHA256: a8194454…b29f</span>
+<span class="text-outline-variant text-[10px]">•</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Ce terminal</span>
+</div>
+</div>
+</div>
+<button aria-label="Paramètres de l'appareil" class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-outline hover:text-on-surface transition-colors shrink-0 ml-space-sm">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+<!-- Carte État Vide & Invitation Technologique Chaleureuse -->
+<div class="relative rounded-xl bg-surface-container-low p-space-lg flex flex-col items-center text-center gap-space-md shadow-inner overflow-hidden">
+<!-- Arrière-plan stylisé d'ondes et nœuds -->
+<div class="w-full flex justify-center py-space-xs">
+<svg class="w-48 h-20" fill="none" viewbox="0 0 192 80" xmlns="http://www.w3.org/2000/svg">
+<!-- Onde gauche vers droite -->
+<circle cx="40" cy="40" r="28" stroke="#cabeff" stroke-opacity="0.1" stroke-width="1.5"></circle>
+<circle cx="40" cy="40" r="18" stroke="#cabeff" stroke-dasharray="3 3" stroke-opacity="0.25"></circle>
+<rect fill="#1e1f24" height="24" rx="6" width="24" x="28" y="28"></rect>
+<path d="M35 43V36C35 34.8954 35.8954 34 37 34H43C44.1046 34 45 34.8954 45 36V43" stroke="#cabeff" stroke-linecap="round" stroke-width="1.5"></path>
+<circle cx="40" cy="40" fill="#6fffe8" r="2"></circle>
+<!-- Pont de liaison d'ondes sinusoïdales chiffrées -->
+<path class="animate-pulse" d="M52 40 C 70 25, 80 55, 96 40 C 112 25, 122 55, 140 40" stroke="url(#paint0_linear)" stroke-dasharray="4 3" stroke-linecap="round" stroke-width="2"></path>
+<!-- Nœud vide de droite en attente -->
+<circle cx="152" cy="40" r="28" stroke="#6fffe8" stroke-opacity="0.1" stroke-width="1.5"></circle>
+<circle cx="152" cy="40" r="18" stroke="#6fffe8" stroke-dasharray="2 4" stroke-opacity="0.2"></circle>
+<circle cx="152" cy="40" fill="#1e1f24" r="12"></circle>
+<path d="M152 35V45M147 40H157" stroke="#6fffe8" stroke-linecap="round" stroke-opacity="0.8" stroke-width="1.5"></path>
+<defs>
+<lineargradient gradientunits="userSpaceOnUse" id="paint0_linear" x1="52" x2="140" y1="40" y2="40">
+<stop stop-color="#cabeff"></stop>
+<stop offset="1" stop-color="#6fffe8"></stop>
+</lineargradient>
+</defs>
+</svg>
+</div>
+<div class="flex flex-col gap-1 px-space-xs">
+<div class="flex items-center justify-center gap-1.5 text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-primary">hub</span>
+<h3 class="font-headline-md text-headline-md font-semibold">Synchronisation isolée</h3>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-[280px] mx-auto">
+          Vous pouvez lier un autre appareil pour commencer à synchroniser vos fichiers, presse-papier et appels en temps réel.
+        </p>
+</div>
+<!-- Bouton d'action secondaire : Générer code de liaison -->
+<button class="px-space-lg py-2 rounded-full bg-surface-container-high hover:bg-surface-bright text-on-surface flex items-center gap-space-xs font-title-sm text-title-sm transition-all shadow-sm active:scale-95">
+<span class="material-symbols-outlined text-[18px] text-secondary">pin</span>
+<span>Générer un code de liaison</span>
+</button>
+</div>
+</div>
+<!-- Bouton d'action Principal Proéminent (Lier un nouvel appareil) -->
+<div class="pt-space-xs">
+<button class="w-full relative group overflow-hidden rounded-xl bg-gradient-to-r from-primary-container via-inverse-primary to-primary-container p-space-md flex items-center justify-between text-on-primary shadow-[0_0_36px_rgba(148,125,255,0.45)] hover:shadow-[0_0_48px_rgba(148,125,255,0.6)] active:scale-[0.98] transition-all">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-12 h-12 rounded-lg bg-surface-container-lowest/30 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[28px] text-primary-fixed">qr_code_scanner</span>
+</div>
+<div class="flex flex-col text-left min-w-0">
+<span class="font-headline-md text-headline-md font-semibold text-primary-fixed truncate">Lier un nouvel appareil</span>
+<span class="font-body-sm text-body-sm text-primary-fixed-dim/90 truncate">Scanner le QR Code ou protocole pair local</span>
+</div>
+</div>
+<div class="w-8 h-8 rounded-full bg-primary-fixed/20 flex items-center justify-center text-primary-fixed shrink-0 group-hover:translate-x-0.5 transition-transform">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</div>
+</button>
+</div>
+</div>
+<script>
+  // Micro-interaction tactile pour simuler le déclenchement de liaison
+  document.addEventListener('DOMContentLoaded', () => {
+    const bindBtn = document.querySelector('button.bg-gradient-to-r');
+    if (bindBtn) {
+      bindBtn.addEventListener('click', () => {
+        bindBtn.classList.add('brightness-125');
+        setTimeout(() => bindBtn.classList.remove('brightness-125'), 200);
+      });
+    }
+  });
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/85 backdrop-blur-xl shadow-[0_-4px_24px_rgba(0,0,0,0.6)]" data-active-classes="text-primary scale-105"><div class="flex justify-around items-center h-20 px-space-xs"><a aria-current="page" class="flex flex-col items-center justify-center gap-space-xs min-w-[56px] min-h-[44px] transition-all text-primary scale-105" data-path="reseau-appareils" href="#"><span class="material-symbols-outlined text-[22px]">hub</span><span class="font-code-sm text-code-sm">Maillage</span></a><a class="flex flex-col items-center justify-center gap-space-xs min-w-[56px] min-h-[44px] text-on-surface-variant transition-all hover:text-on-surface" data-path="radar-decouverte" href="#"><span class="material-symbols-outlined text-[22px]">radar</span><span class="font-code-sm text-code-sm">Radar</span></a><a class="flex flex-col items-center justify-center gap-space-xs min-w-[56px] min-h-[44px] text-on-surface-variant transition-all hover:text-on-surface" data-path="presse-papier-sync" href="#"><span class="material-symbols-outlined text-[22px]">sync_saved_locally</span><span class="font-code-sm text-code-sm">Pont</span></a><a class="flex flex-col items-center justify-center gap-space-xs min-w-[56px] min-h-[44px] text-on-surface-variant transition-all hover:text-on-surface" data-path="journal-transferts" href="#"><span class="material-symbols-outlined text-[22px]">swap_calls</span><span class="font-code-sm text-code-sm">Flux</span></a></div></nav></body></html>

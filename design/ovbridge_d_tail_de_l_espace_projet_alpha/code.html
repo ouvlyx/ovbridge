@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="fr"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=JetBrains+Mono:wght@100..900&display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#121317;color:#e3e2e8;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "secondary-fixed": "#41fce2", "on-tertiary-fixed-variant": "#005228", "on-surface-variant": "#c9c4d8", "surface-container-low": "#1a1b20", "tertiary-fixed": "#5fff9a", "on-tertiary-fixed": "#00210c", "inverse-surface": "#e3e2e8", "surface-container": "#1e1f24", "surface-tint": "#cabeff", "surface-variant": "#343439", "on-secondary": "#003730", "outline": "#938ea1", "inverse-on-surface": "#2f3035", "on-surface": "#e3e2e8", "on-secondary-fixed-variant": "#005047", "on-background": "#e3e2e8", "secondary-container": "#00e5cc", "surface": "#121317", "surface-container-high": "#292a2e", "primary-fixed": "#e6deff", "tertiary-container": "#00a657", "inverse-primary": "#603ce2", "surface-dim": "#121317", "tertiary": "#1be37c", "on-primary-container": "#2a0088", "on-primary-fixed": "#1c0062", "surface-bright": "#38393e", "surface-container-lowest": "#0d0e12", "outline-variant": "#484555", "primary": "#cabeff", "on-tertiary": "#00391a", "on-primary-fixed-variant": "#4816cb", "secondary-fixed-dim": "#00dfc6", "on-error-container": "#ffdad6", "on-error": "#690005", "background": "#121317", "on-secondary-fixed": "#00201b", "surface-container-highest": "#343439", "primary-fixed-dim": "#cabeff", "secondary": "#6fffe8", "error-container": "#93000a", "error": "#ffb4ab", "on-tertiary-container": "#003116", "primary-container": "#947dff", "tertiary-fixed-dim": "#1be37c", "on-secondary-container": "#006156", "on-primary": "#31009a" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "margin-desktop": "32px", "margin": "16px", "margin-tablet": "24px", "space-xl": "24px", "gutter": "12px", "space-lg": "16px", "space-md": "12px", "gutter-tablet": "16px", "space-xs": "4px", "space-sm": "8px", "gutter-desktop": "20px" }, fontFamily: { "headline-xl": ["Geist"], "headline-lg": ["Geist"], "title-sm": ["Geist"], "headline-xl-mobile": ["Geist"], "body-md": ["Geist"], "body-sm": ["Geist"], "body-lg": ["Geist"], "code-sm": ["JetBrains Mono"], "code-md": ["JetBrains Mono"], "headline-md": ["Geist"], "label-caps": ["JetBrains Mono"] }, fontSize: { "headline-xl": ["36px", { lineHeight: "44px", letterSpacing: "-0.03em", fontWeight: "600" }], "headline-lg": ["24px", { lineHeight: "30px", letterSpacing: "-0.02em", fontWeight: "600" }], "title-sm": ["16px", { lineHeight: "22px", letterSpacing: "-0.01em", fontWeight: "500" }], "headline-xl-mobile": ["28px", { lineHeight: "34px", letterSpacing: "-0.025em", fontWeight: "600" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }], "body-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }], "body-lg": ["15px", { lineHeight: "22px", fontWeight: "400" }], "code-sm": ["11px", { lineHeight: "14px", letterSpacing: "0.02em", fontWeight: "400" }], "code-md": ["13px", { lineHeight: "18px", letterSpacing: "-0.01em", fontWeight: "400" }], "headline-md": ["20px", { lineHeight: "26px", letterSpacing: "-0.015em", fontWeight: "500" }], "label-caps": ["10px", { lineHeight: "12px", letterSpacing: "0.08em", fontWeight: "500" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface flex flex-col min-h-screen selection:bg-primary selection:text-on-primary"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-margin flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm min-w-0 flex-1"><button aria-label="Retour" class="w-11 h-11 -ml-space-xs flex items-center justify-center text-on-surface hover:text-primary transition-colors rounded-full" onclick="history.back()"><span class="material-symbols-outlined text-[20px]">arrow_back_ios_new</span></button><div class="flex flex-col min-w-0"><h1 class="font-title-sm text-title-sm text-on-surface truncate">Détail De L'Espace</h1><span class="font-code-sm text-code-sm text-secondary-container truncate">Tunnel E2E Actif</span></div></div><div class="flex items-center gap-space-xs shrink-0"><button aria-label="Partager ou synchroniser" class="w-11 h-11 flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors rounded-full"><span class="material-symbols-outlined text-[20px]">sync_saved_locally</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-safe bg-surface min-h-screen px-margin"><div class="flex flex-col w-full pb-8">
+<!-- Espace Header Bar (In-page context banner) -->
+<section class="flex items-center justify-between py-3 mb-4 bg-surface-container-low rounded-xl px-4 shadow-sm">
+<div class="flex flex-col min-w-0 pr-2">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+<h2 class="font-headline-md text-headline-md text-on-surface truncate">Projet Alpha</h2>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate mt-0.5">5 membres · Espace sécurisé E2E</p>
+</div>
+<button aria-label="Accéder au chat sécurisé" class="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-primary-container text-on-primary-container shadow-md hover:opacity-95 transition-all shrink-0 active:scale-95">
+<span class="material-symbols-outlined text-[18px]">chat_bubble</span>
+<span class="font-title-sm text-body-sm font-medium">Chat</span>
+</button>
+</section>
+<!-- Modern Pill Navigation Tabs -->
+<div class="flex p-1 bg-surface-container-lowest rounded-full mb-5 shadow-inner">
+<button class="flex-1 py-2 rounded-full font-title-sm text-body-sm flex items-center justify-center gap-1.5 transition-all bg-primary-container text-on-primary-container shadow-sm" id="tab-members" onclick="switchTab('members')">
+<span class="material-symbols-outlined text-[16px]">group</span>
+<span>Membres (5)</span>
+</button>
+<button class="flex-1 py-2 rounded-full font-title-sm text-body-sm flex items-center justify-center gap-1.5 transition-all text-on-surface-variant hover:text-on-surface" id="tab-clipboard" onclick="switchTab('clipboard')">
+<span class="material-symbols-outlined text-[16px]">content_paste</span>
+<span>Presse-papiers</span>
+</button>
+</div>
+<!-- Primary Action & Danger Toolbar -->
+<div class="flex items-center gap-2 mb-4">
+<button class="flex-1 h-11 px-4 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center gap-2 transition-transform active:scale-[0.98] shadow-md hover:brightness-110">
+<span class="material-symbols-outlined text-[20px]">person_add</span>
+<span class="font-title-sm text-body-sm font-medium">Inviter un membre</span>
+</button>
+<button aria-label="Supprimer l'espace" class="w-11 h-11 rounded-full bg-error-container/20 text-error flex items-center justify-center hover:bg-error-container/30 transition-colors shrink-0 active:scale-95" title="Supprimer l'espace (Propriétaire uniquement)">
+<span class="material-symbols-outlined text-[20px]">delete_forever</span>
+</button>
+</div>
+<!-- Members View (Active by default) -->
+<div class="flex flex-col gap-2" id="view-members">
+<!-- Membre 1: Fatou Diallo (Vous) -->
+<article class="p-3.5 rounded-xl bg-surface-container-low flex items-center justify-between gap-3 transition-colors hover:bg-surface-container">
+<div class="flex items-center gap-3 min-w-0">
+<div class="relative shrink-0">
+<img class="w-11 h-11 rounded-full object-cover p-0.5 bg-primary-container" data-alt="Portrait of an African woman tech lead with short natural hair smiling subtly in high-tech cinematic moody lighting with purple and mint highlights" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcJQDSfiP0FSjrGWsyA_tmQ4G2ydfcC2GDWhEhDWldLI_vzMFP5HStn6dIn4A1CPpmojW46jZwoucz59e2TyBJC2-t7IksW9YNfIdXpvraL1hBkr04bcth1Z7P7M3kXRAd7K34Zxo8J5A9YIEmYCAOnDXkX3X-3vVdTykk911Jqa927Payg8gWJD52xmRZguqOAXOt0QG4Ep6Hh5N6-4-6qlSQJkd4BZSp-_Ohz5wDM0EtxJ-pYHFrig"/>
+<span class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-tertiary"></span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="font-title-sm text-title-sm text-on-surface truncate">Fatou Diallo (Vous)</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">fatou@ovbridge.io · En ligne</p>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="px-2 py-0.5 rounded-full font-code-sm text-code-sm bg-primary-container/25 text-primary">admin</span>
+<span class="px-2 py-0.5 rounded-full font-code-sm text-code-sm bg-secondary-container/20 text-secondary-container">propriétaire</span>
+</div>
+</div>
+</div>
+<button aria-label="Options pour Fatou Diallo" class="w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors shrink-0">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</article>
+<!-- Membre 2: Alexandre Mercier -->
+<article class="p-3.5 rounded-xl bg-surface-container-low flex items-center justify-between gap-3 transition-colors hover:bg-surface-container">
+<div class="flex items-center gap-3 min-w-0">
+<div class="relative shrink-0">
+<img class="w-11 h-11 rounded-full object-cover" data-alt="Portrait of a young European developer man with glasses in a dark tech ambient room with purple terminal light reflections" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOgvaRiBG1ZR0ENwRXIxkSVaRhY8k5Vc1xp9YPhY3L5MXjoMpXY4UuDDo_asqtufNtJoJGfn9oTRNYqf1fjcPHjP_rxbQ00GH2j09mi6WMakKBzqOU5w11PX2QCOkowLIUOvcRv7dBYC92hG-lXOvDXUrmMY32bcpLXrCJP3RMjp7Mb3En9juTmSVD0W2upe-OD8_NgKkz8lYp5HkNXjAP3VcpNwASCwGxpmiiwddSBHjbtboAgyJzzw"/>
+<span class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-outline-variant"></span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-sm text-title-sm text-on-surface truncate">Alexandre Mercier</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Dernière synchro : il y a 5 min</p>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="px-2 py-0.5 rounded-full font-code-sm text-code-sm bg-primary-container/25 text-primary">admin</span>
+</div>
+</div>
+</div>
+<button aria-label="Options pour Alexandre Mercier" class="w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors shrink-0">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</article>
+<!-- Membre 3: Sarah Connor -->
+<article class="p-3.5 rounded-xl bg-surface-container-low flex items-center justify-between gap-3 transition-colors hover:bg-surface-container">
+<div class="flex items-center gap-3 min-w-0">
+<div class="relative shrink-0">
+<img class="w-11 h-11 rounded-full object-cover" data-alt="Stylized portrait of a tech analyst woman with short blonde hair bathed in cool dark cinematic cyan glow, sleek minimalist backdrop" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJQF9oDeNlfSwprNq3qDnBXr6-tepnKms3L_4kpDLtEOm4p5tgQbFqK-6AolpOvzPVf4xe7gkIDdDpKglOHbcWFM-knI8aVEihABJcpRQbg3vnK4IF9mmQKyLAYKHtFczVi4dtkydEePUI08Eb6AJSnnZ9REt4FEqNxva1hgbvPK3wQ4pW_NBpg_Z484iok9CQuai42yWn-ddaedgi-MbzV1t4wGPJKqmDG87mHq-_CFfxSZOJnLUz2w"/>
+<span class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-tertiary"></span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-sm text-title-sm text-on-surface truncate">Sarah Connor</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">En ligne · iOS 17</p>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="px-2 py-0.5 rounded-full font-code-sm text-code-sm bg-surface-container-high text-on-surface-variant">membre</span>
+</div>
+</div>
+</div>
+<button aria-label="Options pour Sarah Connor" class="w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors shrink-0">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</article>
+<!-- Membre 4: Thomas Vance -->
+<article class="p-3.5 rounded-xl bg-surface-container-low flex items-center justify-between gap-3 transition-colors hover:bg-surface-container">
+<div class="flex items-center gap-3 min-w-0">
+<div class="relative shrink-0">
+<img class="w-11 h-11 rounded-full object-cover" data-alt="Portrait of a male designer with beard in soft dark studio lighting with subtle ultraviolet ambient accents" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7-XbbKnpOIy5by_f-USJqzLu3p2IqPdrVNSBGvXtduUjyIe_SJ1baJPK1xGzjKq_ZCMpl25ZT4Y-hUW50tMEIX8FA68PDVpZkssqVN-fQpFt7UQMSYaT1GUjRs3PJE-NGZsntUvRFNJHX2kFKwxdMZO2nd8kRrvKJ5t53WDBbB3MHoZpOmrkcsg9cAU24RPOyEk-myMPlXS9JMiPFu2IpvoogXN0RMr8R1mXesinjan2RKoR5AZ0M3w"/>
+<span class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-outline-variant"></span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-sm text-title-sm text-on-surface truncate">Thomas Vance</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">Hors ligne depuis 2h</p>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="px-2 py-0.5 rounded-full font-code-sm text-code-sm bg-surface-container-high text-on-surface-variant">membre</span>
+</div>
+</div>
+</div>
+<button aria-label="Options pour Thomas Vance" class="w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors shrink-0">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</article>
+<!-- Membre 5: Camille Roux -->
+<article class="p-3.5 rounded-xl bg-surface-container-low flex items-center justify-between gap-3 transition-colors hover:bg-surface-container">
+<div class="flex items-center gap-3 min-w-0">
+<div class="relative shrink-0">
+<div class="w-11 h-11 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[22px]">mail</span>
+</div>
+<span class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-secondary-fixed"></span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-sm text-title-sm text-on-surface truncate">Camille Roux</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">En attente de confirmation</p>
+<div class="flex items-center gap-1.5 mt-1">
+<span class="px-2 py-0.5 rounded-full font-code-sm text-code-sm bg-secondary-fixed/15 text-secondary-fixed">invité</span>
+</div>
+</div>
+</div>
+<button aria-label="Options pour Camille Roux" class="w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors shrink-0">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</article>
+</div>
+<!-- Empty state placeholder for the secondary tab -->
+<div class="hidden flex-col items-center justify-center p-8 bg-surface-container-low rounded-xl text-center" id="view-clipboard">
+<div class="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-3">
+<span class="material-symbols-outlined text-[24px]">vpn_key</span>
+</div>
+<h3 class="font-title-sm text-title-sm text-on-surface mb-1">Presse-papiers partagé actif</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-xs">Les bribes textuelles et jetons copiés ici sont répliqués en temps réel avec le chiffrement de l'espace.</p>
+</div>
+<!-- Security Footer & SHA-256 Fingerprint -->
+<footer class="mt-6 p-4 rounded-xl bg-surface-container-lowest flex flex-col gap-2 shadow-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary-container text-[18px]">lock</span>
+<span class="font-title-sm text-body-sm text-on-surface">Chiffrement à divulgation nulle</span>
+</div>
+<span class="font-label-caps text-label-caps uppercase text-secondary-container bg-secondary-container/10 px-2 py-0.5 rounded-full">X25519 · E2E</span>
+</div>
+<div class="flex items-center justify-between pt-2">
+<span class="font-code-sm text-code-sm text-on-surface-variant truncate">Empreinte de groupe</span>
+<span class="font-code-sm text-code-sm text-primary tracking-wider shrink-0 select-all">9a4f · 2c81 · e01d</span>
+</div>
+</footer>
+</div>
+<script>
+  function switchTab(tab) {
+    const btnMembers = document.getElementById('tab-members');
+    const btnClipboard = document.getElementById('tab-clipboard');
+    const viewMembers = document.getElementById('view-members');
+    const viewClipboard = document.getElementById('view-clipboard');
+
+    if (tab === 'members') {
+      btnMembers.className = 'flex-1 py-2 rounded-full font-title-sm text-body-sm flex items-center justify-center gap-1.5 transition-all bg-primary-container text-on-primary-container shadow-sm';
+      btnClipboard.className = 'flex-1 py-2 rounded-full font-title-sm text-body-sm flex items-center justify-center gap-1.5 transition-all text-on-surface-variant hover:text-on-surface';
+      viewMembers.classList.remove('hidden');
+      viewClipboard.classList.add('hidden');
+    } else {
+      btnClipboard.className = 'flex-1 py-2 rounded-full font-title-sm text-body-sm flex items-center justify-center gap-1.5 transition-all bg-primary-container text-on-primary-container shadow-sm';
+      btnMembers.className = 'flex-1 py-2 rounded-full font-title-sm text-body-sm flex items-center justify-center gap-1.5 transition-all text-on-surface-variant hover:text-on-surface';
+      viewMembers.classList.add('hidden');
+      viewClipboard.classList.remove('hidden');
+    }
+  }
+</script></main></body></html>

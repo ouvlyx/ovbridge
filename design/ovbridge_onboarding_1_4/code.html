@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OvBridge — Onboarding 1/4</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            bgDark: '#08090D',
+            surface: '#0F1117',
+            surfaceRaised: '#161923',
+            borderSubtle: '#1E2230',
+            borderStrong: '#2A2F40',
+            primaryViolet: '#7C5CFF',
+            primaryGlow: '#9B87FF',
+            accentCyan: '#00E5CC',
+            neonGreen: '#22E67E',
+            textPrimary: '#F5F6FA',
+            textSecondary: '#9096A6',
+            textMuted: '#5A6172',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Geist', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #08090D;
+      color: #F5F6FA;
+      font-family: 'Inter', sans-serif;
+    }
+    .glow-violet-cyan {
+      box-shadow: 0 0 50px -10px rgba(124, 92, 255, 0.45), 0 0 30px -10px rgba(0, 229, 204, 0.3);
+    }
+    .btn-violet-glow {
+      box-shadow: 0 0 30px -6px rgba(124, 92, 255, 0.5);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-0 md:p-6 bg-[#040507]">
+  <!-- Mobile Container 375x812 -->
+  <main class="w-[375px] h-[812px] bg-[#08090D] relative flex flex-col justify-between overflow-hidden shadow-2xl rounded-[36px] border border-[#1E2230] p-6 selection:bg-[#7C5CFF]/30">
+    <!-- Spatial background ambient glow -->
+    <div class="absolute -top-24 -left-20 w-72 h-72 rounded-full bg-[#7C5CFF]/15 blur-3xl pointer-events-none"></div>
+    <div class="absolute top-1/2 -right-24 w-60 h-60 rounded-full bg-[#00E5CC]/10 blur-3xl pointer-events-none"></div>
+
+    <!-- Top Bar: Status indicator & Passer -->
+    <header class="relative z-10 flex items-center justify-between pt-2">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-[#00E5CC] animate-pulse"></span>
+        <span class="font-mono text-[11px] text-[#5A6172] tracking-wider uppercase">OvBridge // v2.4</span>
+      </div>
+      <a href="#passer" class="text-[13px] font-medium text-[#9096A6] hover:text-[#F5F6FA] transition-colors py-1 px-2.5 rounded-full hover:bg-[#161923]">Passer</a>
+    </header>
+
+    <!-- Center Content -->
+    <section class="relative z-10 flex flex-col items-center text-center my-auto px-1">
+      <!-- 120px Icon container: Shield with checkmark -->
+      <div class="relative w-[120px] h-[120px] rounded-[32px] p-[1px] bg-gradient-to-br from-[#7C5CFF] via-[#7C5CFF]/60 to-[#00E5CC] glow-violet-cyan mb-8 transition-transform duration-300 hover:scale-105">
+        <div class="w-full h-full bg-[#0F1117] rounded-[31px] flex items-center justify-center relative overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-br from-[#7C5CFF]/20 to-[#00E5CC]/10 opacity-70"></div>
+          <!-- Shield Check Icon -->
+          <svg class="w-14 h-14 text-[#00E5CC] relative z-10" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
+          </svg>
+        </div>
+      </div>
+
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#161923] border border-[#1E2230] mb-3">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#7C5CFF]"></span>
+        <span class="text-[11px] font-mono font-medium text-[#7C5CFF] tracking-wide uppercase">Étape 01 // Initialisation</span>
+      </div>
+
+      <h1 class="font-display font-semibold text-[24px] leading-[32px] text-[#F5F6FA] mb-1.5">
+        Bienvenue sur OvBridge
+      </h1>
+      
+      <p class="text-[13px] leading-[18px] font-medium text-[#00E5CC] mb-3 tracking-wide">
+        Votre pont chiffré multi-appareils
+      </p>
+
+      <p class="text-[14px] leading-[22px] text-[#9096A6] max-w-[310px]">
+        OvBridge relie tous vos appareils (téléphones, ordinateurs) autour d'un espace sécurisé chiffré de bout en bout.
+      </p>
+    </section>
+
+    <!-- Bottom Controls -->
+    <footer class="relative z-10 flex flex-col gap-5 pb-2">
+      <!-- 4 dots indicator (step 1 active pill) -->
+      <div class="flex items-center justify-center gap-2" aria-label="Pagination étape 1 sur 4">
+        <span class="w-7 h-2 rounded-full bg-[#7C5CFF] transition-all duration-300"></span>
+        <span class="w-2 h-2 rounded-full bg-[#1E2230]"></span>
+        <span class="w-2 h-2 rounded-full bg-[#1E2230]"></span>
+        <span class="w-2 h-2 rounded-full bg-[#1E2230]"></span>
+      </div>
+
+      <!-- Action Button -->
+      <button class="w-full h-[52px] rounded-2xl bg-gradient-to-r from-[#7C5CFF] to-[#9B87FF] text-[#F5F6FA] font-medium text-[15px] flex items-center justify-center gap-2 btn-violet-glow hover:opacity-95 active:scale-[0.98] transition-all">
+        <span>Suivant</span>
+        <svg class="w-4 h-4 text-[#F5F6FA]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+        </svg>
+      </button>
+    </footer>
+  </main>
+</body>
+</html>

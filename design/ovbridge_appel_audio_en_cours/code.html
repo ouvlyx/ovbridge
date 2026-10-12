@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_blank" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=JetBrains+Mono:wght@100..900&display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;min-height:100vh;margin:0;padding:0;background-color:#121317;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "tertiary-container": "#00a657", "secondary-container": "#00e5cc", "on-tertiary-container": "#003116", "on-secondary-container": "#006156", "on-primary-fixed-variant": "#4816cb", "inverse-on-surface": "#2f3035", "error": "#ffb4ab", "surface": "#121317", "secondary-fixed-dim": "#00dfc6", "surface-container-low": "#1a1b20", "on-tertiary-fixed": "#00210c", "on-secondary-fixed-variant": "#005047", "inverse-surface": "#e3e2e8", "surface-tint": "#cabeff", "secondary": "#6fffe8", "on-secondary-fixed": "#00201b", "outline-variant": "#484555", "on-surface": "#e3e2e8", "inverse-primary": "#603ce2", "on-secondary": "#003730", "on-error": "#690005", "outline": "#938ea1", "on-primary-fixed": "#1c0062", "on-background": "#e3e2e8", "tertiary-fixed": "#5fff9a", "primary-fixed-dim": "#cabeff", "tertiary-fixed-dim": "#1be37c", "surface-variant": "#343439", "surface-container-lowest": "#0d0e12", "on-tertiary": "#00391a", "primary": "#cabeff", "surface-container-highest": "#343439", "on-tertiary-fixed-variant": "#005228", "surface-dim": "#121317", "tertiary": "#1be37c", "on-primary": "#31009a", "primary-fixed": "#e6deff", "surface-container": "#1e1f24", "surface-container-high": "#292a2e", "on-surface-variant": "#c9c4d8", "error-container": "#93000a", "on-primary-container": "#2a0088", "background": "#121317", "primary-container": "#947dff", "secondary-fixed": "#41fce2", "surface-bright": "#38393e", "on-error-container": "#ffdad6" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "margin-desktop": "32px", "space-xs": "4px", "margin-tablet": "24px", "gutter-tablet": "16px", "margin": "16px", "gutter": "12px", "space-md": "12px", "gutter-desktop": "20px", "space-xl": "24px", "space-lg": "16px", "space-sm": "8px" }, fontFamily: { "title-sm": ["Geist"], "body-lg": ["Geist"], "headline-md": ["Geist"], "headline-lg": ["Geist"], "body-md": ["Geist"], "body-sm": ["Geist"], "headline-xl-mobile": ["Geist"], "code-sm": ["JetBrains Mono"], "code-md": ["JetBrains Mono"], "label-caps": ["JetBrains Mono"], "headline-xl": ["Geist"] }, fontSize: { "title-sm": ["16px", { lineHeight: "22px", letterSpacing: "-0.01em", fontWeight: "500" }], "body-lg": ["15px", { lineHeight: "22px", fontWeight: "400" }], "headline-md": ["20px", { lineHeight: "26px", letterSpacing: "-0.015em", fontWeight: "500" }], "headline-lg": ["24px", { lineHeight: "30px", letterSpacing: "-0.02em", fontWeight: "600" }], "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }], "body-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }], "headline-xl-mobile": ["28px", { lineHeight: "34px", letterSpacing: "-0.025em", fontWeight: "600" }], "code-sm": ["11px", { lineHeight: "14px", letterSpacing: "0.02em", fontWeight: "400" }], "code-md": ["13px", { lineHeight: "18px", letterSpacing: "-0.01em", fontWeight: "400" }], "label-caps": ["10px", { lineHeight: "12px", letterSpacing: "0.08em", fontWeight: "500" }], "headline-xl": ["36px", { lineHeight: "44px", letterSpacing: "-0.03em", fontWeight: "600" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface antialiased min-h-screen flex flex-col select-none"><main class="flex-1 flex flex-col relative w-full bg-surface"><div class="flex flex-col w-full relative select-none overflow-hidden pb-safe">
+<!-- Subtle Spatial Radial Glows -->
+<div class="pointer-events-none absolute -top-32 -left-20 w-80 h-80 rounded-full bg-primary/10 blur-[90px]"></div>
+<div class="pointer-events-none absolute top-1/4 -right-24 w-80 h-80 rounded-full bg-secondary-container/10 blur-[100px]"></div>
+<div class="pointer-events-none absolute bottom-28 left-1/2 -translate-x-1/2 w-96 h-64 rounded-full bg-primary-container/10 blur-[110px]"></div>
+<div class="flex flex-col justify-between w-full px-margin py-space-md z-10" style="min-height: calc(100vh - 4.5rem);">
+<!-- Top Bar: Floating Status & Cryptographic Metrics -->
+<header class="flex flex-col gap-space-xs w-full">
+<!-- Top floating info cluster -->
+<div class="flex items-center justify-between w-full bg-surface-container/80 backdrop-blur-md rounded-full px-space-md py-space-xs shadow-md">
+<!-- Network & Latency badge -->
+<div class="flex items-center gap-space-xs">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-tertiary"></span>
+</span>
+<span class="font-code-sm text-code-sm text-tertiary">Excellente</span>
+<span class="font-code-sm text-code-sm text-outline">·</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">1.2 ms</span>
+</div>
+<!-- Security protocol badge -->
+<div class="flex items-center gap-1 bg-surface-container-high px-space-sm py-0.5 rounded-full">
+<span class="material-symbols-outlined text-[13px] text-secondary">lock</span>
+<span class="font-label-caps text-label-caps text-secondary tracking-widest uppercase">P2P Noise-XX</span>
+</div>
+</div>
+<!-- Call duration tracker pill -->
+<div class="self-center mt-1 flex items-center gap-space-xs bg-surface-container-low px-space-md py-1 rounded-full shadow-sm">
+<span class="relative flex h-1.5 w-1.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary-container opacity-60"></span>
+<span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-secondary-container"></span>
+</span>
+<span class="font-code-md text-code-md text-on-surface font-semibold tracking-wider" id="call-timer">00:42</span>
+</div>
+</header>
+<!-- Center Section: Caller identity & Audio visualizer -->
+<section class="flex flex-col items-center justify-center my-auto py-space-sm relative">
+<!-- Pulsing spatial audio-wave orbits -->
+<div class="relative flex items-center justify-center">
+<!-- Outer acoustic ring 2 -->
+<div class="absolute w-[240px] h-[240px] rounded-full bg-gradient-to-tr from-primary/15 via-secondary/10 to-transparent blur-sm animate-pulse" style="animation-duration: 3s;"></div>
+<!-- Outer acoustic ring 1 -->
+<div class="absolute w-[200px] h-[200px] rounded-full bg-surface-container-highest/60"></div>
+<!-- Core Avatar Container (160px diameter) with glowing gradient boundary -->
+<div class="relative w-40 h-40 rounded-full p-1 bg-gradient-to-tr from-primary-container via-primary to-secondary-container shadow-2xl flex items-center justify-center">
+<div class="w-full h-full rounded-full bg-surface-container-lowest overflow-hidden flex items-center justify-center relative">
+<!-- Simulated ambient soft lighting inside avatar -->
+<div class="absolute inset-0 bg-gradient-to-b from-primary/20 via-transparent to-surface-container-lowest/90 z-0"></div>
+<img class="w-full h-full object-cover relative z-10" data-alt="Portrait of a young elegant Senegalese woman Fatou Diop with braided hairstyle, studio rim lighting with subtle deep violet and soft teal cyan accents, dark cinematic ambient background, premium photography" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrq8Oq6w0ArLHqL2c-zk3WEWOXg9JKq8SVz9197Gh5hLDlmS7jYc4hz03DJV4Pjy7v7voJKBeHbj1CbFNxY7Q3nSFtjyXUMmW0VJkqKQM2-7vd6SBTgU7CR3vvToSAtZTLDcL8dAk8XblgcByDB2EeTPISEoULo3v-u5K-7n8G_tV8H5p7R8xhfYCdYTeITpzK8w2M2hjsnd7XMAJ-Vw7Z2CCennhA8Y0MNRjtzxKfOl6zAKeZhMfeCg"/>
+<!-- Fallback monogram silhouette overlay -->
+<div class="absolute inset-0 flex items-center justify-center z-0 opacity-40">
+<span class="font-headline-xl text-headline-xl text-primary font-bold">FD</span>
+</div>
+</div>
+<!-- Pulsing direct audio indicator pip on avatar rim -->
+<span class="absolute bottom-1 right-2 flex h-5 w-5 rounded-full bg-surface-container-lowest items-center justify-center shadow">
+<span class="h-3 w-3 rounded-full bg-tertiary animate-ping absolute"></span>
+<span class="h-3 w-3 rounded-full bg-tertiary relative"></span>
+</span>
+</div>
+</div>
+<!-- Caller Details -->
+<div class="mt-space-lg flex flex-col items-center text-center">
+<h1 class="font-headline-lg text-headline-lg text-on-surface font-semibold tracking-tight">Fatou Diop</h1>
+<!-- Peer device state -->
+<div class="flex items-center gap-1.5 mt-space-xs text-secondary">
+<span class="relative flex h-1.5 w-1.5">
+<span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-tertiary"></span>
+</span>
+<span class="font-body-sm text-body-sm text-secondary font-medium tracking-tight">MacBook Pro M3 · Chiffré E2E</span>
+<span class="material-symbols-outlined text-[13px] text-secondary ml-0.5">lock</span>
+</div>
+<!-- Real-time Audio Stream Metrics -->
+<div class="mt-space-md bg-surface-container-low px-space-md py-1.5 rounded-full shadow-sm flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[14px] text-outline">graphic_eq</span>
+<span class="font-code-sm text-code-sm text-on-surface-variant">Opus 48kHz · 128 kbps · Zéro Cloud</span>
+</div>
+</div>
+<!-- Dynamic Audio Waveform micro-canvas -->
+<div class="flex items-center justify-center gap-1.5 mt-space-lg h-7 px-space-lg">
+<span class="w-1 bg-secondary rounded-full h-2 animate-pulse" style="animation-duration: 850ms;"></span>
+<span class="w-1 bg-secondary-container rounded-full h-5 animate-pulse" style="animation-duration: 620ms;"></span>
+<span class="w-1 bg-primary rounded-full h-7 animate-pulse" style="animation-duration: 940ms;"></span>
+<span class="w-1 bg-primary-fixed-dim rounded-full h-4 animate-pulse" style="animation-duration: 710ms;"></span>
+<span class="w-1 bg-secondary rounded-full h-6 animate-pulse" style="animation-duration: 830ms;"></span>
+<span class="w-1 bg-tertiary rounded-full h-3 animate-pulse" style="animation-duration: 590ms;"></span>
+<span class="w-1 bg-secondary-container rounded-full h-5 animate-pulse" style="animation-duration: 770ms;"></span>
+<span class="w-1 bg-primary rounded-full h-2 animate-pulse" style="animation-duration: 900ms;"></span>
+</div>
+</section>
+<!-- Bottom Controls: Floating docking panel -->
+<footer class="w-full flex flex-col items-center mb-space-xs">
+<div class="w-full bg-surface-container/70 backdrop-blur-xl rounded-[28px] p-space-md shadow-xl flex items-center justify-between gap-1">
+<!-- 1. Micro (Active toggled Mute state: prominent light surface) -->
+<button aria-label="Microphone muet" class="group flex flex-col items-center gap-1.5 focus:outline-none transition-transform active:scale-95" id="btn-mute" type="button">
+<div class="w-14 h-14 rounded-full bg-inverse-surface text-inverse-on-surface flex items-center justify-center shadow-lg transition-colors" id="mute-circle">
+<span class="material-symbols-outlined text-[24px]" id="mute-icon">mic_off</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface font-medium" id="mute-label">Muet</span>
+</button>
+<!-- 2. Pavé numérique / Clavier -->
+<button aria-label="Afficher le clavier" class="group flex flex-col items-center gap-1.5 focus:outline-none transition-transform active:scale-95" type="button">
+<div class="w-14 h-14 rounded-full bg-surface-container-high text-on-surface flex items-center justify-center shadow-md group-hover:bg-surface-bright transition-colors">
+<span class="material-symbols-outlined text-[24px]">dialpad</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-medium">Clavier</span>
+</button>
+<!-- 3. Raccrocher / Fin d'appel (Centre proéminent, 64px, Rouge destructeur éclatant) -->
+<button aria-label="Terminer l'appel" class="group flex flex-col items-center gap-1 focus:outline-none transition-transform active:scale-90 -translate-y-2" id="btn-hangup" type="button">
+<div class="w-16 h-16 rounded-full bg-error-container text-on-error flex items-center justify-center shadow-2xl relative transition-transform">
+<div class="absolute inset-0 rounded-full bg-error/20 blur-md pointer-events-none"></div>
+<span class="material-symbols-outlined text-[30px] relative z-10" style="font-variation-settings: 'FILL' 1;">call_end</span>
+</div>
+<span class="font-body-sm text-body-sm text-error font-semibold">Fin</span>
+</button>
+<!-- 4. Haut-parleur -->
+<button aria-label="Haut-parleur" class="group flex flex-col items-center gap-1.5 focus:outline-none transition-transform active:scale-95" id="btn-speaker" type="button">
+<div class="w-14 h-14 rounded-full bg-surface-container-high text-on-surface flex items-center justify-center shadow-md group-hover:bg-surface-bright transition-colors" id="speaker-circle">
+<span class="material-symbols-outlined text-[24px]">volume_up</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-medium">HP</span>
+</button>
+<!-- 5. Basculer vers Vidéo -->
+<button aria-label="Basculer vers vidéo" class="group flex flex-col items-center gap-1.5 focus:outline-none transition-transform active:scale-95" type="button">
+<div class="w-14 h-14 rounded-full bg-surface-container-high text-on-surface flex items-center justify-center shadow-md group-hover:bg-surface-bright transition-colors">
+<span class="material-symbols-outlined text-[24px]">videocam</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-medium">Vidéo</span>
+</button>
+</div>
+</footer>
+</div>
+</div>
+<script>
+  // Simple reactive timer increment
+  (function() {
+    let seconds = 42;
+    const timerElem = document.getElementById('call-timer');
+    if (timerElem) {
+      setInterval(() => {
+        seconds++;
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        timerElem.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      }, 1000);
+    }
+
+    // Toggle mute state visual feedback
+    const muteBtn = document.getElementById('btn-mute');
+    const muteCircle = document.getElementById('mute-circle');
+    const muteIcon = document.getElementById('mute-icon');
+    let isMuted = true;
+
+    if (muteBtn && muteCircle && muteIcon) {
+      muteBtn.addEventListener('click', () => {
+        isMuted = !isMuted;
+        if (isMuted) {
+          muteCircle.className = 'w-14 h-14 rounded-full bg-inverse-surface text-inverse-on-surface flex items-center justify-center shadow-lg transition-colors';
+          muteIcon.textContent = 'mic_off';
+        } else {
+          muteCircle.className = 'w-14 h-14 rounded-full bg-surface-container-high text-on-surface flex items-center justify-center shadow-md transition-colors';
+          muteIcon.textContent = 'mic';
+        }
+      });
+    }
+
+    // Speaker toggle state
+    const speakerBtn = document.getElementById('btn-speaker');
+    const speakerCircle = document.getElementById('speaker-circle');
+    let speakerOn = false;
+
+    if (speakerBtn && speakerCircle) {
+      speakerBtn.addEventListener('click', () => {
+        speakerOn = !speakerOn;
+        if (speakerOn) {
+          speakerCircle.className = 'w-14 h-14 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-md transition-colors';
+        } else {
+          speakerCircle.className = 'w-14 h-14 rounded-full bg-surface-container-high text-on-surface flex items-center justify-center shadow-md transition-colors';
+        }
+      });
+    }
+  })();
+</script></main></body></html>

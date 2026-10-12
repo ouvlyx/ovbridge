@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="fr"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_tab" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "surface-container-highest": "#343439", "secondary-fixed-dim": "#00dfc6", "surface-bright": "#38393e", "secondary-container": "#00e5cc", "inverse-primary": "#603ce2", "on-primary": "#31009a", "on-secondary": "#003730", "primary": "#cabeff", "on-surface-variant": "#c9c4d8", "on-secondary-container": "#006156", "on-error-container": "#ffdad6", "primary-fixed": "#e6deff", "primary-container": "#947dff", "surface-tint": "#cabeff", "on-tertiary-fixed-variant": "#005228", "on-secondary-fixed-variant": "#005047", "on-error": "#690005", "tertiary-fixed-dim": "#1be37c", "on-tertiary-container": "#003116", "outline-variant": "#484555", "on-primary-fixed-variant": "#4816cb", "error-container": "#93000a", "inverse-surface": "#e3e2e8", "on-tertiary": "#00391a", "surface-container": "#1e1f24", "error": "#ffb4ab", "on-tertiary-fixed": "#00210c", "surface-container-low": "#1a1b20", "tertiary-fixed": "#5fff9a", "on-secondary-fixed": "#00201b", "on-surface": "#e3e2e8", "surface-container-high": "#292a2e", "surface-dim": "#121317", "on-primary-container": "#2a0088", "primary-fixed-dim": "#cabeff", "background": "#121317", "on-background": "#e3e2e8", "surface-container-lowest": "#0d0e12", "surface": "#121317", "outline": "#938ea1", "surface-variant": "#343439", "secondary": "#6fffe8", "secondary-fixed": "#41fce2", "inverse-on-surface": "#2f3035", "tertiary": "#1be37c", "on-primary-fixed": "#1c0062", "tertiary-container": "#00a657" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "gutter-desktop": "20px", "space-sm": "8px", "space-xs": "4px", "margin-desktop": "32px", "space-md": "12px", "gutter": "12px", "margin": "16px", "space-lg": "16px", "space-xl": "24px", "margin-tablet": "24px", "gutter-tablet": "16px" }, "fontFamily": { "label-caps": ["JetBrains Mono"], "headline-xl-mobile": ["Geist"], "headline-xl": ["Geist"], "body-md": ["Geist"], "headline-lg": ["Geist"], "body-lg": ["Geist"], "title-sm": ["Geist"], "code-md": ["JetBrains Mono"], "body-sm": ["Geist"], "headline-md": ["Geist"], "code-sm": ["JetBrains Mono"] }, "fontSize": { "label-caps": ["10px", { "lineHeight": "12px", "letterSpacing": "0.08em", "fontWeight": "500" }], "headline-xl-mobile": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.025em", "fontWeight": "600" }], "headline-xl": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.03em", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "headline-lg": ["24px", { "lineHeight": "30px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }], "title-sm": ["16px", { "lineHeight": "22px", "letterSpacing": "-0.01em", "fontWeight": "500" }], "code-md": ["13px", { "lineHeight": "18px", "letterSpacing": "-0.01em", "fontWeight": "400" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "headline-md": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.015em", "fontWeight": "500" }], "code-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.02em", "fontWeight": "400" }] } } } };</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-background font-body-md text-body-md text-on-surface flex flex-col min-h-screen selection:bg-primary-container selection:text-on-primary-container"><header class="fixed top-0 inset-x-0 z-50 bg-surface/80 backdrop-blur-xl pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.4)]"><div class="h-16 px-margin flex items-center justify-between"><div class="flex items-center gap-space-sm"><div class="w-2.5 h-2.5 rounded-full bg-secondary shadow-[0_0_8px_rgba(111,255,232,0.6)]"></div><h1 class="font-headline-md text-headline-md text-on-surface tracking-tight">Messages</h1></div><div class="flex items-center gap-space-sm"><button aria-label="Sécurité chiffrée" class="w-11 h-11 flex items-center justify-center text-secondary hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">verified_user</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-[0_0_12px_rgba(202,190,255,0.35)]"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-24 bg-surface min-h-screen"><div class="flex flex-col w-full relative px-margin pb-space-xl">
+<!-- Dynamic In-App Toast Notification Banner Floating Overlay -->
+<div class="sticky top-2 z-40 mb-space-md transition-all duration-300 ease-out transform" id="toast-banner">
+<div class="relative bg-surface-container-high/95 backdrop-blur-xl rounded-xl p-space-md shadow-[0_8px_32px_-6px_rgba(124,92,255,0.45)] flex items-center gap-space-md">
+<!-- Glow ambient backdrop for the toast -->
+<div class="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-container/20 to-secondary-container/10 pointer-events-none"></div>
+<!-- Icon & Status Dot -->
+<div class="relative flex-shrink-0 w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary shadow-sm">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">chat</span>
+<span class="absolute -top-1 -right-1 flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary-fixed-dim opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-secondary"></span>
+</span>
+</div>
+<!-- Content -->
+<div class="flex-1 min-w-0 pr-space-xs z-10">
+<div class="flex items-center gap-space-xs mb-0.5">
+<span class="font-title-sm text-title-sm text-on-surface truncate">Nouveau message</span>
+<span class="font-code-sm text-code-sm text-outline flex-shrink-0">• À l'instant</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">
+          iPhone 15 Pro vous a envoyé un fichier
+        </p>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-space-xs z-10 flex-shrink-0">
+<button class="h-8 px-2.5 rounded-full bg-primary/15 text-primary hover:bg-primary/25 font-title-sm text-body-sm flex items-center gap-1 transition-colors" id="open-toast-btn">
+<span>Ouvrir</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+<button aria-label="Fermer la notification" class="w-7 h-7 rounded-full flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors" id="dismiss-toast-btn">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Messages Header Sub-Bar & Unread Counter -->
+<div class="flex items-center justify-between mt-space-xs mb-space-md">
+<div class="flex items-center gap-space-sm">
+<span class="font-headline-md text-headline-md text-on-surface">Conversations</span>
+<div class="px-2 py-0.5 rounded-full bg-secondary-container/20 text-secondary-fixed flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span class="font-label-caps text-label-caps tracking-wider uppercase font-semibold">4 non lus</span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+</button>
+</div>
+</div>
+<!-- Search & Security Filter Bar -->
+<div class="relative w-full mb-space-lg">
+<div class="flex items-center w-full h-11 px-3.5 bg-surface-container-low rounded-xl text-on-surface-variant focus-within:bg-surface-container focus-within:text-on-surface transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[20px] mr-2 text-outline">search</span>
+<input class="bg-transparent border-0 outline-none w-full font-body-md text-body-md text-on-surface placeholder:text-outline" placeholder="Rechercher par clé, contact ou tag..." type="text"/>
+<span class="font-label-caps text-label-caps uppercase text-outline px-1.5 py-0.5 rounded bg-surface-container-highest">E2EE</span>
+</div>
+</div>
+<!-- Conversation Cards List -->
+<div class="flex flex-col gap-space-sm">
+<!-- Highlighted Conversation Linked with Toast (iPhone 15 Pro) -->
+<div class="relative group p-space-md rounded-xl bg-surface-container-high shadow-[0_4px_24px_-8px_rgba(124,92,255,0.35)] transition-all duration-300" id="conv-highlight">
+<div class="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-container/15 via-transparent to-secondary-container/5 pointer-events-none"></div>
+<div class="relative flex items-center gap-space-md">
+<!-- Device/User Avatar -->
+<div class="relative flex-shrink-0 w-12 h-12 rounded-xl bg-surface-container-highest flex items-center justify-center text-secondary shadow-sm">
+<span class="material-symbols-outlined text-[24px]">phone_iphone</span>
+<!-- Live pulse badge -->
+<span class="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-secondary shadow-[0_0_8px_rgba(111,255,232,0.8)]"></span>
+</div>
+<!-- Chat Details -->
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<div class="flex items-center gap-space-xs">
+<span class="font-title-sm text-title-sm text-on-surface font-semibold truncate">iPhone 15 Pro</span>
+<span class="font-code-sm text-code-sm text-secondary-fixed bg-secondary-container/15 px-1.5 py-0.2 rounded">Mesh Pair</span>
+</div>
+<span class="font-code-sm text-code-sm text-primary font-medium flex-shrink-0">À l'instant</span>
+</div>
+<div class="flex items-center justify-between gap-space-sm">
+<p class="font-body-md text-body-md text-on-surface truncate flex items-center gap-1 font-medium">
+<span class="material-symbols-outlined text-[16px] text-secondary">attachment</span>
+<span>build_v2.4.9-arm64.tar.gz</span>
+<span class="font-code-sm text-code-sm text-outline">(18.4 Mo)</span>
+</p>
+<span class="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-on-primary font-label-caps text-label-caps font-bold flex-shrink-0 shadow-sm">
+              2
+            </span>
+</div>
+</div>
+</div>
+<!-- Peer Hash Micro-Meta -->
+<div class="mt-space-sm pt-2 flex items-center justify-between bg-surface-container/60 rounded-lg px-2.5 py-1 text-on-surface-variant">
+<span class="font-code-sm text-code-sm text-outline truncate">ed25519:7b3f...91ae</span>
+<span class="font-label-caps text-label-caps uppercase text-tertiary flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+          Canal P2P direct
+        </span>
+</div>
+</div>
+<!-- Conversation 2: Projet Alpha -->
+<div class="relative p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-space-md">
+<!-- Group Avatar -->
+<div class="relative flex-shrink-0 w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[24px]">workspaces</span>
+</div>
+<!-- Chat Details -->
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<span class="font-title-sm text-title-sm text-on-surface font-medium truncate">Projet Alpha</span>
+<span class="font-code-sm text-code-sm text-outline flex-shrink-0">14:22</span>
+</div>
+<div class="flex items-center justify-between gap-space-sm">
+<p class="font-body-md text-body-md text-on-surface-variant truncate">
+              Thomas : Les signatures cryptographiques sont validées.
+            </p>
+<span class="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-on-primary font-label-caps text-label-caps font-bold flex-shrink-0">
+              2
+            </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Conversation 3: Famille -->
+<div class="relative p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-space-md">
+<!-- Family Avatar -->
+<div class="relative flex-shrink-0 w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[24px]">diversity_3</span>
+</div>
+<!-- Chat Details -->
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<span class="font-title-sm text-title-sm text-on-surface font-medium truncate">Famille</span>
+<span class="font-code-sm text-code-sm text-outline flex-shrink-0">Hier</span>
+</div>
+<div class="flex items-center justify-between gap-space-sm">
+<p class="font-body-md text-body-md text-outline truncate">
+              Claire : On synchronise l'album chiffré ce soir ?
+            </p>
+<span class="material-symbols-outlined text-[16px] text-outline">done_all</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Conversation 4: Relais Personnel & Journal Local -->
+<div class="relative p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors opacity-80">
+<div class="flex items-center gap-space-md">
+<div class="relative flex-shrink-0 w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-secondary-fixed">
+<span class="material-symbols-outlined text-[24px]">lock_clock</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-0.5">
+<span class="font-title-sm text-title-sm text-on-surface font-medium truncate">Notes Éphémères</span>
+<span class="font-code-sm text-code-sm text-outline flex-shrink-0">Lun.</span>
+</div>
+<p class="font-body-md text-body-md text-outline truncate">
+            Clé temporaire de session : token expiré.
+          </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Ambient Network Status Card -->
+<div class="mt-space-lg p-space-md rounded-xl bg-surface-container-lowest flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[20px]">hub</span>
+<div class="flex flex-col">
+<span class="font-title-sm text-body-sm text-on-surface">Réseau décentralisé</span>
+<span class="font-code-sm text-code-sm text-outline">5 nœuds actifs • latence 14ms</span>
+</div>
+</div>
+<div class="w-2 h-2 rounded-full bg-tertiary shadow-[0_0_8px_rgba(27,227,124,0.6)]"></div>
+</div>
+<!-- Floating Action Button (New Discussion) -->
+<button aria-label="Nouvelle conversation" class="fixed right-5 bottom-24 z-30 w-14 h-14 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shadow-[0_8px_24px_rgba(148,125,255,0.45)] hover:scale-105 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[28px]">add</span>
+</button>
+</div>
+<script>
+  (function() {
+    const toastBanner = document.getElementById('toast-banner');
+    const dismissBtn = document.getElementById('dismiss-toast-btn');
+    const openBtn = document.getElementById('open-toast-btn');
+    const convHighlight = document.getElementById('conv-highlight');
+
+    if (dismissBtn && toastBanner) {
+      dismissBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toastBanner.style.opacity = '0';
+        toastBanner.style.transform = 'translateY(-12px) scale(0.97)';
+        setTimeout(() => {
+          toastBanner.style.display = 'none';
+        }, 300);
+      });
+    }
+
+    if (openBtn && convHighlight) {
+      openBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        convHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        convHighlight.classList.add('bg-surface-bright');
+        setTimeout(() => {
+          convHighlight.classList.remove('bg-surface-bright');
+        }, 1200);
+      });
+    }
+  })();
+</script></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/85 backdrop-blur-xl shadow-[0_-2px_16px_rgba(0,0,0,0.5)]" data-active-classes="text-primary font-semibold relative after:content-[''] after:absolute after:bottom-1 after:w-1 after:h-1 after:bg-secondary after:rounded-full after:shadow-[0_0_6px_rgba(111,255,232,0.8)]"><div class="flex justify-around items-center h-20 px-space-xs"><a class="flex flex-col items-center justify-center gap-space-xs min-w-[64px] min-h-[44px] py-1 text-on-surface-variant hover:text-on-surface transition-all" data-path="appareils" href="#"><span class="material-symbols-outlined text-[22px]">devices</span><span class="font-label-caps text-label-caps uppercase">Appareils</span></a><a class="flex flex-col items-center justify-center gap-space-xs min-w-[64px] min-h-[44px] py-1 text-on-surface-variant hover:text-on-surface transition-all" data-path="fichiers" href="#"><span class="material-symbols-outlined text-[22px]">folder_data</span><span class="font-label-caps text-label-caps uppercase">Fichiers</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-space-xs min-w-[64px] min-h-[44px] py-1 transition-all text-primary font-semibold relative after:content-[''] after:absolute after:bottom-1 after:w-1 after:h-1 after:bg-secondary after:rounded-full after:shadow-[0_0_6px_rgba(111,255,232,0.8)]" data-path="messages" href="#"><span class="material-symbols-outlined text-[22px]">forum</span><span class="font-label-caps text-label-caps uppercase">Messages</span></a><a class="flex flex-col items-center justify-center gap-space-xs min-w-[64px] min-h-[44px] py-1 text-on-surface-variant hover:text-on-surface transition-all" data-path="activite" href="#"><span class="material-symbols-outlined text-[22px]">query_stats</span><span class="font-label-caps text-label-caps uppercase">Activité</span></a></div></nav></body></html>
