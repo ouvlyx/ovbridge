@@ -92,6 +92,9 @@ export async function encryptFileFor(
   const ct = s.crypto_secretbox_easy(raw, fileNonce, symKey);
 
   const keyNonce = s.randombytes_buf(s.crypto_box_NONCEBYTES);
+
+  // Si recipientPublicKey === senderPublicKey (ex: workspace auto-chiffré par l'appareil d'un utilisateur),
+  // on chiffre avec la clé publique de l'appareil et sa clé privée.
   const encKey = s.crypto_box_easy(
     symKey,
     keyNonce,
@@ -107,6 +110,45 @@ export async function encryptFileFor(
     ciphertext: blob,
     encryptedKey: s.to_base64(encKey),
     nonce: s.to_base64(keyNonce),
+  };
+}
+
+export async function encryptWorkspaceFileForUser(
+  file: File,
+  userDevicesPublicKeys: string[],
+  senderPrivateKeyB64: string
+): Promise<{ ciphertext: Uint8Array; encryptedKeys: Record<string, { key: string; nonce: string }> }> {
+  const s = await initCrypto();
+  const raw = new Uint8Array(await file.arrayBuffer());
+
+  const symKey = s.randombytes_buf(s.crypto_secretbox_KEYBYTES);
+  const fileNonce = s.randombytes_buf(s.crypto_secretbox_NONCEBYTES);
+
+  const ct = s.crypto_secretbox_easy(raw, fileNonce, symKey);
+
+  const encryptedKeys: Record<string, { key: string; nonce: string }> = {};
+
+  for (const pubKey of userDevicesPublicKeys) {
+    const keyNonce = s.randombytes_buf(s.crypto_box_NONCEBYTES);
+    const encKey = s.crypto_box_easy(
+      symKey,
+      keyNonce,
+      s.from_base64(pubKey),
+      s.from_base64(senderPrivateKeyB64)
+    );
+    encryptedKeys[pubKey] = {
+      key: s.to_base64(encKey),
+      nonce: s.to_base64(keyNonce),
+    };
+  }
+
+  const blob = new Uint8Array(fileNonce.length + ct.length);
+  blob.set(fileNonce, 0);
+  blob.set(ct, fileNonce.length);
+
+  return {
+    ciphertext: blob,
+    encryptedKeys,
   };
 }
 

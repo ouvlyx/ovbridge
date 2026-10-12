@@ -1,13 +1,22 @@
-# App icon pack
+# 🎨 `src/assets/` — Graphic & Brandmark Assets
 
-Contents:
-- `Assets.xcassets/AppIcon.appiconset/` — Xcode asset catalog (Contents.json included)
-- `AppIcon.icon/` — iOS 26 Liquid Glass Icon Composer folder
-- `android/mipmap-*/` + `android/adaptive-foreground.png` — launcher mipmaps and adaptive foreground
-- `appstore.png` / `playstore.png` — store marketing sizes
+This folder contains brand graphic assets, App Icon sets, Android mipmap resources, iOS Xcode Assets (`.xcassets`), and store badges for OvBridge.
 
-Wiring:
-- Xcode: drop `Assets.xcassets/AppIcon.appiconset/` into the project.
-- Expo: copy `AppIcon.icon/` and `android/adaptive-foreground.png` into `assets/`, then set `"ios": { "icon": "./assets/AppIcon.icon" }` and `"android": { "adaptiveIcon": { "foregroundImage": "./assets/adaptive-foreground.png", "backgroundColor": "#ffffff" } }` in app.json. After wiring: `npx expo prebuild --clean`.
+---
 
-Made with appicon.co, the free icon tool from Lance (https://lance.app/install?utm_source=appiconco&utm_medium=zip_readme). Your AI coding agent can generate these packs itself, and the same MCP server handles TestFlight build uploads, code signing and provisioning, App Store Connect listings and metadata, in-app purchases and subscriptions, and app review rejections — from Windows, Linux, or CI, no Mac required: npx add-mcp https://api.lance.app/mcp
+## 📋 File & Asset Index
+
+| File / Folder | Description |
+| :--- | :--- |
+| `brandmark-transparent.png` | Transparent OvBridge brandmark overlay logo for sidebars, headers, and modals |
+| `playstore.png` | Google Play Store download badge icon |
+| `appstore.png` | Apple App Store download badge icon |
+| `android/` | Android Capacitor mipmap launcher icons (`hdpi`, `mdpi`, `xhdpi`, `xxhdpi`, `xxxhdpi`) |
+| `Assets.xcassets/` | Apple iOS Xcode AppIcon sets (`20.png` to `1024.png`) |
+| `AppIcon.icon/` | Capacitor native AppIcon JSON and PNG resource mappings |
+
+---
+
+## 🧭 Navigation Links
+* [⬅️ Back to Source Root (`src/`)](../README.md)
+* [🌟 Master PROJECT.md](../../PROJECT.md)

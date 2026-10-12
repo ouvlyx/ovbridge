@@ -135,38 +135,50 @@ export async function downloadWorkspaceFile(
     throw TransferError.downloadFailed(error?.message ?? "Téléchargement échoué", error);
   }
 
-  // Récupérer la clé publique de l'appareil émetteur/téléverseur
-  let uploaderPublicKey = me.publicKey;
+  const buf = new Uint8Array(await data.arrayBuffer());
 
-  if (wf.uploaded_by_device && wf.uploaded_by_device !== me.deviceId) {
-    const { data: dev } = await supabase
-      .from("ovbridge_devices")
-      .select("public_key")
-      .eq("id", wf.uploaded_by_device)
-      .maybeSingle();
-
-    if (dev?.public_key) {
-      uploaderPublicKey = dev.public_key;
-    }
-  }
-
+  // 1. Essai de déchiffrement direct avec la clé de l'appareil courant
   try {
-    const buf = new Uint8Array(await data.arrayBuffer());
     const plain = await decryptFileFrom(
       buf,
       wf.encrypted_key,
       wf.nonce,
-      uploaderPublicKey,
+      me.publicKey,
       me.privateKey
     );
-
     return new Blob([new Uint8Array(plain)], {
       type: wf.mime_type ?? "application/octet-stream",
     });
-  } catch (err) {
+  } catch (_e1) {
+    // 2. Si le déchiffrement direct échoue, essayer la clé de l'appareil téléverseur s'il s'agit d'un autre appareil
+    if (wf.uploaded_by_device && wf.uploaded_by_device !== me.deviceId) {
+      const { data: dev } = await supabase
+        .from("ovbridge_devices")
+        .select("public_key")
+        .eq("id", wf.uploaded_by_device)
+        .maybeSingle();
+
+      if (dev?.public_key) {
+        try {
+          const plain = await decryptFileFrom(
+            buf,
+            wf.encrypted_key,
+            wf.nonce,
+            dev.public_key,
+            me.privateKey
+          );
+          return new Blob([new Uint8Array(plain)], {
+            type: wf.mime_type ?? "application/octet-stream",
+          });
+        } catch (_e2) {
+          // échec
+        }
+      }
+    }
+
     throw CryptoError.decryptionFailed(
-      err instanceof Error ? err.message : String(err),
-      err
+      "Impossible de déchiffrer ce fichier. Assurez-vous que l'appareil émetteur est lié.",
+      _e1
     );
   }
 }
