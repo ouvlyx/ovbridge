@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/features/auth/useAuth";
+import { SUPABASE_SCHEMA } from "@/lib/constants";
+import { withMinDelay } from "@/lib/utils";
 import { ensureWorkspace, type Workspace } from "@/lib/workspace";
 
 export type { Workspace };
@@ -13,7 +15,7 @@ export function useWorkspace() {
   const refresh = useCallback(async () => {
     if (!user) return;
     try {
-      const ws = await ensureWorkspace(user.id);
+      const ws = await withMinDelay(ensureWorkspace(user.id), 2000);
       setWorkspace(ws);
     } catch (error) {
       console.error("[useWorkspace] Erreur lors de l'accès au workspace:", error);
@@ -35,7 +37,7 @@ export function useWorkspace() {
         "postgres_changes",
         {
           event: "*",
-          schema: "public",
+          schema: SUPABASE_SCHEMA,
           table: "ovbridge_workspaces",
           filter: `owner_id=eq.${user.id}`,
         },

@@ -12,7 +12,8 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/features/auth";
 
-const STORAGE_PREFIX = "ovbridge_onboarding_seen_v2";
+const GLOBAL_STORAGE_KEY = "ovbridge_onboarding_seen_global";
+const USER_STORAGE_PREFIX = "ovbridge_onboarding_seen_v2";
 
 export function OnboardingModal() {
   const { user, loading } = useAuth();
@@ -20,21 +21,36 @@ export function OnboardingModal() {
   const [step, setStep] = useState(0);
   const [dismissed, setDismissed] = useState(false);
 
-  const storageKey = user ? `${STORAGE_PREFIX}:${user.id}` : null;
+  const isSeen = (userId?: string | null) => {
+    try {
+      if (localStorage.getItem(GLOBAL_STORAGE_KEY)) return true;
+      if (userId && localStorage.getItem(`${USER_STORAGE_PREFIX}:${userId}`)) return true;
+      if (localStorage.getItem("ovbridge_onboarding_seen")) return true;
+    } catch {
+      // ignore storage errors
+    }
+    return false;
+  };
 
-  /* ---------- ouverture unique par utilisateur ---------- */
+  /* ---------- ouverture unique par appareil / utilisateur ---------- */
   useEffect(() => {
     if (loading || dismissed) return;
-    if (!storageKey) return;
 
-    const seen = localStorage.getItem(storageKey);
-    if (!seen) setOpen(true);
-  }, [storageKey, loading, dismissed]);
+    if (!isSeen(user?.id)) {
+      setOpen(true);
+    }
+  }, [user?.id, loading, dismissed]);
 
-  /* ---------- fermeture : marque comme vu ---------- */
+  /* ---------- fermeture : marque comme vu définitivement ---------- */
   const markSeen = () => {
-    if (storageKey) {
-      localStorage.setItem(storageKey, new Date().toISOString());
+    try {
+      const now = new Date().toISOString();
+      localStorage.setItem(GLOBAL_STORAGE_KEY, now);
+      if (user?.id) {
+        localStorage.setItem(`${USER_STORAGE_PREFIX}:${user.id}`, now);
+      }
+    } catch {
+      // ignore storage errors
     }
     setOpen(false);
     setDismissed(true);

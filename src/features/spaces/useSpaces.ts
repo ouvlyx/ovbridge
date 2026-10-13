@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { SUPABASE_SCHEMA } from "@/lib/constants";
+import { withMinDelay } from "@/lib/utils";
 import { useAuth } from "@/features/auth";
 import type { Space, SpaceMember } from "@/lib/spaces";
 
@@ -16,10 +18,15 @@ export function useSpaces() {
   const refresh = useCallback(async () => {
     if (!user) return;
 
-    const { data: spacesData, error } = await supabase
-      .from("ovbridge_spaces")
-      .select("*")
-      .order("created_at", { ascending: true });
+    const { data: spacesData, error } = await withMinDelay(
+      Promise.resolve(
+        supabase
+          .from("ovbridge_spaces")
+          .select("*")
+          .order("created_at", { ascending: true })
+      ),
+      2000
+    );
     if (error) {
       console.error("[useSpaces]", error);
       return;
@@ -65,12 +72,12 @@ export function useSpaces() {
       .channel("ovbridge_spaces_rt")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "ovbridge_spaces" },
+        { event: "*", schema: SUPABASE_SCHEMA, table: "ovbridge_spaces" },
         () => refresh()
       )
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "ovbridge_space_members" },
+        { event: "*", schema: SUPABASE_SCHEMA, table: "ovbridge_space_members" },
         () => refresh()
       )
       .subscribe();

@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/features/auth";
+import { SUPABASE_SCHEMA } from "@/lib/constants";
+import { withMinDelay } from "@/lib/utils";
 
 export type Device = {
   id: string;
@@ -33,11 +35,16 @@ export function useDevices() {
       setDeviceSnapshot(null);
       return;
     }
-    const { data, error } = await supabase
-      .from("ovbridge_devices")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: true });
+    const { data, error } = await withMinDelay(
+      Promise.resolve(
+        supabase
+          .from("ovbridge_devices")
+          .select("*")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: true })
+      ),
+      2000
+    );
     if (error) {
       console.error("[useDevices]", error);
       return;
@@ -62,7 +69,7 @@ export function useDevices() {
         "postgres_changes",
         {
           event: "*",
-          schema: "public",
+          schema: SUPABASE_SCHEMA,
           table: "ovbridge_devices",
           filter: `user_id=eq.${userId}`,
         },

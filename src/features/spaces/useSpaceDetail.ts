@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { SUPABASE_SCHEMA } from "@/lib/constants";
+import { withMinDelay } from "@/lib/utils";
 import type { Space, SpaceMember } from "@/lib/spaces";
 
 export type MemberWithProfile = SpaceMember & {
@@ -15,11 +17,16 @@ export function useSpaceDetail(spaceId: string | undefined) {
   const refresh = useCallback(async () => {
     if (!spaceId) return;
 
-    const { data: sp } = await supabase
-      .from("ovbridge_spaces")
-      .select("*")
-      .eq("id", spaceId)
-      .maybeSingle();
+    const { data: sp } = await withMinDelay(
+      Promise.resolve(
+        supabase
+          .from("ovbridge_spaces")
+          .select("*")
+          .eq("id", spaceId)
+          .maybeSingle()
+      ),
+      2000
+    );
     setSpace((sp as Space) ?? null);
 
     const { data: mem } = await supabase
@@ -69,7 +76,7 @@ export function useSpaceDetail(spaceId: string | undefined) {
         "postgres_changes",
         {
           event: "*",
-          schema: "public",
+          schema: SUPABASE_SCHEMA,
           table: "ovbridge_space_members",
           filter: `space_id=eq.${spaceId}`,
         },
@@ -81,7 +88,7 @@ export function useSpaceDetail(spaceId: string | undefined) {
         "postgres_changes",
         {
           event: "*",
-          schema: "public",
+          schema: SUPABASE_SCHEMA,
           table: "ovbridge_spaces",
           filter: `id=eq.${spaceId}`,
         },

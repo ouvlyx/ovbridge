@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { getStoredIdentity } from "@/lib/device";
 import { useAuth } from "@/features/auth";
+import { SUPABASE_SCHEMA } from "@/lib/constants";
+import { withMinDelay } from "@/lib/utils";
 import {
   fetchClipboardHistory,
   type DecryptedClipboard,
@@ -26,7 +28,7 @@ export function useClipboard() {
 
     fetchingRef.current = true;
     try {
-      const list = await fetchClipboardHistory(me);
+      const list = await withMinDelay(fetchClipboardHistory(me), 2000);
       const seen = new Set<string>();
       const unique = list.filter((i) => {
         if (seen.has(i.id)) return false;
@@ -66,7 +68,7 @@ export function useClipboard() {
         "postgres_changes",
         {
           event: "*",
-          schema: "public",
+          schema: SUPABASE_SCHEMA,
           table: "ovbridge_clipboard",
           filter: `user_id=eq.${user.id}`,
         },

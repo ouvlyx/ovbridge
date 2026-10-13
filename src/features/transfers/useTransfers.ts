@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/features/auth";
+import { SUPABASE_SCHEMA } from "@/lib/constants";
 import type { Transfer } from "@/lib/transfers";
 
 export function useTransfers() {
@@ -38,7 +39,7 @@ export function useTransfers() {
         "postgres_changes",
         {
           event: "*",
-          schema: "public",
+          schema: SUPABASE_SCHEMA,
           table: "ovbridge_transfers",
           filter: `user_id=eq.${user.id}`,
         },

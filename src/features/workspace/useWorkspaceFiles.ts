@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { SUPABASE_SCHEMA } from "@/lib/constants";
+import { withMinDelay } from "@/lib/utils";
 import type { WorkspaceFile } from "@/lib/workspace";
 
 export function useWorkspaceFiles(workspaceId: string | undefined) {
@@ -18,12 +20,17 @@ export function useWorkspaceFiles(workspaceId: string | undefined) {
 
     fetchingRef.current = true;
     try {
-      const { data, error } = await supabase
-        .from("ovbridge_workspace_files")
-        .select("*")
-        .eq("workspace_id", workspaceId)
-        .is("deleted_at", null)
-        .order("created_at", { ascending: false });
+      const { data, error } = await withMinDelay(
+        Promise.resolve(
+          supabase
+            .from("ovbridge_workspace_files")
+            .select("*")
+            .eq("workspace_id", workspaceId)
+            .is("deleted_at", null)
+            .order("created_at", { ascending: false })
+        ),
+        2000
+      );
 
       if (error) throw error;
 
@@ -67,7 +74,7 @@ export function useWorkspaceFiles(workspaceId: string | undefined) {
         "postgres_changes",
         {
           event: "*",
-          schema: "public",
+          schema: SUPABASE_SCHEMA,
           table: "ovbridge_workspace_files",
           filter: `workspace_id=eq.${workspaceId}`,
         },

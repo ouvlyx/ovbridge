@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { SUPABASE_SCHEMA } from "@/lib/constants";
+import { withMinDelay } from "@/lib/utils";
 import { getStoredIdentity } from "@/lib/device";
 import { useAuth } from "@/features/auth/useAuth";
 import { getConversation, type ConversationMessage } from "@/lib/transfers";
@@ -30,11 +32,14 @@ export function useConversation(scope: Scope | undefined) {
 
     fetchingRef.current = true;
     try {
-      const msgs = await getConversation({
-        myUserId: user.id,
-        myDeviceId: me.deviceId,
-        scope: { kind: scopeKind, id: scopeId },
-      });
+      const msgs = await withMinDelay(
+        getConversation({
+          myUserId: user.id,
+          myDeviceId: me.deviceId,
+          scope: { kind: scopeKind, id: scopeId },
+        }),
+        2000
+      );
 
       // Dédoublonne par id
       const seen = new Set<string>();
@@ -77,7 +82,7 @@ export function useConversation(scope: Scope | undefined) {
       .channel(`conv_${scopeKind}_${scopeId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "ovbridge_transfers" },
+        { event: "*", schema: SUPABASE_SCHEMA, table: "ovbridge_transfers" },
         () => debouncedRefresh()
       )
       .subscribe();

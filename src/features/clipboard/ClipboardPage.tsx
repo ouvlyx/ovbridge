@@ -70,6 +70,21 @@ export default function ClipboardPage() {
     }
   };
 
+  const nativeShare = async (item: DecryptedClipboard) => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Presse-papiers OvBridge",
+          text: item.content,
+        });
+      } catch {
+        // Annulation utilisateur
+      }
+    } else {
+      await copy(item);
+    }
+  };
+
   const onQuickShare = async () => {
     if (!user) return;
     const me = getStoredIdentity();
@@ -213,22 +228,36 @@ export default function ClipboardPage() {
                     size="sm"
                     variant="outline"
                     onClick={() => copy(item)}
-                    className="flex-1"
+                    className="flex-1 min-h-[36px]"
                   >
                     {copiedId === item.id ? (
-                      <Check className="w-3 h-3 mr-1" />
+                      <Check className="w-3.5 h-3.5 mr-1" />
                     ) : (
-                      <Copy className="w-3 h-3 mr-1" />
+                      <Copy className="w-3.5 h-3.5 mr-1" />
                     )}
                     {copiedId === item.id ? "Copié" : "Copier"}
                   </Button>
+
+                  {"share" in navigator && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => nativeShare(item)}
+                      title="Partager"
+                      className="min-h-[36px]"
+                    >
+                      <Share2 className="w-3.5 h-3.5 text-ov-primary" />
+                    </Button>
+                  )}
+
                   <Button
                     size="sm"
                     variant="ghost"
                     onClick={() => setDeleting(item)}
                     aria-label="Supprimer"
+                    className="min-h-[36px]"
                   >
-                    <Trash2 className="w-3 h-3 text-ov-danger" />
+                    <Trash2 className="w-3.5 h-3.5 text-ov-danger" />
                   </Button>
                 </div>
               </Card>

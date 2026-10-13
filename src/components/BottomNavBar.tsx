@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Laptop, MessageSquare, HardDrive, Clipboard } from "lucide-react";
+import { Laptop, MessageSquare, HardDrive, Clipboard, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function BottomNavBar() {
@@ -10,6 +10,7 @@ export default function BottomNavBar() {
     { label: "Messages", path: "/messages", icon: MessageSquare },
     { label: "Espace", path: "/workspace", icon: HardDrive },
     { label: "Presse-papiers", path: "/clipboard", icon: Clipboard },
+    { label: "Profil", path: "/profile", icon: User },
   ];
 
   return (
