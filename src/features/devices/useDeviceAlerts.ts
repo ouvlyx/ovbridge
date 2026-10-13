@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/features/auth/useAuth";
+import { SUPABASE_SCHEMA } from "@/lib/constants";
 import { sendUniversalNotification } from "@/lib/notifications";
 
 export function useDeviceAlerts(myDeviceId: string | null) {
@@ -25,7 +26,7 @@ export function useDeviceAlerts(myDeviceId: string | null) {
         "postgres_changes",
         {
           event: "INSERT",
-          schema: "public",
+          schema: SUPABASE_SCHEMA,
           table: "ovbridge_devices",
           filter: `user_id=eq.${user.id}`,
         },

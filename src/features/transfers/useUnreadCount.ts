@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { SUPABASE_SCHEMA } from "@/lib/constants";
 import { getStoredIdentity } from "@/lib/device";
 import { useAuth } from "@/features/auth";
 
@@ -31,7 +32,7 @@ export function useUnreadCount() {
         "postgres_changes",
         {
           event: "*",
-          schema: "public",
+          schema: SUPABASE_SCHEMA,
           table: "ovbridge_transfers",
           filter: `to_device_id=eq.${me.deviceId}`,
         },

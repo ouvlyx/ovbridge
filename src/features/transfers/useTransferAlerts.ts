@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { SUPABASE_SCHEMA } from "@/lib/constants";
 import { getStoredIdentity } from "@/lib/device";
 import { useAuth } from "@/features/auth/useAuth";
 import { sendUniversalNotification } from "@/lib/notifications";
@@ -31,7 +32,7 @@ export function useTransferAlerts({ currentChat }: Options = {}) {
         "postgres_changes",
         {
           event: "INSERT",
-          schema: "public",
+          schema: SUPABASE_SCHEMA,
           table: "ovbridge_transfers",
           filter: `user_id=eq.${user.id}`,
         },

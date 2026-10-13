@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { SUPABASE_SCHEMA } from "@/lib/constants";
 import { ensureDeviceRegistered } from "@/lib/device";
 import { friendlyError } from "@/lib/errors";
 
@@ -96,7 +97,7 @@ export function usePairing(userId: string | undefined) {
         "postgres_changes",
         {
           event: "UPDATE",
-          schema: "public",
+          schema: SUPABASE_SCHEMA,
           table: "ovbridge_pairing_tokens",
           filter: `token=eq.${code}`,
         },
