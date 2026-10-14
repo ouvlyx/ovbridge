@@ -120,12 +120,12 @@ export default function ClipboardPage() {
     try {
       await deleteClipboardItem(deleting.id);
       toast.success("Élément supprimé");
-      setDeleting(null);
       await refresh();
     } catch (e) {
       toast.error(friendlyError(e));
     } finally {
       setBusy(false);
+      setDeleting(null);
     }
   };
 
@@ -134,12 +134,12 @@ export default function ClipboardPage() {
     try {
       await clearClipboardHistory();
       toast.success("Historique vidé");
-      setClearing(false);
       await refresh();
     } catch (e) {
       toast.error(friendlyError(e));
     } finally {
       setBusy(false);
+      setClearing(false);
     }
   };
 

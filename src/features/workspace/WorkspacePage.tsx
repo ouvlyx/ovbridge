@@ -286,13 +286,13 @@ export default function WorkspacePage() {
         return s;
       });
       toast.success("Fichier supprimé");
-      setDeleting(null);
       await refreshFiles();
       await refreshWorkspace();
     } catch (err) {
       toast.error(friendlyError(err));
     } finally {
       setBusyId(null);
+      setDeleting(null);
     }
   };
 
@@ -303,12 +303,12 @@ export default function WorkspacePage() {
     try {
       await toggleBlockFile(blocking, !blocking.is_blocked);
       toast.success(blocking.is_blocked ? "Fichier débloqué" : "Fichier bloqué");
-      setBlocking(null);
       await refreshFiles();
     } catch (err) {
       toast.error(friendlyError(err));
     } finally {
       setBusyId(null);
+      setBlocking(null);
     }
   };
 
@@ -328,13 +328,13 @@ export default function WorkspacePage() {
       });
       toast.success(`${list.length} fichier(s) supprimé(s)`);
       clearSelection();
-      setBulkAction(null);
       await refreshFiles();
       await refreshWorkspace();
     } catch (err) {
       toast.error(friendlyError(err));
     } finally {
       setBusyId(null);
+      setBulkAction(null);
     }
   };
 
@@ -353,12 +353,12 @@ export default function WorkspacePage() {
           : `${list.length} fichier(s) bloqué(s)`
       );
       clearSelection();
-      setBulkAction(null);
       await refreshFiles();
     } catch (err) {
       toast.error(friendlyError(err));
     } finally {
       setBusyId(null);
+      setBulkAction(null);
     }
   };
 

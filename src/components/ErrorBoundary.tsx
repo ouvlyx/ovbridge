@@ -29,12 +29,14 @@ export class ErrorBoundary extends Component<Props, State> {
     if (
       error.name === "NotFoundError" ||
       error.message?.includes("insertBefore") ||
-      error.message?.includes("removeChild")
+      error.message?.includes("removeChild") ||
+      error.message?.includes("focus") ||
+      error.message?.includes("Focus")
     ) {
-      console.warn("[ErrorBoundary] Browser extension DOM mutation detected. Recovering silently…");
+      console.warn("[ErrorBoundary] Non-fatal DOM/Focus mutation detected. Recovering silently…");
       setTimeout(() => {
         this.setState({ hasError: false, error: null });
-      }, 500);
+      }, 300);
     }
   }
 

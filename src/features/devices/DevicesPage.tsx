@@ -102,7 +102,10 @@ export default function DevicesPage() {
       .update({ revoked: true })
       .eq("id", revoking.id);
     setBusy(false);
-    if (error) return toast.error(friendlyError(error));
+    if (error) {
+      toast.error(friendlyError(error));
+      return;
+    }
     toast.success("Appareil révoqué");
     setRevoking(null);
     await refresh();
@@ -116,7 +119,10 @@ export default function DevicesPage() {
       .delete()
       .eq("id", deleting.id);
     setBusy(false);
-    if (error) return toast.error(friendlyError(error));
+    if (error) {
+      toast.error(friendlyError(error));
+      return;
+    }
     toast.success("Appareil supprimé");
     setDeleting(null);
     await refresh();
