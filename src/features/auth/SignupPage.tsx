@@ -49,6 +49,8 @@ function GoogleIcon() {
 export default function SignupPage() {
   const { signUp, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const publicSignupEnabled =
+    import.meta.env.VITE_PUBLIC_SIGNUP_ENABLED === "true";
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
@@ -89,6 +91,34 @@ export default function SignupPage() {
       setGoogleLoading(false);
     }
   };
+
+  if (!publicSignupEnabled) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <Card className="w-full max-w-md p-6 bg-ov-surface border-ov-border space-y-6 text-center">
+          <div className="space-y-2">
+            <img
+              src="/brandmark-bg.png"
+              alt="OvBridge"
+              className="mx-auto h-16 w-auto rounded-2xl shadow-lg border border-ov-border/40"
+            />
+            <h1 className="text-2xl font-bold text-ov-primary">Bêta sur invitation</h1>
+            <p className="text-sm text-ov-muted">
+              Les inscriptions publiques sont temporairement fermées.
+              Seules les personnes invitées peuvent rejoindre la bêta.
+            </p>
+          </div>
+          <p className="text-sm text-ov-muted">
+            Si tu as reçu une invitation, ouvre son lien depuis ton e-mail,
+            puis connecte-toi.
+          </p>
+          <Button asChild className="w-full bg-ov-primary hover:bg-ov-primaryHover">
+            <Link to="/login">Se connecter</Link>
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6">

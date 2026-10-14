@@ -75,6 +75,14 @@ d’application dans le dépôt ou dans le client. Cette configuration est rése
 aux tests; pour la production, utilisez un fournisseur transactionnel et un
 domaine d’envoi que vous contrôlez.
 
+Pour une bêta limitée aux personnes invitées, désactivez aussi les inscriptions
+publiques dans Supabase Dashboard → Authentication → Settings → User Signups.
+Le réglage `VITE_PUBLIC_SIGNUP_ENABLED=false` masque le formulaire côté Vercel,
+mais ne remplace pas cette protection côté serveur. Envoyez les invitations
+depuis Supabase Dashboard → Authentication → Users → Invite user. Vérifiez
+qu’un utilisateur non invité ne peut pas créer de compte, y compris par OAuth,
+avant de publier le lien de bêta.
+
 L'audit statique a vérifié les dépendances des migrations dans cet ordre.
 L'exécution réelle doit être confirmée avec `npx supabase db reset` dans un
 environnement Supabase local configuré.

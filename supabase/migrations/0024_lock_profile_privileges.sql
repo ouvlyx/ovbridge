@@ -80,7 +80,7 @@ as $$
 $$;
 
 revoke all on function ovbridge.ovbridge_shares_space(uuid, uuid) from public, anon;
-revoke execute on function ovbridge.ovbridge_shares_space(uuid, uuid) from authenticated;
+grant execute on function ovbridge.ovbridge_shares_space(uuid, uuid) to authenticated;
 
 drop policy if exists "profiles: select own or co-members"
   on ovbridge.ovbridge_profiles;

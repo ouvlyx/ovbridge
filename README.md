@@ -37,9 +37,15 @@ Créer `.env.local` à la racine, à partir de `.env.example`, puis renseigner :
 ```env
 VITE_SUPABASE_URL=https://<project-ref>.supabase.co
 VITE_SUPABASE_ANON_KEY=<publishable-or-anon-key>
+VITE_PUBLIC_SIGNUP_ENABLED=false
 ```
 
 Ne jamais exposer ni utiliser une clé `service_role` dans le frontend.
+`VITE_PUBLIC_SIGNUP_ENABLED` doit rester à `false` pour une bêta sur invitation.
+Cette variable ne masque que le formulaire dans l'interface : désactivez aussi
+les inscriptions publiques dans les réglages Supabase Auth pour empêcher les
+créations de comptes directes via l'API. Les invitations doivent être envoyées
+par un administrateur depuis le Dashboard Supabase.
 
 ### Développement et build
 
@@ -61,6 +67,9 @@ npm run build
 ### Hébergement frontend
 
 Vercel et Netlify détectent Vite. La commande de build est `npm run build` et le dossier généré est `dist`. Définir les deux variables `VITE_SUPABASE_*` dans les variables d'environnement du fournisseur.
+Pour la bêta sur invitation, ajouter `VITE_PUBLIC_SIGNUP_ENABLED=false` dans
+Vercel puis redéployer. Le contrôle serveur complémentaire obligatoire est
+décrit dans `supabase/migrations/README.md`.
 
 Le site de production doit être servi en HTTPS : l'accès caméra pour le scan QR exige un contexte sécurisé. Le mode invité dépend aussi de la disponibilité de Supabase Auth depuis l'origine HTTPS.
 
