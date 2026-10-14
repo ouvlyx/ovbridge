@@ -1,1 +1,1 @@
-alter publication supabase_realtime add table public.ovbridge_pairing_tokens;
+alter publication supabase_realtime add table ovbridge.ovbridge_pairing_tokens;

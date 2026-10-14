@@ -11,6 +11,12 @@ import {
   Lock,
   LogOut,
   Palette,
+  UserRound,
+  Mail,
+  Phone,
+  MapPin,
+  SlidersHorizontal,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
@@ -22,7 +28,13 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { fetchUserAdminRole } from "@/lib/admin";
 import { ADMIN_ROLE_LABELS, type AdminRole } from "@/types/admin";
-import { playNotificationSound, vibrateDevice } from "@/lib/notifications";
+import {
+  getNotificationPreferences,
+  playNotificationSound,
+  saveNotificationPreferences,
+  vibrateDevice,
+} from "@/lib/notifications";
+import { useAppPreferences } from "./AppPreferencesContext";
 
 function GoogleIcon() {
   return (
@@ -50,6 +62,7 @@ function GoogleIcon() {
 export default function ProfilePage() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { accentColor, density, setAppearance } = useAppPreferences();
 
   // Champs de profil étendus
   const [displayName, setDisplayName] = useState("");
@@ -63,13 +76,13 @@ export default function ProfilePage() {
   const [adminRole, setAdminRole] = useState<AdminRole>("none");
   const [devicesCount, setDevicesCount] = useState(0);
 
-  // Personnalisation d'interface
-  const [accentColor, setAccentColor] = useState("#6366F1");
-  const [density, setDensity] = useState<"compact" | "normal" | "comfortable">("normal");
-
   // Notifications
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const [vibeEnabled, setVibeEnabled] = useState(true);
+  const [soundEnabled, setSoundEnabled] = useState(
+    () => getNotificationPreferences().soundEnabled,
+  );
+  const [vibeEnabled, setVibeEnabled] = useState(
+    () => getNotificationPreferences().vibrationEnabled,
+  );
 
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -85,7 +98,8 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const [{ data }, role, { count }] = await Promise.all([
+      try {
+        const [{ data, error }, role, { count }] = await Promise.all([
         supabase
           .from("ovbridge_profiles")
           .select("*")
@@ -96,45 +110,60 @@ export default function ProfilePage() {
           .from("ovbridge_devices")
           .select("id", { count: "exact", head: true })
           .eq("user_id", user.id),
-      ]);
+        ]);
 
-      if (data) {
-        setDisplayName(data.display_name ?? "");
-        setFirstName(data.first_name ?? "");
-        setLastName(data.last_name ?? "");
-        setPhoneNumber(data.phone_number ?? "");
-        setAddress(data.address ?? "");
-        setAvatarUrl(data.avatar_url ?? null);
-        setAccentColor(data.accent_color ?? "#6366F1");
-        setDensity(data.interface_density ?? "normal");
+        if (error) throw error;
+
+        if (data) {
+          setDisplayName(data.display_name ?? "");
+          setFirstName(data.first_name ?? "");
+          setLastName(data.last_name ?? "");
+          setPhoneNumber(data.phone_number ?? "");
+          setAddress(data.address ?? "");
+          setAvatarUrl(data.avatar_url ?? null);
+          setAppearance(
+            data.accent_color ?? "#6366F1",
+            data.interface_density ?? "normal",
+          );
+        }
+
+        setAdminRole(role);
+        setDevicesCount(count ?? 0);
+      } catch (error) {
+        console.error("[ProfilePage] Unable to load profile:", error);
+        toast.error("Impossible de charger votre profil. Réessayez plus tard.");
+      } finally {
+        setLoading(false);
       }
-
-      setAdminRole(role);
-      setDevicesCount(count ?? 0);
-      setLoading(false);
     })();
-  }, [user]);
+  }, [user, setAppearance]);
 
   const saveProfile = async () => {
     if (!user) return;
     setBusy(true);
-    const { error } = await supabase
-      .from("ovbridge_profiles")
-      .update({
-        display_name: displayName.trim(),
-        first_name: firstName.trim(),
-        last_name: lastName.trim(),
-        phone_number: phoneNumber.trim(),
-        address: address.trim(),
-        avatar_url: avatarUrl,
-        accent_color: accentColor,
-        interface_density: density,
-      })
-      .eq("id", user.id);
+    try {
+      const { error } = await supabase
+        .from("ovbridge_profiles")
+        .update({
+          display_name: displayName.trim(),
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          phone_number: phoneNumber.trim(),
+          address: address.trim(),
+          avatar_url: avatarUrl,
+          accent_color: accentColor,
+          interface_density: density,
+        })
+        .eq("id", user.id);
 
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    toast.success("Profil et préférences mis à jour ✅");
+      if (error) throw error;
+      toast.success("Profil et préférences mis à jour ✅");
+    } catch (error) {
+      console.error("[ProfilePage] Unable to save profile:", error);
+      toast.error("Impossible d'enregistrer le profil. Réessayez.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   const syncGoogleData = () => {
@@ -159,62 +188,123 @@ export default function ProfilePage() {
   };
 
   const testSound = () => {
-    playNotificationSound("message");
+    if (soundEnabled) playNotificationSound("message");
     if (vibeEnabled) vibrateDevice([100, 50, 100]);
     toast.info("Test sonore et haptique exécuté !");
   };
 
+  const updateNotificationPreferences = (
+    nextSoundEnabled: boolean,
+    nextVibrationEnabled: boolean,
+  ) => {
+    try {
+      saveNotificationPreferences({
+        soundEnabled: nextSoundEnabled,
+        vibrationEnabled: nextVibrationEnabled,
+      });
+      setSoundEnabled(nextSoundEnabled);
+      setVibeEnabled(nextVibrationEnabled);
+    } catch {
+      toast.error("Impossible d'enregistrer les préférences de notification.");
+    }
+  };
+
   return (
-    <div className="min-h-screen p-4 sm:p-6 max-w-3xl mx-auto space-y-6 text-ov-text">
-      <header className="flex items-center gap-3 border-b border-ov-border pb-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate("/devices")}>
+    <div className="min-h-screen p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto space-y-6 sm:space-y-8 text-ov-text">
+      <header className="flex items-center gap-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate("/devices")}
+          className="rounded-xl border border-ov-border bg-ov-surface"
+          aria-label="Retour aux appareils"
+        >
           <ArrowLeft className="w-5 h-5" />
         </Button>
-        <div>
-          <h1 className="text-xl font-bold">Mon Profil & Paramètres Avancés</h1>
-          <p className="text-xs text-ov-muted">
-            Personnalisation, coordonnées personnelles et données Google
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-ov-primary">
+            Votre espace
+          </p>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+            Profil & paramètres
+          </h1>
+          <p className="mt-1 text-sm text-ov-muted">
+            Personnalisez OvBridge selon vos préférences.
           </p>
         </div>
       </header>
 
+      <Card className="relative overflow-hidden border-ov-border bg-gradient-to-br from-ov-primary/20 via-ov-surface to-ov-accent/10 p-5 sm:p-7 shadow-xl">
+        <div className="absolute -right-12 -top-16 h-48 w-48 rounded-full bg-ov-primary/10 blur-3xl" />
+        <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-3xl border border-white/15 bg-ov-bg/70 text-2xl font-bold text-ov-primary shadow-lg">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+            ) : (
+              (displayName || user?.email || "U")[0].toUpperCase()
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="truncate text-xl font-semibold">
+                {displayName || [firstName, lastName].filter(Boolean).join(" ") || "Bienvenue"}
+              </h2>
+              <Badge className="border-0 bg-ov-success/15 text-ov-success">
+                <Lock className="mr-1 h-3 w-3" /> Chiffré de bout en bout
+              </Badge>
+            </div>
+            <p className="mt-1 flex items-center gap-2 text-sm text-ov-muted">
+              <Mail className="h-4 w-4 shrink-0" />
+              <span className="truncate">{user?.email}</span>
+            </p>
+            <p className="mt-3 max-w-xl text-xs leading-relaxed text-ov-muted">
+              Vos réglages d’apparence se synchronisent avec votre compte ; les préférences sonores restent propres à cet appareil.
+            </p>
+          </div>
+        </div>
+      </Card>
+
       {/* STATS APPAREILS & SÉCURITÉ */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        <Card className="p-3 border-ov-border bg-ov-surface text-center">
-          <Laptop className="w-5 h-5 text-ov-primary mx-auto mb-1" />
-          <p className="text-xl font-bold">{devicesCount}</p>
-          <p className="text-[10px] text-ov-muted uppercase tracking-wide">Appareils Liés</p>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <Card className="flex items-center gap-4 border-ov-border bg-ov-surface p-4">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-ov-primary/15 text-ov-primary">
+            <Laptop className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-xl font-bold">{devicesCount}</p>
+            <p className="text-xs text-ov-muted">Appareils liés</p>
+          </div>
         </Card>
-        <Card className="p-3 border-ov-border bg-ov-surface text-center">
-          <Lock className="w-5 h-5 text-ov-success mx-auto mb-1" />
-          <p className="text-xl font-bold">E2E</p>
-          <p className="text-[10px] text-ov-muted uppercase tracking-wide">Chiffrement Actif</p>
+        <Card className="flex items-center gap-4 border-ov-border bg-ov-surface p-4">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-ov-success/15 text-ov-success">
+            <Shield className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-xl font-bold">E2E</p>
+            <p className="text-xs text-ov-muted">Chiffrement actif</p>
+          </div>
         </Card>
-        <Card className="p-3 border-ov-border bg-ov-surface text-center col-span-2 sm:col-span-1">
-          <HardDrive className="w-5 h-5 text-ov-accent mx-auto mb-1" />
-          <p className="text-xl font-bold">100 Mo</p>
-          <p className="text-[10px] text-ov-muted uppercase tracking-wide">Espace Inclus</p>
+        <Card className="flex items-center gap-4 border-ov-border bg-ov-surface p-4">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-ov-accent/15 text-ov-accent">
+            <HardDrive className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-xl font-bold">100 Mo</p>
+            <p className="text-xs text-ov-muted">Espace inclus</p>
+          </div>
         </Card>
       </div>
 
       {/* DONNÉES PERSONNELLES & COMPTE */}
-      <Card className="p-5 border-ov-border space-y-5 bg-ov-surface">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ov-border pb-3">
+      <Card className="space-y-5 border-ov-border bg-ov-surface p-5 sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ov-border pb-4">
           <div className="flex items-center gap-3">
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt=""
-                className="w-12 h-12 rounded-full border-2 border-ov-primary object-cover"
-              />
-            ) : (
-              <div className="w-12 h-12 rounded-full bg-ov-primary/20 text-ov-primary flex items-center justify-center font-bold text-lg">
-                {(displayName || user?.email || "U")[0].toUpperCase()}
-              </div>
-            )}
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-ov-primary/15 text-ov-primary">
+              <UserRound className="h-5 w-5" />
+            </div>
             <div>
-              <h2 className="text-base font-bold">Données Personnelles</h2>
-              <p className="text-xs text-ov-muted">Renseignez vos coordonnées de profil</p>
+              <h2 className="font-semibold">Données personnelles</h2>
+              <p className="text-xs text-ov-muted">Gérez les informations de votre profil.</p>
             </div>
           </div>
 
@@ -223,42 +313,41 @@ export default function ProfilePage() {
             variant="outline"
             size="sm"
             onClick={syncGoogleData}
-            className="text-xs border-ov-border hover:bg-white/5"
+            className="rounded-xl border-ov-border text-xs hover:bg-white/5"
           >
             <GoogleIcon />
             Import Google Profile
           </Button>
         </div>
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>Adresse Email (Non modifiable)</Label>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2 sm:col-span-2">
+            <Label>Adresse e-mail</Label>
             <Input
               value={user?.email ?? ""}
               disabled
-              className="bg-ov-bg font-mono text-xs cursor-not-allowed opacity-80"
+              className="cursor-not-allowed rounded-xl border-ov-border bg-ov-bg font-mono text-xs opacity-80"
             />
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label htmlFor="first-name">Prénom</Label>
-              <Input
-                id="first-name"
-                value={loading ? "" : firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                placeholder="Ex: Jean"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="last-name">Nom de famille</Label>
-              <Input
-                id="last-name"
-                value={loading ? "" : lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                placeholder="Ex: Dupont"
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="first-name">Prénom</Label>
+            <Input
+              id="first-name"
+              value={loading ? "" : firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              placeholder="Ex: Jean"
+              className="rounded-xl border-ov-border bg-ov-bg"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="last-name">Nom de famille</Label>
+            <Input
+              id="last-name"
+              value={loading ? "" : lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              placeholder="Ex: Dupont"
+              className="rounded-xl border-ov-border bg-ov-bg"
+            />
           </div>
 
           <div className="space-y-2">
@@ -269,28 +358,33 @@ export default function ProfilePage() {
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="Ton nom d'affichage"
               maxLength={40}
+              className="rounded-xl border-ov-border bg-ov-bg"
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label htmlFor="phone">Numéro de Téléphone</Label>
-              <Input
-                id="phone"
-                value={loading ? "" : phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder="+33 6 12 34 56 78"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="address">Adresse Postale</Label>
-              <Input
-                id="address"
-                value={loading ? "" : address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="Ex: 12 Rue de la Paix, Paris"
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="phone" className="flex items-center gap-2">
+              <Phone className="h-3.5 w-3.5 text-ov-muted" /> Numéro de téléphone
+            </Label>
+            <Input
+              id="phone"
+              value={loading ? "" : phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              placeholder="+33 6 12 34 56 78"
+              className="rounded-xl border-ov-border bg-ov-bg"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="address" className="flex items-center gap-2">
+              <MapPin className="h-3.5 w-3.5 text-ov-muted" /> Adresse postale
+            </Label>
+            <Input
+              id="address"
+              value={loading ? "" : address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="Ex: 12 Rue de la Paix, Paris"
+              className="rounded-xl border-ov-border bg-ov-bg"
+            />
           </div>
         </div>
 
@@ -325,26 +419,34 @@ export default function ProfilePage() {
       </Card>
 
       {/* PERSONNALISATION DE L'INTERFACE */}
-      <Card className="p-5 border-ov-border space-y-4 bg-ov-surface">
-        <h2 className="text-base font-bold flex items-center gap-2">
-          <Palette className="w-4 h-4 text-ov-accent" /> Personnalisation de l'Interface
-        </h2>
+      <Card className="space-y-5 border-ov-border bg-ov-surface p-5 sm:p-6">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-ov-accent/15 text-ov-accent">
+            <Palette className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="font-semibold">Personnalisation de l’interface</h2>
+            <p className="mt-1 text-xs text-ov-muted">Aperçu immédiat dans l’application. Enregistrez votre profil pour conserver ces choix.</p>
+          </div>
+        </div>
 
         <div className="space-y-2">
-          <Label>Couleur d'Accentuation du Thème</Label>
+          <Label>Couleur d’accentuation</Label>
           <div className="flex flex-wrap gap-3 pt-1">
             {colorPresets.map((c) => (
               <button
                 key={c.value}
-                onClick={() => setAccentColor(c.value)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all ${
+                type="button"
+                onClick={() => setAppearance(c.value, density)}
+                aria-pressed={accentColor === c.value}
+                className={`flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-medium transition-all ${
                   accentColor === c.value
-                    ? "border-white bg-white/10 text-white shadow-sm"
-                    : "border-ov-border bg-ov-bg text-ov-muted hover:text-ov-text"
+                    ? "border-ov-primary bg-ov-primary/10 text-ov-text ring-1 ring-ov-primary/40"
+                    : "border-ov-border bg-ov-bg text-ov-muted hover:border-ov-primary/50 hover:text-ov-text"
                 }`}
               >
                 <span
-                  className="w-3.5 h-3.5 rounded-full inline-block"
+                  className="inline-block h-4 w-4 rounded-full ring-2 ring-white/10"
                   style={{ backgroundColor: c.value }}
                 />
                 {c.label}
@@ -353,20 +455,30 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <div className="space-y-2 pt-2">
-          <Label>Densité d'Affichage</Label>
-          <div className="grid grid-cols-3 gap-2">
+        <div className="space-y-3 border-t border-ov-border pt-4">
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal className="h-4 w-4 text-ov-muted" />
+            <Label>Densité d’affichage</Label>
+          </div>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             {(["compact", "normal", "comfortable"] as const).map((d) => (
               <button
                 key={d}
-                onClick={() => setDensity(d)}
-                className={`py-2 px-2 rounded-xl border text-xs font-medium capitalize transition-all ${
+                type="button"
+                onClick={() => setAppearance(accentColor, d)}
+                aria-pressed={density === d}
+                className={`rounded-xl border px-3 py-3 text-left text-xs transition-all ${
                   density === d
-                    ? "border-ov-primary bg-ov-primary/20 text-ov-primary font-bold"
-                    : "border-ov-border bg-ov-bg text-ov-muted"
+                    ? "border-ov-primary bg-ov-primary/10 text-ov-text ring-1 ring-ov-primary/40"
+                    : "border-ov-border bg-ov-bg text-ov-muted hover:border-ov-primary/50"
                 }`}
               >
-                {d === "compact" ? "Compacte" : d === "normal" ? "Normale" : "Confortable"}
+                <span className="block font-semibold">
+                  {d === "compact" ? "Compacte" : d === "normal" ? "Équilibrée" : "Confortable"}
+                </span>
+                <span className="mt-1 block text-[10px] opacity-75">
+                  {d === "compact" ? "Plus de contenu à l’écran" : d === "normal" ? "Espacement standard" : "Plus d’espace entre les éléments"}
+                </span>
               </button>
             ))}
           </div>
@@ -374,9 +486,12 @@ export default function ProfilePage() {
       </Card>
 
       {/* SÉCURITÉ ET CHANGER DE MOT DE PASSE */}
-      <Card className="p-5 border-ov-border space-y-4 bg-ov-surface">
-        <h2 className="text-base font-bold flex items-center gap-2">
-          <Lock className="w-4 h-4 text-ov-primary" /> Sécurité & Mot de passe
+      <Card className="space-y-4 border-ov-border bg-ov-surface p-5 sm:p-6">
+        <h2 className="flex items-center gap-3 font-semibold">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-ov-primary/15 text-ov-primary">
+            <Lock className="h-5 w-5" />
+          </div>
+          Sécurité & mot de passe
         </h2>
         <p className="text-xs text-ov-muted">
           Modifiez votre mot de passe d'accès au compte.
@@ -385,52 +500,62 @@ export default function ProfilePage() {
         <Button
           variant="outline"
           onClick={() => navigate("/reset-password")}
-          className="w-full border-ov-border hover:bg-ov-bg text-xs"
+          className="w-full rounded-xl border-ov-border hover:bg-ov-bg text-xs"
         >
           <Lock className="w-3.5 h-3.5 mr-2" /> Modifier mon mot de passe
         </Button>
       </Card>
 
       {/* PARAMÈTRES ET NOTIFICATIONS */}
-      <Card className="p-5 border-ov-border space-y-4 bg-ov-surface">
-        <h2 className="text-base font-bold flex items-center gap-2">
-          <Bell className="w-4 h-4 text-ov-accent" /> Préférences & Alertes
+      <Card className="space-y-4 border-ov-border bg-ov-surface p-5 sm:p-6">
+        <h2 className="flex items-center gap-3 font-semibold">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-ov-accent/15 text-ov-accent">
+            <Bell className="h-5 w-5" />
+          </div>
+          Préférences & alertes
         </h2>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4 rounded-xl border border-ov-border bg-ov-bg/60 p-4">
           <div>
-            <p className="text-sm font-medium">Sons de Notification</p>
-            <p className="text-xs text-ov-muted">Jouer un carillon sonore lors des messages reçus</p>
+            <p className="text-sm font-medium">Sons de notification</p>
+            <p className="mt-1 text-xs text-ov-muted">Jouer un carillon lors des messages reçus</p>
           </div>
           <input
             type="checkbox"
             checked={soundEnabled}
-            onChange={(e) => setSoundEnabled(e.target.checked)}
-            className="w-4 h-4 accent-ov-primary"
+            onChange={(e) =>
+              updateNotificationPreferences(e.target.checked, vibeEnabled)
+            }
+            aria-label="Activer les sons de notification"
+            className="h-5 w-5 shrink-0 accent-ov-primary"
           />
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4 rounded-xl border border-ov-border bg-ov-bg/60 p-4">
           <div>
-            <p className="text-sm font-medium">Vibration Tactile</p>
-            <p className="text-xs text-ov-muted">Activer les retours haptiques sur appareil mobile</p>
+            <p className="text-sm font-medium">Vibration tactile</p>
+            <p className="mt-1 text-xs text-ov-muted">Activer le retour haptique sur mobile</p>
           </div>
           <input
             type="checkbox"
             checked={vibeEnabled}
-            onChange={(e) => setVibeEnabled(e.target.checked)}
-            className="w-4 h-4 accent-ov-primary"
+            onChange={(e) =>
+              updateNotificationPreferences(soundEnabled, e.target.checked)
+            }
+            aria-label="Activer la vibration tactile"
+            className="h-5 w-5 shrink-0 accent-ov-primary"
           />
         </div>
 
-        <Button size="sm" variant="outline" onClick={testSound} className="w-full text-xs">
+        <Button size="sm" variant="outline" onClick={testSound} className="w-full rounded-xl text-xs">
+          <Sparkles className="mr-2 h-4 w-4 text-ov-accent" />
           Tester le son et la vibration
         </Button>
       </Card>
 
       {/* JURIDIQUE ET DÉCONNEXION */}
-      <Card className="p-5 border-ov-border space-y-3 bg-ov-surface">
-        <h2 className="text-base font-bold">Informations Légales & Aide</h2>
+      <Card className="space-y-4 border-ov-border bg-ov-surface p-5 sm:p-6">
+        <h2 className="font-semibold">Informations légales & aide</h2>
         <div className="flex flex-col gap-2 pt-1 text-sm">
           <Link to="/privacy" className="text-ov-primary hover:underline flex items-center gap-2">
             <FileText className="w-4 h-4" /> Politique de Confidentialité (Zero-Knowledge)

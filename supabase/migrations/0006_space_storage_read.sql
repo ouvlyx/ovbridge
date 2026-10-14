@@ -10,7 +10,7 @@ create policy "ovbridge_files: users read own or space files"
       or case
         when (storage.foldername(name))[2] ~
           '^space-[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
-        then public.ovbridge_is_member(
+        then ovbridge.ovbridge_is_member(
           substring((storage.foldername(name))[2] from 7)::uuid,
           auth.uid()
         )

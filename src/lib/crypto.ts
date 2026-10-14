@@ -181,6 +181,40 @@ export async function decryptSymKey(
   return s.to_base64(key);
 }
 
+/** Chiffre un texte avec une clé symétrique partagée. */
+export async function encryptTextWithSymKey(
+  plaintext: string,
+  symKeyB64: string
+): Promise<EncryptedPayload> {
+  const s = await initCrypto();
+  const nonce = s.randombytes_buf(s.crypto_secretbox_NONCEBYTES);
+  const ciphertext = s.crypto_secretbox_easy(
+    s.from_string(plaintext),
+    nonce,
+    s.from_base64(symKeyB64)
+  );
+
+  return {
+    ciphertext: s.to_base64(ciphertext),
+    nonce: s.to_base64(nonce),
+  };
+}
+
+/** Déchiffre un texte protégé par une clé symétrique partagée. */
+export async function decryptTextWithSymKey(
+  payload: EncryptedPayload,
+  symKeyB64: string
+): Promise<string> {
+  const s = await initCrypto();
+  const plaintext = s.crypto_secretbox_open_easy(
+    s.from_base64(payload.ciphertext),
+    s.from_base64(payload.nonce),
+    s.from_base64(symKeyB64)
+  );
+
+  return s.to_string(plaintext);
+}
+
 /** Chiffre un blob avec la clé symétrique. */
 export async function encryptFileWithSymKey(
   file: File,

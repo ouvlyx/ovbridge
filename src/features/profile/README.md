@@ -8,7 +8,9 @@ This module allows users to manage extended personal details, sync Google profil
 
 | File | Route | Responsibility |
 | :--- | :--- | :--- |
-| `ProfilePage.tsx` | `/profile` | Profile settings view managing extended fields (`first_name`, `last_name`, `phone_number`, `address`), Google metadata import, custom theme accent picker, UI density, and notification test controls |
+| `ProfilePage.tsx` | `/profile` | Modern profile and settings screen for personal details, Google metadata import, app-wide accent and spacing density, per-device notification sound/vibration, security, and account actions |
+| `AppPreferences.tsx` | — | Loads and applies saved appearance preferences throughout the application |
+| `AppPreferencesContext.ts` | — | Shared appearance preferences state and hook |
 
 ---
 

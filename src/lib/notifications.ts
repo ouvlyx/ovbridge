@@ -2,6 +2,43 @@ import { toast } from "sonner";
 
 export type NotificationType = "message" | "transfer" | "device" | "alert" | "system";
 
+export type NotificationPreferences = {
+  soundEnabled: boolean;
+  vibrationEnabled: boolean;
+};
+
+const NOTIFICATION_PREFERENCES_KEY = "ovbridge_notification_preferences";
+const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreferences = {
+  soundEnabled: true,
+  vibrationEnabled: true,
+};
+
+export function getNotificationPreferences(): NotificationPreferences {
+  try {
+    const stored = localStorage.getItem(NOTIFICATION_PREFERENCES_KEY);
+    if (!stored) return DEFAULT_NOTIFICATION_PREFERENCES;
+    const parsed = JSON.parse(stored) as Partial<NotificationPreferences>;
+    return {
+      soundEnabled: parsed.soundEnabled !== false,
+      vibrationEnabled: parsed.vibrationEnabled !== false,
+    };
+  } catch (error) {
+    console.error("[getNotificationPreferences] Unable to read preferences:", error);
+    return DEFAULT_NOTIFICATION_PREFERENCES;
+  }
+}
+
+export function saveNotificationPreferences(
+  preferences: NotificationPreferences,
+): void {
+  try {
+    localStorage.setItem(NOTIFICATION_PREFERENCES_KEY, JSON.stringify(preferences));
+  } catch (error) {
+    console.error("[saveNotificationPreferences] Unable to save preferences:", error);
+    throw error;
+  }
+}
+
 /**
  * Demande la permission pour les notifications système du navigateur/bureau.
  */
@@ -84,9 +121,10 @@ export async function sendUniversalNotification(params: {
   icon?: string;
 }) {
   const { title, body, type = "message", onClick, icon = "/brandmark-transparent.png" } = params;
+  const preferences = getNotificationPreferences();
 
-  playNotificationSound(type);
-  vibrateDevice([100, 50, 100]);
+  if (preferences.soundEnabled) playNotificationSound(type);
+  if (preferences.vibrationEnabled) vibrateDevice([100, 50, 100]);
 
   toast(title, {
     description: body,

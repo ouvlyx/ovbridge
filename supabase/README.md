@@ -27,6 +27,8 @@ This directory contains PostgreSQL schema definitions, functions, and Row Level 
 | `0017_admin_system.sql` | 4-tier admin governance, error logs, rules, and RPC functions (`ovbridge_admin_set_user_ban`, `ovbridge_admin_set_user_role`) |
 | `0018_extended_profile_and_settings.sql` | Extended profile fields (`first_name`, `last_name`, `phone_number`, `address`, `accent_color`, `interface_density`) |
 | `0019_workspace_storage_and_opened_traces.sql` | Storage path policy adjustments and message open trace (`opened_at`) column |
+| `0023_clipboard_multi_device_keys.sql` | Per-device wrapped keys for shared clipboard encryption |
+| `0024_lock_profile_privileges.sql` | Restricts profile privilege updates, helper function scope, and admin audit log mutation |
 
 ---
 

@@ -1,16 +1,16 @@
-revoke update on public.ovbridge_transfers from authenticated;
+revoke update on ovbridge.ovbridge_transfers from authenticated;
 grant update (status, read_at)
-  on public.ovbridge_transfers to authenticated;
+  on ovbridge.ovbridge_transfers to authenticated;
 
 drop policy if exists "ovbridge_transfers: update own"
-  on public.ovbridge_transfers;
+  on ovbridge.ovbridge_transfers;
 
 create policy "ovbridge_transfers: update read state"
-  on public.ovbridge_transfers for update
+  on ovbridge.ovbridge_transfers for update
   using (
     auth.uid() = user_id
     or exists (
-      select 1 from public.ovbridge_devices d
+      select 1 from ovbridge.ovbridge_devices d
       where d.id = to_device_id
         and d.user_id = auth.uid()
     )
@@ -18,13 +18,13 @@ create policy "ovbridge_transfers: update read state"
   with check (
     auth.uid() = user_id
     or exists (
-      select 1 from public.ovbridge_devices d
+      select 1 from ovbridge.ovbridge_devices d
       where d.id = to_device_id
         and d.user_id = auth.uid()
     )
   );
 
-create or replace function public.ovbridge_validate_transfer_read_update()
+create or replace function ovbridge.ovbridge_validate_transfer_read_update()
 returns trigger
 language plpgsql
 set search_path = public
@@ -39,5 +39,5 @@ end;
 $$;
 
 create trigger ovbridge_validate_transfer_read_update
-  before update of status, read_at on public.ovbridge_transfers
-  for each row execute function public.ovbridge_validate_transfer_read_update();
+  before update of status, read_at on ovbridge.ovbridge_transfers
+  for each row execute function ovbridge.ovbridge_validate_transfer_read_update();

@@ -22,6 +22,14 @@ renommer ni réordonner les fichiers déjà appliqués.
 14. `0014_clipboard_preview_privacy.sql` — efface les aperçus plaintext déjà stockés.
 15. `0015_clipboard_preview_guard.sql` — interdit les aperçus plaintext et borne la taille des nouveaux textes chiffrés.
 16. `0016_workspace_storage_policies.sql` — autorise le Storage Workspace uniquement à son propriétaire.
+17. `0017_admin_system.sql` — tables et règles de gouvernance de l'administration.
+18. `0018_extended_profile_and_settings.sql` — champs de profil et préférences utilisateur.
+19. `0019_workspace_storage_and_opened_traces.sql` — suivi d'ouverture et évolutions du stockage.
+20. `0020_workspace_shared_key.sql` — partage de clés de workspace entre appareils.
+21. `0021_call_miltiple.sql` — évolutions des appels de groupe.
+22. `0022_transfers_composite_index.sql` — index composite des transferts.
+23. `0023_clipboard_multi_device_keys.sql` — clés de chiffrement du presse-papiers enveloppées pour chaque appareil.
+24. `0024_lock_profile_privileges.sql` — interdit l’auto-attribution de rôles admin, limite les fonctions auxiliaires à l’utilisateur connecté, masque les coordonnées détaillées des membres et verrouille les salles d’appel et journaux d’administration.
 
 ## Recréer une base locale
 
@@ -50,6 +58,22 @@ Ne pas exécuter cette commande contre une base distante contenant des données.
 - Activer Anonymous sign-ins dans Supabase Auth si le parcours invité est utilisé.
 - Pour une instance distante neuve, lier le projet avec `npx supabase link`
   puis appliquer les migrations avec `npx supabase db push`.
+
+## E-mails d’authentification pour les tests
+
+Pour autoriser les inscriptions de test vers des adresses externes sans nom de
+domaine, une adresse Gmail dédiée peut être utilisée temporairement comme SMTP
+personnalisé. Activez la validation en deux étapes sur ce compte et créez un mot
+de passe d’application. Dans Supabase Dashboard → Authentication → SMTP
+Settings, configurez `smtp.gmail.com`, le port `587`, l’adresse Gmail comme
+utilisateur et expéditeur, et le mot de passe d’application comme mot de passe.
+
+Désactivez également le Send Email Hook distant qui pointe vers
+`pg-functions://postgres/ouvchat/send_email_hook`, puisqu’il n’existe pas dans
+ce dépôt et empêcherait le nouvel envoi SMTP. Ne placez jamais le mot de passe
+d’application dans le dépôt ou dans le client. Cette configuration est réservée
+aux tests; pour la production, utilisez un fournisseur transactionnel et un
+domaine d’envoi que vous contrôlez.
 
 L'audit statique a vérifié les dépendances des migrations dans cet ordre.
 L'exécution réelle doit être confirmée avec `npx supabase db reset` dans un

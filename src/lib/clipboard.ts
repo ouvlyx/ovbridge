@@ -1,8 +1,17 @@
 import { supabase } from "./supabase";
 import type { DeviceIdentity } from "./device";
-import { encryptFor, decryptFrom } from "./crypto";
+import {
+  decryptFrom,
+  decryptSymKey,
+  decryptTextWithSymKey,
+  encryptSymKey,
+  encryptTextWithSymKey,
+  generateSymKey,
+} from "./crypto";
 import { MAX_CLIPBOARD_SIZE_BYTES } from "./constants";
 import { ClipboardError } from "./errors";
+
+const MAX_ENCRYPTED_CLIPBOARD_SIZE_BYTES = 700_000;
 
 export type ClipboardItem = {
   id: string;
@@ -10,6 +19,7 @@ export type ClipboardItem = {
   from_device_id: string;
   content_encrypted: string;
   nonce: string;
+  encrypted_keys: Record<string, EncryptedClipboardKey> | null;
   preview: string | null;
   kind: "text" | "url" | "password" | "code";
   created_at: string;
@@ -18,6 +28,12 @@ export type ClipboardItem = {
 
 export type DecryptedClipboard = ClipboardItem & {
   content: string;
+  decryptionError?: "legacy" | "unavailable" | "failed";
+};
+
+type EncryptedClipboardKey = {
+  encrypted_key: string;
+  nonce: string;
 };
 
 export function clipboardContentSizeBytes(content: string): number {
@@ -100,17 +116,51 @@ export async function sendToSharedClipboard(
     throw ClipboardError.tooLarge(MAX_CLIPBOARD_SIZE_BYTES / 1024);
   }
 
-  const { ciphertext, nonce } = await encryptFor(
-    content,
-    me.publicKey,
-    me.privateKey
-  );
+  const { data: devices, error: devicesError } = await supabase
+    .from("ovbridge_devices")
+    .select("id, public_key")
+    .eq("user_id", userId)
+    .eq("revoked", false);
+
+  if (devicesError) throw devicesError;
+  const senderDevice = devices?.find((device) => device.id === me.deviceId);
+  if (!senderDevice || senderDevice.public_key !== me.publicKey) {
+    throw new Error(
+      "La clé de cet appareil ne correspond plus à son enregistrement. Réappairez-le avant de partager."
+    );
+  }
+
+  const symKey = await generateSymKey();
+  const { ciphertext, nonce } = await encryptTextWithSymKey(content, symKey);
+  const encryptedKeys: Record<string, EncryptedClipboardKey> = {};
+
+  for (const device of devices) {
+    const { encryptedKey, nonce: keyNonce } = await encryptSymKey(
+      symKey,
+      device.public_key,
+      me.privateKey
+    );
+    encryptedKeys[device.id] = {
+      encrypted_key: encryptedKey,
+      nonce: keyNonce,
+    };
+  }
+
+  if (
+    new TextEncoder().encode(ciphertext).byteLength >
+    MAX_ENCRYPTED_CLIPBOARD_SIZE_BYTES
+  ) {
+    throw new Error(
+      "Le contenu chiffré dépasse la limite de stockage. Réduisez sa taille puis réessayez."
+    );
+  }
 
   const { error } = await supabase.from("ovbridge_clipboard").insert({
     user_id: userId,
     from_device_id: me.deviceId,
     content_encrypted: ciphertext,
     nonce,
+    encrypted_keys: encryptedKeys,
     preview: null,
     kind: detectKind(content),
   });
@@ -133,18 +183,74 @@ export async function fetchClipboardHistory(
   if (error) throw error;
 
   const items = (data ?? []) as ClipboardItem[];
+  const senderDeviceIds = [...new Set(items.map((item) => item.from_device_id))];
+  const { data: senderDevices, error: senderDevicesError } =
+    senderDeviceIds.length > 0
+      ? await supabase
+          .from("ovbridge_devices")
+          .select("id, public_key")
+          .in("id", senderDeviceIds)
+      : { data: [], error: null };
+
+  if (senderDevicesError) throw senderDevicesError;
+
+  const senderPublicKeys = new Map(
+    (senderDevices ?? []).map((device) => [device.id, device.public_key])
+  );
 
   const decrypted = await Promise.all(
     items.map(async (item) => {
       try {
-        const content = await decryptFrom(
-          { ciphertext: item.content_encrypted, nonce: item.nonce },
-          me.publicKey,
-          me.privateKey
-        );
+        let content: string;
+
+        if (item.encrypted_keys) {
+          const encryptedKey = item.encrypted_keys[me.deviceId];
+          if (!encryptedKey) {
+            return {
+              ...item,
+              content: "[Contenu non disponible sur cet appareil]",
+              decryptionError: "unavailable" as const,
+            };
+          }
+
+          const senderPublicKey = senderPublicKeys.get(item.from_device_id);
+          if (!senderPublicKey) {
+            throw new Error("Clé publique de l'appareil expéditeur introuvable.");
+          }
+
+          const symKey = await decryptSymKey(
+            encryptedKey.encrypted_key,
+            encryptedKey.nonce,
+            senderPublicKey,
+            me.privateKey
+          );
+          content = await decryptTextWithSymKey(
+            { ciphertext: item.content_encrypted, nonce: item.nonce },
+            symKey
+          );
+        } else {
+          if (item.from_device_id !== me.deviceId) {
+            return {
+              ...item,
+              content: "[Ancien partage inaccessible sur cet appareil]",
+              decryptionError: "legacy" as const,
+            };
+          }
+
+          content = await decryptFrom(
+            { ciphertext: item.content_encrypted, nonce: item.nonce },
+            me.publicKey,
+            me.privateKey
+          );
+        }
+
         return { ...item, content };
       } catch {
-        return { ...item, content: "[Impossible à déchiffrer]" };
+        return {
+          ...item,
+          content: "[Impossible à déchiffrer sur cet appareil]",
+          decryptionError: "failed" as const,
+        };
       }
     })
   );

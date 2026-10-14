@@ -12,7 +12,7 @@ This directory contains reusable UI components, navigation layouts, error handli
 | `DesktopSidebar.tsx` | Persistent desktop/tablet left navigation sidebar with user session info and route links |
 | `BottomNavBar.tsx` | Fixed mobile bottom navigation bar with active route highlighting |
 | `NetworkStatusBanner.tsx` | Top banner notifying users when offline and automatically flushing the offline transfer queue |
-| `ErrorBoundary.tsx` | Top-level React error boundary catching render crashes and silently recovering from extension DOM mutations |
+| `ErrorBoundary.tsx` | Top-level React error boundary; unexpected render errors show recovery actions, while failed dynamic imports show a retry state |
 | `NotFoundPage.tsx` | Branded 404 error page with quick links to home, devices, pairing, and login |
 | `ui/` | Primitive UI components (button, card, dialog, badge, input, label, dropdown-menu) |
 

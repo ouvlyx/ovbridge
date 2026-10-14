@@ -8,11 +8,11 @@ This folder contains foundational services, Libsodium encryption wrappers, Supab
 
 | File | Responsibility |
 | :--- | :--- |
-| `crypto.ts` | Libsodium wrappers for local keypair generation, public key fingerprinting, text encryption (`crypto_box_easy`), and file encryption (`crypto_secretbox_easy`) |
+| `crypto.ts` | Libsodium wrappers for local keypair generation, public key fingerprinting, public-key encryption, and symmetric text/file encryption |
 | `supabase.ts` | Configured Supabase JS client instance using environment variables |
 | `device.ts` | Local device registration, keypair persistence in `localStorage`, fingerprinting, and identity management |
 | `transfers.ts` | Encrypted text/file sending, fanout transfer to spaces, conversation fetching, and in-memory sent item caching |
-| `clipboard.ts` | Shared clipboard sync with regex sensitivity detector (passwords, JWTs, credit cards, API keys) |
+| `clipboard.ts` | Multi-device end-to-end encrypted clipboard sync with per-device wrapped content keys and sensitivity detection |
 | `workspace.ts` | Personal storage workspace creation, E2E encrypted file uploads, downloads, and storage usage tracking |
 | `spaces.ts` | Collaborative space management and recipient device resolution for space fanout transfers |
 | `admin.ts` | Service functions wrapping Supabase RPCs for user bans, admin role changes, error logs, and audit logs |

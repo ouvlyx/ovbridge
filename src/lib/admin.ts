@@ -27,13 +27,16 @@ export async function logAdminAction(
   details?: any
 ) {
   try {
-    await supabase.from("ovbridge_admin_logs").insert({
+    const { error } = await supabase.from("ovbridge_admin_logs").insert({
       admin_id: adminId,
       admin_role: role,
       action,
       target_id: targetId ?? null,
       details: details ?? {},
     });
+    if (error) {
+      console.error("[logAdminAction] Audit record rejected:", error);
+    }
   } catch (e) {
     console.error("[logAdminAction]", e);
   }

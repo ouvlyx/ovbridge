@@ -2,7 +2,7 @@
 -- OvBridge — Migration 0018: Extended Profile & Theme Settings
 -- =====================================================
 
-alter table public.ovbridge_profiles
+alter table ovbridge.ovbridge_profiles
   add column if not exists first_name text,
   add column if not exists last_name text,
   add column if not exists phone_number text,

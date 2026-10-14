@@ -32,9 +32,9 @@ create policy "workspace_files: delete owner"
   );
 
 -- 2. Colonne et politique de traçabilité pour la lecture/ouverture des fichiers & messages
-alter table public.ovbridge_transfers
+alter table ovbridge.ovbridge_transfers
   add column if not exists opened_at timestamptz;
 
 -- Index pour filtres rapides par statut de lecture
 create index if not exists ovbridge_transfers_read_opened_idx
-  on public.ovbridge_transfers(to_device_id, read_at, opened_at);
+  on ovbridge.ovbridge_transfers(to_device_id, read_at, opened_at);

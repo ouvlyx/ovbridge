@@ -16,53 +16,47 @@ export async function getOrCreateWorkspaceKey(
   me: DeviceIdentity
 ): Promise<string> {
   // 1. Cherche ma clé existante pour ce workspace
-  const { data: existing } = await supabase
+  const { data: existing, error: existingError } = await supabase
     .from("ovbridge_workspace_keys")
-    .select("encrypted_key, nonce, wrapped_by_device_id")
+    .select("wrapped_key, nonce, wrapped_by_public_key")
     .eq("workspace_id", workspaceId)
     .eq("device_id", me.deviceId)
     .maybeSingle();
 
-  if (existing?.encrypted_key && existing.wrapped_by_device_id) {
-    const senderDeviceId = existing.wrapped_by_device_id;
-    const senderPubKey =
-      senderDeviceId === me.deviceId
-        ? me.publicKey
-        : (
-            await supabase
-              .from("ovbridge_devices")
-              .select("public_key")
-              .eq("id", senderDeviceId)
-              .maybeSingle()
-          ).data?.public_key;
+  if (existingError) throw existingError;
 
-    if (senderPubKey) {
-      try {
-        return await decryptSymKey(
-          existing.encrypted_key,
-          existing.nonce,
-          senderPubKey,
-          me.privateKey
-        );
-      } catch (err) {
-        console.warn("[getOrCreateWorkspaceKey] Déchiffrement échoué pour la clé existante", err);
-      }
+  if (existing?.wrapped_key && existing.wrapped_by_public_key) {
+    try {
+      return await decryptSymKey(
+        existing.wrapped_key,
+        existing.nonce,
+        existing.wrapped_by_public_key,
+        me.privateKey
+      );
+    } catch (err) {
+      console.warn("[getOrCreateWorkspaceKey] Déchiffrement échoué pour la clé existante", err);
     }
   }
 
   // 2. Si une clé existe déjà pour ce workspace sur un autre appareil, ne JAMAIS générer une nouvelle clé aléatoire !
-  const { data: allWorkspaceKeys } = await supabase
+  const { data: allWorkspaceKeys, error: allKeysError } = await supabase
     .from("ovbridge_workspace_keys")
-    .select("workspace_id, device_id, encrypted_key, nonce, wrapped_by_device_id")
+    .select("workspace_id, device_id, wrapped_key, nonce, wrapped_by_public_key")
     .eq("workspace_id", workspaceId);
+
+  if (allKeysError) throw allKeysError;
 
   if (allWorkspaceKeys && allWorkspaceKeys.length > 0) {
     // Tenter de déchiffrer une clé si emballée par moi-même
     for (const keyRow of allWorkspaceKeys) {
-      if (keyRow.wrapped_by_device_id === me.deviceId && keyRow.encrypted_key) {
+      if (
+        keyRow.device_id === me.deviceId &&
+        keyRow.wrapped_by_public_key === me.publicKey &&
+        keyRow.wrapped_key
+      ) {
         try {
           const symKey = await decryptSymKey(
-            keyRow.encrypted_key,
+            keyRow.wrapped_key,
             keyRow.nonce,
             me.publicKey,
             me.privateKey
@@ -95,12 +89,13 @@ async function createAndShareSymKey(
 ): Promise<string> {
   const symKey = await generateSymKey();
 
-  const { data: devices } = await supabase
+  const { data: devices, error: devicesError } = await supabase
     .from("ovbridge_devices")
     .select("id, public_key")
     .eq("user_id", userId)
     .eq("revoked", false);
 
+  if (devicesError) throw devicesError;
   if (!devices || devices.length === 0) {
     throw new Error("Aucun appareil trouvé");
   }
@@ -115,16 +110,16 @@ async function createAndShareSymKey(
       return {
         workspace_id: workspaceId,
         device_id: d.id,
-        encrypted_key: encryptedKey,
+        wrapped_key: encryptedKey,
         nonce,
-        wrapped_by_device_id: me.deviceId,
+        wrapped_by_public_key: me.publicKey,
       };
     })
   );
 
   const { error } = await supabase
     .from("ovbridge_workspace_keys")
-    .upsert(rows, { onConflict: "workspace_id,device_id" });
+    .insert(rows);
 
   if (error) throw error;
 
@@ -140,13 +135,24 @@ export async function shareWorkspaceKeyWithNewDevice(
   symKeyB64: string,
   me: DeviceIdentity
 ): Promise<void> {
-  const { data: newDevice } = await supabase
+  const { data: newDevice, error: deviceError } = await supabase
     .from("ovbridge_devices")
     .select("public_key")
     .eq("id", newDeviceId)
     .maybeSingle();
 
+  if (deviceError) throw deviceError;
   if (!newDevice) throw new Error("Nouvel appareil introuvable");
+
+  const { data: existingKey, error: keyLookupError } = await supabase
+    .from("ovbridge_workspace_keys")
+    .select("device_id")
+    .eq("workspace_id", workspaceId)
+    .eq("device_id", newDeviceId)
+    .maybeSingle();
+
+  if (keyLookupError) throw keyLookupError;
+  if (existingKey) return;
 
   const { encryptedKey, nonce } = await encryptSymKey(
     symKeyB64,
@@ -156,16 +162,13 @@ export async function shareWorkspaceKeyWithNewDevice(
 
   const { error } = await supabase
     .from("ovbridge_workspace_keys")
-    .upsert(
-      {
-        workspace_id: workspaceId,
-        device_id: newDeviceId,
-        encrypted_key: encryptedKey,
-        nonce,
-        wrapped_by_device_id: me.deviceId,
-      },
-      { onConflict: "workspace_id,device_id" }
-    );
+    .insert({
+      workspace_id: workspaceId,
+      device_id: newDeviceId,
+      wrapped_key: encryptedKey,
+      nonce,
+      wrapped_by_public_key: me.publicKey,
+    });
 
   if (error) throw error;
 }

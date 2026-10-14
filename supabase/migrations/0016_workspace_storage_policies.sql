@@ -7,7 +7,7 @@ create policy "workspace_files: insert owner"
     and case
       when split_part(name, '/', 3) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
       then exists (
-        select 1 from public.ovbridge_workspaces w
+        select 1 from ovbridge.ovbridge_workspaces w
         where w.id = split_part(name, '/', 3)::uuid
           and w.owner_id = auth.uid()
       )
@@ -24,7 +24,7 @@ create policy "workspace_files: select owner"
     and case
       when split_part(name, '/', 3) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
       then exists (
-        select 1 from public.ovbridge_workspaces w
+        select 1 from ovbridge.ovbridge_workspaces w
         where w.id = split_part(name, '/', 3)::uuid
           and w.owner_id = auth.uid()
       )
@@ -41,7 +41,7 @@ create policy "workspace_files: delete owner"
     and case
       when split_part(name, '/', 3) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
       then exists (
-        select 1 from public.ovbridge_workspaces w
+        select 1 from ovbridge.ovbridge_workspaces w
         where w.id = split_part(name, '/', 3)::uuid
           and w.owner_id = auth.uid()
       )

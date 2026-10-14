@@ -1,6 +1,6 @@
 # 📋 `src/features/clipboard/` — Shared Cross-Device Clipboard
 
-This module manages real-time, end-to-end encrypted shared clipboard syncing between user devices.
+This module manages real-time, end-to-end encrypted shared clipboard syncing between user devices. Each item is encrypted once with a temporary symmetric key; that key is then encrypted separately for every active device. Apply migration `0023_clipboard_multi_device_keys.sql` before deploying this version. Older clipboard items remain readable on their sending device only and must be shared again to reach other devices.
 
 ---
 

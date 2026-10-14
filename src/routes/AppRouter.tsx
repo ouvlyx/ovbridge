@@ -1,40 +1,47 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { LoaderCircle } from "lucide-react";
 import ProtectedRoute from "./ProtectedRoute";
 import AdminRoute from "./AdminRoute";
 import AppLayout from "@/components/AppLayout";
+import { loadRouteModule } from "@/lib/chunkLoadRecovery";
 
-const LoginPage = lazy(() => import("@/features/auth/LoginPage"));
-const SignupPage = lazy(() => import("@/features/auth/SignupPage"));
-const DevicesPage = lazy(() => import("@/features/devices/DevicesPage"));
-const PairingPage = lazy(() => import("@/features/pairing/PairingPage"));
-const JoinPage = lazy(() => import("@/features/pairing/JoinPage"));
-const ScanPage = lazy(() => import("@/features/pairing/ScanPage"));
-const SendPage = lazy(() => import("@/features/transfers/SendPage"));
-const InboxPage = lazy(() => import("@/features/transfers/InboxPage"));
-const ProfilePage = lazy(() => import("@/features/profile/ProfilePage"));
-const SpaceDetailPage = lazy(() => import("@/features/spaces/SpaceDetailPage"));
-const JoinSpacePage = lazy(() => import("@/features/spaces/JoinSpacePage"));
-const MessagesPage = lazy(() => import("@/features/transfers/MessagesPage"));
-const ChatPage = lazy(() => import("@/features/transfers/ChatPage"));
-const ConfirmPage = lazy(() => import("@/features/auth/ConfirmPage"));
-const AuthCallbackPage = lazy(() => import("@/features/auth/AuthCallbackPage"));
-const ForgotPasswordPage = lazy(() => import("@/features/auth/ForgotPasswordPage"));
-const ResetPasswordPage = lazy(() => import("@/features/auth/ResetPasswordPage"));
-const WorkspacePage = lazy(() => import("@/features/workspace/WorkspacePage"));
-const ClipboardPage = lazy(() => import("@/features/clipboard/ClipboardPage"));
-const AdminDashboardPage = lazy(() => import("@/features/admin/AdminDashboardPage"));
-const PrivacyPolicyPage = lazy(() => import("@/features/legal/PrivacyPolicyPage"));
-const TermsPage = lazy(() => import("@/features/legal/TermsPage"));
-const NotFoundPage = lazy(() => import("@/components/NotFoundPage"));
+const LoginPage = lazy(() => loadRouteModule(() => import("@/features/auth/LoginPage")));
+const SignupPage = lazy(() => loadRouteModule(() => import("@/features/auth/SignupPage")));
+const DevicesPage = lazy(() => loadRouteModule(() => import("@/features/devices/DevicesPage")));
+const PairingPage = lazy(() => loadRouteModule(() => import("@/features/pairing/PairingPage")));
+const JoinPage = lazy(() => loadRouteModule(() => import("@/features/pairing/JoinPage")));
+const ScanPage = lazy(() => loadRouteModule(() => import("@/features/pairing/ScanPage")));
+const SendPage = lazy(() => loadRouteModule(() => import("@/features/transfers/SendPage")));
+const InboxPage = lazy(() => loadRouteModule(() => import("@/features/transfers/InboxPage")));
+const ProfilePage = lazy(() => loadRouteModule(() => import("@/features/profile/ProfilePage")));
+const SpaceDetailPage = lazy(() => loadRouteModule(() => import("@/features/spaces/SpaceDetailPage")));
+const JoinSpacePage = lazy(() => loadRouteModule(() => import("@/features/spaces/JoinSpacePage")));
+const MessagesPage = lazy(() => loadRouteModule(() => import("@/features/transfers/MessagesPage")));
+const ChatPage = lazy(() => loadRouteModule(() => import("@/features/transfers/ChatPage")));
+const ConfirmPage = lazy(() => loadRouteModule(() => import("@/features/auth/ConfirmPage")));
+const AuthCallbackPage = lazy(() => loadRouteModule(() => import("@/features/auth/AuthCallbackPage")));
+const ForgotPasswordPage = lazy(() => loadRouteModule(() => import("@/features/auth/ForgotPasswordPage")));
+const ResetPasswordPage = lazy(() => loadRouteModule(() => import("@/features/auth/ResetPasswordPage")));
+const WorkspacePage = lazy(() => loadRouteModule(() => import("@/features/workspace/WorkspacePage")));
+const ClipboardPage = lazy(() => loadRouteModule(() => import("@/features/clipboard/ClipboardPage")));
+const AdminDashboardPage = lazy(() => loadRouteModule(() => import("@/features/admin/AdminDashboardPage")));
+const PrivacyPolicyPage = lazy(() => loadRouteModule(() => import("@/features/legal/PrivacyPolicyPage")));
+const TermsPage = lazy(() => loadRouteModule(() => import("@/features/legal/TermsPage")));
+const NotFoundPage = lazy(() => loadRouteModule(() => import("@/components/NotFoundPage")));
 
-const SpacesPage = lazy(() => import("@/features/spaces/SpacesPage"));
+const SpacesPage = lazy(() => loadRouteModule(() => import("@/features/spaces/SpacesPage")));
 
 
 function Loading() {
   return (
-    <div className="min-h-screen flex items-center justify-center text-ov-muted text-sm">
-      Chargement…
+    <div
+      className="min-h-screen flex flex-col items-center justify-center gap-3 bg-ov-bg text-ov-muted text-sm"
+      role="status"
+      aria-live="polite"
+    >
+      <LoaderCircle className="w-8 h-8 animate-spin text-ov-primary" aria-hidden="true" />
+      <span>Chargement…</span>
     </div>
   );
 }
@@ -71,7 +78,7 @@ export default function AppRouter() {
               <Route path="/workspace" element={<WorkspacePage />} />
               <Route path="/clipboard" element={<ClipboardPage />} />
 
-              // Route protégée :
+              {/* Route protégée */}
               <Route path="/spaces" element={<SpacesPage />} />
 
 

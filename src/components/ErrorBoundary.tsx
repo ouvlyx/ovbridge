@@ -1,7 +1,7 @@
 import { Component, ErrorInfo, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { AlertTriangle, RefreshCw, Home } from "lucide-react";
+import { AlertTriangle, RefreshCw, Home, LoaderCircle } from "lucide-react";
 
 interface Props {
   children: ReactNode;
@@ -10,6 +10,20 @@ interface Props {
 interface State {
   hasError: boolean;
   error: Error | null;
+}
+
+function isDynamicImportError(error: Error | null): boolean {
+  if (!error) {
+    return false;
+  }
+
+  return (
+    error.name === "RouteModuleLoadError" ||
+    error.name === "ChunkLoadError" ||
+    /dynamically imported module|dynamic import|module importé dynamiquement|loading (?:css )?chunk|chunkloaderror|importing a module script failed|failed to fetch module script/i.test(
+      error.message,
+    )
+  );
 }
 
 export class ErrorBoundary extends Component<Props, State> {
@@ -42,6 +56,28 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public render() {
     if (this.state.hasError) {
+      if (isDynamicImportError(this.state.error)) {
+        return (
+          <div
+            className="min-h-screen flex flex-col items-center justify-center gap-4 p-6 bg-ov-bg text-ov-text text-center"
+            role="status"
+            aria-live="polite"
+          >
+            <LoaderCircle className="w-10 h-10 animate-spin text-ov-primary" aria-hidden="true" />
+            <p className="max-w-sm text-sm text-ov-muted">
+              Le module n'a pas pu être chargé. Vérifiez votre connexion puis réessayez.
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => window.location.reload()}
+              className="border-ov-border text-xs"
+            >
+              <RefreshCw className="w-3.5 h-3.5 mr-1.5" /> Réessayer
+            </Button>
+          </div>
+        );
+      }
+
       return (
         <div className="min-h-screen flex items-center justify-center p-6 bg-ov-bg text-ov-text">
           <Card className="w-full max-w-md p-6 bg-ov-surface border-ov-border text-center space-y-5">

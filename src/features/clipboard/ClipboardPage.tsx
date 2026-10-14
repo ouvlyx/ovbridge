@@ -228,14 +228,24 @@ export default function ClipboardPage() {
                 </div>
 
                 <pre className="text-xs bg-ov-bg rounded-lg p-2 whitespace-pre-wrap break-all max-h-24 overflow-auto">
-                  {item.preview ?? item.content}
+                  {item.decryptionError ? item.content : item.preview ?? item.content}
                 </pre>
+                {item.decryptionError && (
+                  <p className="text-xs text-ov-danger" role="status">
+                    {item.decryptionError === "legacy"
+                      ? "Cet ancien partage est lisible uniquement sur l'appareil expéditeur. Republiez-le pour le voir ici."
+                      : item.decryptionError === "unavailable"
+                        ? "Ce contenu n'a pas été chiffré pour cet appareil. Vérifiez qu'il était actif lors du partage."
+                        : "Vérifiez que cet appareil est correctement appairé et synchronisé."}
+                  </p>
+                )}
 
                 <div className="flex gap-2">
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => copy(item)}
+                    disabled={!!item.decryptionError}
                     className="flex-1 min-h-[36px]"
                   >
                     {copiedId === item.id ? (
@@ -251,6 +261,7 @@ export default function ClipboardPage() {
                       size="sm"
                       variant="outline"
                       onClick={() => nativeShare(item)}
+                      disabled={!!item.decryptionError}
                       title="Partager"
                       className="min-h-[36px]"
                     >
