@@ -18,64 +18,55 @@ export async function getOrCreateWorkspaceKey(
   // 1. Cherche ma clé existante pour ce workspace
   const { data: existing, error: existingError } = await supabase
     .from("ovbridge_workspace_keys")
-    .select("wrapped_key, nonce, wrapped_by_public_key")
+    .select("encrypted_key, nonce, wrapped_by_device_id")
     .eq("workspace_id", workspaceId)
     .eq("device_id", me.deviceId)
     .maybeSingle();
 
   if (existingError) throw existingError;
 
-  if (existing?.wrapped_key && existing.wrapped_by_public_key) {
+  if (existing?.encrypted_key && existing.wrapped_by_device_id) {
     try {
-      return await decryptSymKey(
-        existing.wrapped_key,
-        existing.nonce,
-        existing.wrapped_by_public_key,
-        me.privateKey
-      );
+      // Récupère la clé publique du device qui a chiffré pour moi
+      const { data: senderDevice, error: senderError } = await supabase
+        .from("ovbridge_devices")
+        .select("public_key")
+        .eq("id", existing.wrapped_by_device_id)
+        .maybeSingle();
+
+      if (senderError) throw senderError;
+
+      if (senderDevice?.public_key) {
+        return await decryptSymKey(
+          existing.encrypted_key,
+          existing.nonce,
+          senderDevice.public_key,
+          me.privateKey
+        );
+      }
     } catch (err) {
-      console.warn("[getOrCreateWorkspaceKey] Déchiffrement échoué pour la clé existante", err);
+      console.warn(
+        "[getOrCreateWorkspaceKey] Déchiffrement échoué pour la clé existante",
+        err
+      );
     }
   }
 
-  // 2. Si une clé existe déjà pour ce workspace sur un autre appareil, ne JAMAIS générer une nouvelle clé aléatoire !
+  // 2. Cherche si une clé existe déjà pour ce workspace sur un autre appareil
   const { data: allWorkspaceKeys, error: allKeysError } = await supabase
     .from("ovbridge_workspace_keys")
-    .select("workspace_id, device_id, wrapped_key, nonce, wrapped_by_public_key")
+    .select("workspace_id, device_id, encrypted_key, nonce, wrapped_by_device_id")
     .eq("workspace_id", workspaceId);
 
   if (allKeysError) throw allKeysError;
 
   if (allWorkspaceKeys && allWorkspaceKeys.length > 0) {
-    // Tenter de déchiffrer une clé si emballée par moi-même
-    for (const keyRow of allWorkspaceKeys) {
-      if (
-        keyRow.device_id === me.deviceId &&
-        keyRow.wrapped_by_public_key === me.publicKey &&
-        keyRow.wrapped_key
-      ) {
-        try {
-          const symKey = await decryptSymKey(
-            keyRow.wrapped_key,
-            keyRow.nonce,
-            me.publicKey,
-            me.privateKey
-          );
-          // Auto-réparation : s'enregistrer soi-même avec la clé unique du workspace
-          await shareWorkspaceKeyWithNewDevice(workspaceId, me.deviceId, symKey, me);
-          return symKey;
-        } catch {
-          /* continue */
-        }
-      }
-    }
-
     throw new Error(
       "La clé de cet espace de stockage a été générée par un autre appareil. Réappairez cet appareil pour synchroniser vos clés."
     );
   }
 
-  // 3. Aucune clé n'existe pour ce workspace (premier fichier/premier device) → créer la clé maîtresse unique et la partager à tous les appareils du compte
+  // 3. Aucune clé n'existe pour ce workspace → créer la clé maîtresse unique
   return await createAndShareSymKey(workspaceId, userId, me);
 }
 
@@ -110,9 +101,9 @@ async function createAndShareSymKey(
       return {
         workspace_id: workspaceId,
         device_id: d.id,
-        wrapped_key: encryptedKey,
+        encrypted_key: encryptedKey,
         nonce,
-        wrapped_by_public_key: me.publicKey,
+        wrapped_by_device_id: me.deviceId,
       };
     })
   );
@@ -144,6 +135,7 @@ export async function shareWorkspaceKeyWithNewDevice(
   if (deviceError) throw deviceError;
   if (!newDevice) throw new Error("Nouvel appareil introuvable");
 
+  // Vérifie si une clé existe déjà pour ce device
   const { data: existingKey, error: keyLookupError } = await supabase
     .from("ovbridge_workspace_keys")
     .select("device_id")
@@ -165,9 +157,9 @@ export async function shareWorkspaceKeyWithNewDevice(
     .insert({
       workspace_id: workspaceId,
       device_id: newDeviceId,
-      wrapped_key: encryptedKey,
+      encrypted_key: encryptedKey,
       nonce,
-      wrapped_by_public_key: me.publicKey,
+      wrapped_by_device_id: me.deviceId,
     });
 
   if (error) throw error;
