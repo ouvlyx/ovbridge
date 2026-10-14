@@ -45,39 +45,35 @@ export default function ShareClipboardDialog({
 
   useEffect(() => {
     if (!open) return;
-    let active = true;
+    setError(null);
 
-    (async () => {
-      setError(null);
+    if (prefillContent) {
+      if (clipboardContentSizeBytes(prefillContent) > MAX_CLIPBOARD_SIZE_BYTES) {
+        setError("Le contenu est trop volumineux. La limite est de 512 Kio.");
+        return;
+      }
+      setContent(prefillContent);
+      setSensitivity(checkSensitivity(prefillContent));
+    }
+  }, [open, prefillContent]);
 
-      if (prefillContent) {
-        if (!active) return;
-        if (clipboardContentSizeBytes(prefillContent) > MAX_CLIPBOARD_SIZE_BYTES) {
+  const handlePaste = async () => {
+    try {
+      const text = await readLocalClipboardText(3000);
+      if (text) {
+        if (clipboardContentSizeBytes(text) > MAX_CLIPBOARD_SIZE_BYTES) {
           setError("Le contenu est trop volumineux. La limite est de 512 Kio.");
           return;
         }
-        setContent(prefillContent);
-        setSensitivity(checkSensitivity(prefillContent));
-        return;
+        setError(null);
+        setContent(text);
+        setSensitivity(checkSensitivity(text));
+        toast.success("Contenu collé");
       }
-
-      // Saisie manuelle : tente la lecture silencieuse du presse-papiers
-      try {
-        const text = await readLocalClipboardText(3000);
-        if (!active) return;
-        if (text && clipboardContentSizeBytes(text) <= MAX_CLIPBOARD_SIZE_BYTES) {
-          setContent(text);
-          setSensitivity(checkSensitivity(text));
-        }
-      } catch {
-        // En mode saisie manuelle, si le presse-papiers n'est pas accessible, laisser le champ vide sans bloquer l'utilisateur
-      }
-    })();
-
-    return () => {
-      active = false;
-    };
-  }, [open, prefillContent]);
+    } catch (e: any) {
+      toast.error(friendlyError(e));
+    }
+  };
 
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
@@ -130,22 +126,36 @@ export default function ShareClipboardDialog({
             </div>
           )}
 
-          <textarea
-            value={content}
-            onChange={(e) => {
-              const nextContent = e.target.value;
-              setError(null);
-              setContent(nextContent);
-              if (clipboardContentSizeBytes(nextContent) > MAX_CLIPBOARD_SIZE_BYTES) {
-                setError("Le contenu est trop volumineux. La limite est de 512 Kio.");
-              } else {
-                setSensitivity(checkSensitivity(nextContent));
-              }
-            }}
-            rows={5}
-            placeholder="Collez ou saisissez votre texte ici… (512 Kio max)"
-            className="w-full rounded-xl border border-ov-border bg-ov-bg p-3 text-sm text-ov-text focus:outline-none focus:ring-2 focus:ring-ov-primary"
-          />
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-ov-muted">Texte du presse-papiers</span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handlePaste}
+                className="text-xs text-ov-accent hover:text-ov-accent/80 h-7 px-2"
+              >
+                Coller depuis le presse-papiers
+              </Button>
+            </div>
+            <textarea
+              value={content}
+              onChange={(e) => {
+                const nextContent = e.target.value;
+                setError(null);
+                setContent(nextContent);
+                if (clipboardContentSizeBytes(nextContent) > MAX_CLIPBOARD_SIZE_BYTES) {
+                  setError("Le contenu est trop volumineux. La limite est de 512 Kio.");
+                } else {
+                  setSensitivity(checkSensitivity(nextContent));
+                }
+              }}
+              rows={5}
+              placeholder="Collez ou saisissez votre texte ici… (512 Kio max)"
+              className="w-full rounded-xl border border-ov-border bg-ov-bg p-3 text-sm text-ov-text focus:outline-none focus:ring-2 focus:ring-ov-primary"
+            />
+          </div>
 
           {content.length > 0 && (
             <p className="text-[10px] text-ov-muted">

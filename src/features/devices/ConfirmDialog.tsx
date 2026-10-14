@@ -15,7 +15,7 @@ type Props = {
   description: string;
   confirmLabel?: string;
   danger?: boolean;
-  onConfirm: () => void;
+  onConfirm: () => void | Promise<void>;
   busy?: boolean;
 };
 
@@ -29,6 +29,15 @@ export default function ConfirmDialog({
   onConfirm,
   busy = false,
 }: Props) {
+  const handleConfirm = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    try {
+      await Promise.resolve(onConfirm());
+    } catch (err) {
+      console.error("[ConfirmDialog] Execution error:", err);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -39,12 +48,12 @@ export default function ConfirmDialog({
 
         <div className="flex gap-2 pt-2">
           <DialogClose asChild>
-            <Button variant="outline" className="flex-1">
+            <Button variant="outline" className="flex-1" disabled={busy}>
               Annuler
             </Button>
           </DialogClose>
           <Button
-            onClick={onConfirm}
+            onClick={handleConfirm}
             disabled={busy}
             className={
               danger
