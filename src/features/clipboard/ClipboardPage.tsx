@@ -11,6 +11,7 @@ import {
   Lock,
   Code,
   Zap,
+  LoaderCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useClipboard } from "./useClipboard";
@@ -174,8 +175,15 @@ export default function ClipboardPage() {
           disabled={quickBusy}
           className="bg-ov-primary hover:bg-ov-primaryHover"
         >
-          <Zap className="w-4 h-4 mr-2" />
-          {quickBusy ? "Envoi…" : "Copier maintenant"}
+          {quickBusy ? (
+            <>
+              <LoaderCircle className="w-4 h-4 mr-2 animate-spin" /> Envoi…
+            </>
+          ) : (
+            <>
+              <Zap className="w-4 h-4 mr-2" /> Copier maintenant
+            </>
+          )}
         </Button>
         <Button
           variant="outline"

@@ -722,7 +722,11 @@ export default function WorkspacePage() {
               disabled={busyId === "__bulk__"}
               className="flex-1 flex flex-col items-center gap-0.5 py-2 rounded-lg hover:bg-ov-bg transition-colors disabled:opacity-40"
             >
-              <Download className="w-4 h-4 text-ov-primary" />
+              {busyId === "__bulk__" ? (
+                <LoaderCircle className="w-4 h-4 text-ov-primary animate-spin" />
+              ) : (
+                <Download className="w-4 h-4 text-ov-primary" />
+              )}
               <span className="text-[10px]">Exporter</span>
             </button>
 
@@ -733,7 +737,11 @@ export default function WorkspacePage() {
               disabled={busyId === "__bulk__"}
               className="flex-1 flex flex-col items-center gap-0.5 py-2 rounded-lg hover:bg-ov-bg transition-colors disabled:opacity-40"
             >
-              <Lock className="w-4 h-4 text-ov-warning" />
+              {busyId === "__bulk__" ? (
+                <LoaderCircle className="w-4 h-4 text-ov-warning animate-spin" />
+              ) : (
+                <Lock className="w-4 h-4 text-ov-warning" />
+              )}
               <span className="text-[10px]">Bloquer</span>
             </button>
 
@@ -744,7 +752,11 @@ export default function WorkspacePage() {
               disabled={busyId === "__bulk__"}
               className="flex-1 flex flex-col items-center gap-0.5 py-2 rounded-lg hover:bg-ov-danger/10 transition-colors disabled:opacity-40"
             >
-              <Trash2 className="w-4 h-4 text-ov-danger" />
+              {busyId === "__bulk__" ? (
+                <LoaderCircle className="w-4 h-4 text-ov-danger animate-spin" />
+              ) : (
+                <Trash2 className="w-4 h-4 text-ov-danger" />
+              )}
               <span className="text-[10px]">Supprimer</span>
             </button>
 
