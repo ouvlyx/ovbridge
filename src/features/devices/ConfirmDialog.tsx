@@ -7,6 +7,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { LoaderCircle } from "lucide-react";
 
 type Props = {
   open: boolean;
@@ -61,7 +62,11 @@ export default function ConfirmDialog({
                 : "flex-1 bg-ov-primary hover:bg-ov-primaryHover"
             }
           >
-            {busy ? "…" : confirmLabel}
+            {busy ? (
+              <LoaderCircle className="w-4 h-4 mx-auto animate-spin" />
+            ) : (
+              confirmLabel
+            )}
           </Button>
         </div>
       </DialogContent>

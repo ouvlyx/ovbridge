@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { AlertTriangle, Clipboard, Check } from "lucide-react";
+import { AlertTriangle, Clipboard, Check, LoaderCircle } from "lucide-react";
 import { getStoredIdentity } from "@/lib/device";
 import { useAuth } from "@/features/auth";
 import {
@@ -194,7 +194,9 @@ export default function ShareClipboardDialog({
               }
             >
               {busy ? (
-                "Envoi en cours…"
+                <>
+                  <LoaderCircle className="w-4 h-4 mr-2 animate-spin" /> Envoi…
+                </>
               ) : sensitivity.sensitive ? (
                 <>
                   <Check className="w-4 h-4 mr-2" /> Partager quand même

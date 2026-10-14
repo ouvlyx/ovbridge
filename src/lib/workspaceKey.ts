@@ -15,7 +15,7 @@ export async function getOrCreateWorkspaceKey(
   userId: string,
   me: DeviceIdentity
 ): Promise<string> {
-  // 1. Cherche ma clé existante
+  // 1. Cherche ma clé existante pour ce workspace
   const { data: existing } = await supabase
     .from("ovbridge_workspace_keys")
     .select("encrypted_key, nonce, wrapped_by_device_id")
@@ -24,24 +24,64 @@ export async function getOrCreateWorkspaceKey(
     .maybeSingle();
 
   if (existing?.encrypted_key && existing.wrapped_by_device_id) {
-    // Récupère la clé publique de l'appareil qui a chiffré pour moi
-    const { data: senderDevice } = await supabase
-      .from("ovbridge_devices")
-      .select("public_key")
-      .eq("id", existing.wrapped_by_device_id)
-      .maybeSingle();
+    const senderDeviceId = existing.wrapped_by_device_id;
+    const senderPubKey =
+      senderDeviceId === me.deviceId
+        ? me.publicKey
+        : (
+            await supabase
+              .from("ovbridge_devices")
+              .select("public_key")
+              .eq("id", senderDeviceId)
+              .maybeSingle()
+          ).data?.public_key;
 
-    if (senderDevice?.public_key) {
-      return await decryptSymKey(
-        existing.encrypted_key,
-        existing.nonce,
-        senderDevice.public_key,
-        me.privateKey
-      );
+    if (senderPubKey) {
+      try {
+        return await decryptSymKey(
+          existing.encrypted_key,
+          existing.nonce,
+          senderPubKey,
+          me.privateKey
+        );
+      } catch (err) {
+        console.warn("[getOrCreateWorkspaceKey] Déchiffrement échoué pour la clé existante", err);
+      }
     }
   }
 
-  // 2. Aucune clé valide pour moi → en génère une et la partage
+  // 2. Si une clé existe déjà pour ce workspace sur un autre appareil, ne JAMAIS générer une nouvelle clé aléatoire !
+  const { data: allWorkspaceKeys } = await supabase
+    .from("ovbridge_workspace_keys")
+    .select("workspace_id, device_id, encrypted_key, nonce, wrapped_by_device_id")
+    .eq("workspace_id", workspaceId);
+
+  if (allWorkspaceKeys && allWorkspaceKeys.length > 0) {
+    // Tenter de déchiffrer une clé si emballée par moi-même
+    for (const keyRow of allWorkspaceKeys) {
+      if (keyRow.wrapped_by_device_id === me.deviceId && keyRow.encrypted_key) {
+        try {
+          const symKey = await decryptSymKey(
+            keyRow.encrypted_key,
+            keyRow.nonce,
+            me.publicKey,
+            me.privateKey
+          );
+          // Auto-réparation : s'enregistrer soi-même avec la clé unique du workspace
+          await shareWorkspaceKeyWithNewDevice(workspaceId, me.deviceId, symKey, me);
+          return symKey;
+        } catch {
+          /* continue */
+        }
+      }
+    }
+
+    throw new Error(
+      "La clé de cet espace de stockage a été générée par un autre appareil. Réappairez cet appareil pour synchroniser vos clés."
+    );
+  }
+
+  // 3. Aucune clé n'existe pour ce workspace (premier fichier/premier device) → créer la clé maîtresse unique et la partager à tous les appareils du compte
   return await createAndShareSymKey(workspaceId, userId, me);
 }
 
