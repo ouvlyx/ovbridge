@@ -20,6 +20,8 @@ export function useCallSession(targetId?: string, isSpace = false) {
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [netQuality, setNetQuality] = useState<"excellente" | "moyenne" | "faible">("excellente");
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
 
   const localStreamRef = useRef<MediaStream | null>(null);
   const remoteStreamRef = useRef<MediaStream | null>(null);
@@ -37,6 +39,8 @@ export function useCallSession(targetId?: string, isSpace = false) {
       pcRef.current.close();
       pcRef.current = null;
     }
+    setLocalStream(null);
+    setRemoteStream(null);
     setCallState("idle");
   }, []);
 
@@ -56,6 +60,7 @@ export function useCallSession(targetId?: string, isSpace = false) {
     pc.ontrack = (e) => {
       if (e.streams && e.streams[0]) {
         remoteStreamRef.current = e.streams[0];
+        setRemoteStream(e.streams[0]);
       }
     };
 
@@ -84,6 +89,7 @@ export function useCallSession(targetId?: string, isSpace = false) {
         video: type === "video",
       });
       localStreamRef.current = stream;
+      setLocalStream(stream);
 
       const pc = createPeerConnection();
       stream.getTracks().forEach((track) => pc.addTrack(track, stream));
@@ -130,7 +136,7 @@ export function useCallSession(targetId?: string, isSpace = false) {
             });
           }
         });
-    } catch (err: any) {
+    } catch {
       toast.error("Impossible d'accéder à la caméra ou au microphone.");
       cleanupCall();
     }
@@ -147,6 +153,7 @@ export function useCallSession(targetId?: string, isSpace = false) {
         video: offerPayload.type === "video",
       });
       localStreamRef.current = stream;
+      setLocalStream(stream);
 
       const pc = createPeerConnection();
       stream.getTracks().forEach((track) => pc.addTrack(track, stream));
@@ -162,7 +169,7 @@ export function useCallSession(targetId?: string, isSpace = false) {
           payload: { answer, to: offerPayload.from, from: me.deviceId },
         });
       }
-    } catch (err) {
+    } catch {
       toast.error("Échec du démarrage du flux audio/vidéo.");
       cleanupCall();
     }
@@ -200,8 +207,8 @@ export function useCallSession(targetId?: string, isSpace = false) {
     isMuted,
     isVideoOff,
     netQuality,
-    localStream: localStreamRef.current,
-    remoteStream: remoteStreamRef.current,
+    localStream,
+    remoteStream,
     startCall,
     acceptCall,
     endCall,

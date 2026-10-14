@@ -37,7 +37,7 @@ export function OnboardingModal() {
     if (loading || dismissed) return;
 
     if (!isSeen(user?.id)) {
-      setOpen(true);
+      setOpen((prev) => (prev ? prev : true));
     }
   }, [user?.id, loading, dismissed]);
 

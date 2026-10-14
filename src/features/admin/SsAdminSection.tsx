@@ -48,7 +48,23 @@ export default function SsAdminSection({ myRole }: { myRole: AdminRole }) {
   };
 
   useEffect(() => {
-    loadData();
+    let active = true;
+    Promise.all([fetchErrorLogs(), fetchSystemRules()])
+      .then(([eData, rData]) => {
+        if (active) {
+          setErrors(eData);
+          setRules(rData);
+        }
+      })
+      .catch((e: any) => {
+        toast.error(friendlyError(e));
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleResolve = async (errId: string) => {

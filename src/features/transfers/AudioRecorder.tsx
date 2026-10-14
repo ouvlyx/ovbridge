@@ -261,12 +261,12 @@ export function AudioRecorder({
 
         {!paused ? (
           <div className="flex-1 flex items-center justify-center gap-[3px] h-6">
-            {Array.from({ length: 20 }).map((_, i) => (
+            {[12, 18, 10, 22, 14, 20, 8, 24, 16, 12, 22, 18, 10, 20, 14, 24, 8, 16, 12, 18].map((h, i) => (
               <span
                 key={i}
                 className="w-[3px] bg-ov-danger/70 rounded-full animate-pulse"
                 style={{
-                  height: `${8 + Math.random() * 16}px`,
+                  height: `${h}px`,
                   animationDelay: `${i * 50}ms`,
                   animationDuration: "0.8s",
                 }}

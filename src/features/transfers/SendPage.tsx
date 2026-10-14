@@ -184,7 +184,7 @@ export default function SendPage() {
         }
       }
       navigate("/devices");
-    } catch (_err: any) {
+    } catch {
       // Si une erreur de réseau survient pendant l'envoi, basculer dans la file hors-ligne
       let b64: string | undefined;
       if (mode === "file" && file) {
