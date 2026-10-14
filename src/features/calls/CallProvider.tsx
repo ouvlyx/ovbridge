@@ -229,10 +229,12 @@ export function CallProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!user) {
-      setDeviceId(null);
       return;
     }
-    const read = () => setDeviceId(getStoredIdentity()?.deviceId ?? null);
+    const read = () => {
+      const currentId = getStoredIdentity()?.deviceId ?? null;
+      setDeviceId((prev) => (prev !== currentId ? currentId : prev));
+    };
     read();
     const timer = setInterval(read, 2_000);
     return () => clearInterval(timer);
@@ -355,7 +357,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
           }
         } else if (pc.connectionState === "failed") {
           toast.error(`Connexion perdue avec ${peerNameStr}`);
-          closePeer(peerDeviceId);
+          closePeerRef.current(peerDeviceId);
         }
       };
 
@@ -391,6 +393,11 @@ export function CallProvider({ children }: { children: ReactNode }) {
     },
     [refreshPeersUi]
   );
+
+  const closePeerRef = useRef<(peerDeviceId: string) => void>(closePeer);
+  useEffect(() => {
+    closePeerRef.current = closePeer;
+  }, [closePeer]);
 
   /* ---------- appelant : 1:1 ---------- */
   const startCall = useCallback(
@@ -498,7 +505,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
         const ch = await joinChannel(`call:${callId}`, (c) => {
           c.on("broadcast", { event: "invite" }, async ({ payload }) => {
             // Un nouveau participant arrive : on lui envoie notre offre
-            await handleGroupIncoming(payload as InvitePayload);
+            await handleGroupIncomingRef.current(payload as InvitePayload);
           });
           c.on("broadcast", { event: "answer" }, async ({ payload }) => {
             const peerDeviceId = payload.from as string;
@@ -512,7 +519,7 @@ export function CallProvider({ children }: { children: ReactNode }) {
           });
           c.on("broadcast", { event: "end" }, ({ payload }) => {
             const peerDeviceId = payload.from as string;
-            closePeer(peerDeviceId);
+            closePeerRef.current(peerDeviceId);
           });
         });
         callChRef.current = ch;
@@ -573,6 +580,13 @@ export function CallProvider({ children }: { children: ReactNode }) {
     },
     [callType, createPeerConnection, sendOnCall]
   );
+
+  const handleGroupIncomingRef = useRef<(payload: InvitePayload) => Promise<void>>(
+    handleGroupIncoming
+  );
+  useEffect(() => {
+    handleGroupIncomingRef.current = handleGroupIncoming;
+  }, [handleGroupIncoming]);
 
   /* ---------- accepter (1:1) ---------- */
   const acceptCall = useCallback(async () => {

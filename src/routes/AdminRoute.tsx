@@ -12,7 +12,7 @@ export default function AdminRoute({ minLevel = 10 }: { minLevel?: number }) {
 
   useEffect(() => {
     if (!user) {
-      setLoading(false);
+      setLoading((prev) => (prev ? false : prev));
       return;
     }
     let active = true;

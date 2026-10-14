@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Camera, AlertCircle } from "lucide-react";
-import { Html5Qrcode } from "html5-qrcode";
 import { friendlyError } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,7 +9,7 @@ const REGION_ID = "ovbridge-qr-region";
 
 export default function ScanPage() {
   const navigate = useNavigate();
-  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const scannerRef = useRef<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [starting, setStarting] = useState(true);
 
@@ -19,6 +18,9 @@ export default function ScanPage() {
 
     async function start() {
       try {
+        const { Html5Qrcode } = await import("html5-qrcode");
+        if (!mounted) return;
+
         const scanner = new Html5Qrcode(REGION_ID);
         scannerRef.current = scanner;
 

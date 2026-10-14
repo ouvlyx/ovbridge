@@ -10,6 +10,8 @@ export function useWorkspaceFiles(workspaceId: string | undefined) {
   const fetchingRef = useRef(false);
   const pendingRefreshRef = useRef(false);
 
+  const refreshRef = useRef<() => Promise<void>>(() => Promise.resolve());
+
   const refresh = useCallback(async () => {
     if (!workspaceId) return;
 
@@ -48,10 +50,14 @@ export function useWorkspaceFiles(workspaceId: string | undefined) {
       fetchingRef.current = false;
       if (pendingRefreshRef.current) {
         pendingRefreshRef.current = false;
-        refresh();
+        refreshRef.current();
       }
     }
   }, [workspaceId]);
+
+  useEffect(() => {
+    refreshRef.current = refresh;
+  }, [refresh]);
 
   useEffect(() => {
     if (!workspaceId) return;

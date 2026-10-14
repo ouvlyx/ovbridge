@@ -20,6 +20,8 @@ export function useConversation(scope: Scope | undefined) {
   const scopeKind = scope?.kind;
   const scopeId = scope?.id;
 
+  const refreshRef = useRef<() => Promise<void>>(() => Promise.resolve());
+
   const refresh = useCallback(async () => {
     if (!user || !scopeKind || !scopeId) return;
     const me = getStoredIdentity();
@@ -56,10 +58,14 @@ export function useConversation(scope: Scope | undefined) {
       fetchingRef.current = false;
       if (pendingRefreshRef.current) {
         pendingRefreshRef.current = false;
-        refresh();
+        refreshRef.current();
       }
     }
   }, [user, scopeKind, scopeId]);
+
+  useEffect(() => {
+    refreshRef.current = refresh;
+  }, [refresh]);
 
   useEffect(() => {
     if (!user || !scopeKind || !scopeId) return;

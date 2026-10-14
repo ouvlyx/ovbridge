@@ -27,7 +27,20 @@ export default function SAdminSection({ myRole }: { myRole: AdminRole }) {
   };
 
   useEffect(() => {
-    loadReports();
+    let active = true;
+    fetchModerationReports()
+      .then((data) => {
+        if (active) setReports(data);
+      })
+      .catch((e: any) => {
+        toast.error(friendlyError(e));
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleUpdate = async (

@@ -46,10 +46,10 @@ export function MediaViewer({ items, initialIndex, onClose }: Props) {
 
   /* ---------- reset au changement d'item ---------- */
   useEffect(() => {
-    setZoom(1);
-    setVideoPlaying(false);
-    setCurrentTime(0);
-    setDuration(0);
+    setZoom((prev) => (prev !== 1 ? 1 : prev));
+    setVideoPlaying((prev) => (prev ? false : prev));
+    setCurrentTime((prev) => (prev !== 0 ? 0 : prev));
+    setDuration((prev) => (prev !== 0 ? 0 : prev));
     if (videoRef.current) videoRef.current.currentTime = 0;
     if (audioRef.current) audioRef.current.currentTime = 0;
   }, [index]);

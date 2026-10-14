@@ -16,6 +16,8 @@ export function useClipboard() {
   const fetchingRef = useRef(false);
   const pendingRefreshRef = useRef(false);
 
+  const refreshRef = useRef<() => Promise<void>>(() => Promise.resolve());
+
   const refresh = useCallback(async () => {
     if (!user) return;
     const me = getStoredIdentity();
@@ -42,10 +44,14 @@ export function useClipboard() {
       fetchingRef.current = false;
       if (pendingRefreshRef.current) {
         pendingRefreshRef.current = false;
-        refresh();
+        refreshRef.current();
       }
     }
   }, [user]);
+
+  useEffect(() => {
+    refreshRef.current = refresh;
+  }, [refresh]);
 
   useEffect(() => {
     if (!user) return;

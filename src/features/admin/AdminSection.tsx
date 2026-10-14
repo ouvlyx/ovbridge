@@ -49,7 +49,20 @@ export default function AdminSection({ myRole }: { myRole: AdminRole }) {
   };
 
   useEffect(() => {
-    loadUsers();
+    let active = true;
+    fetchUsersForAdmin()
+      .then((data) => {
+        if (active) setUsers(data);
+      })
+      .catch((e: any) => {
+        toast.error(friendlyError(e));
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleToggleBan = async (u: UserProfileAdmin) => {
