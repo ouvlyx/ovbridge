@@ -30,6 +30,7 @@ renommer ni réordonner les fichiers déjà appliqués.
 22. `0022_transfers_composite_index.sql` — index composite des transferts.
 23. `0023_clipboard_multi_device_keys.sql` — clés de chiffrement du presse-papiers enveloppées pour chaque appareil.
 24. `0024_lock_profile_privileges.sql` — interdit l’auto-attribution de rôles admin, limite les fonctions auxiliaires à l’utilisateur connecté, masque les coordonnées détaillées des membres et verrouille les salles d’appel et journaux d’administration.
+25. `0025_project_storage.sql` — ajoute un stockage de projet séparé de l’espace personnel, des clés enveloppées par appareil, des règles réservées aux membres et un quota partagé de 1 Gio par projet.
 
 ## Recréer une base locale
 
@@ -82,6 +83,14 @@ mais ne remplace pas cette protection côté serveur. Envoyez les invitations
 depuis Supabase Dashboard → Authentication → Users → Invite user. Vérifiez
 qu’un utilisateur non invité ne peut pas créer de compte, y compris par OAuth,
 avant de publier le lien de bêta.
+
+Le stockage projet est distinct des espaces personnels : ses fichiers et ses
+clés utilisent leurs propres tables et le chemin `project/` du bucket privé.
+Les membres approuvés ont accès aux fichiers ; lorsqu’un membre rejoint un
+projet, un administrateur doit ouvrir le stockage projet et synchroniser les
+clés vers les nouveaux appareils. Le retrait d’un membre révoque ses droits
+serveur et supprime ses clés enveloppées, mais ne peut pas effacer des copies ou
+clés déjà téléchargées sur ses appareils.
 
 L'audit statique a vérifié les dépendances des migrations dans cet ordre.
 L'exécution réelle doit être confirmée avec `npx supabase db reset` dans un

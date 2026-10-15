@@ -1,2 +1,2 @@
 alter table ovbridge.ovbridge_clipboard
-  add column encrypted_keys jsonb;
+  add column if not exists encrypted_keys jsonb;

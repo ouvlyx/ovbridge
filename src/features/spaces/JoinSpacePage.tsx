@@ -28,7 +28,7 @@ export default function JoinSpacePage() {
     setBusy(true);
     try {
       const spaceId = await joinSpaceByCode(code);
-      toast.success("Vous avez rejoint l'espace");
+      toast.success("Vous avez rejoint le projet");
       navigate(`/spaces/${spaceId}`);
     } catch (e: any) {
       toast.error(friendlyError(e));
@@ -49,8 +49,8 @@ export default function JoinSpacePage() {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
-            <h1 className="text-lg font-semibold">Rejoindre un espace</h1>
-            <p className="text-xs text-ov-muted">Entrez le code reçu</p>
+            <h1 className="text-lg font-semibold">Rejoindre un projet</h1>
+            <p className="text-xs text-ov-muted">Entrez le code d'invitation reçu</p>
           </div>
         </header>
 
@@ -78,7 +78,7 @@ export default function JoinSpacePage() {
             disabled={busy || authLoading}
             className="w-full bg-ov-primary hover:bg-ov-primaryHover"
           >
-            {busy ? "Rejoindre…" : "Rejoindre l'espace"}
+            {busy ? "Rejoindre…" : "Rejoindre le projet"}
           </Button>
         </form>
       </Card>

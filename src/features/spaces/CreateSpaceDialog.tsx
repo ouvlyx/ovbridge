@@ -37,7 +37,7 @@ export default function CreateSpaceDialog({
     setBusy(true);
     try {
       await createSpace(user.id, name, description);
-      toast.success("Espace créé");
+      toast.success("Projet créé");
       setName("");
       setDescription("");
       onOpenChange(false);
@@ -53,10 +53,10 @@ export default function CreateSpaceDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Nouvel espace</DialogTitle>
+          <DialogTitle>Nouveau projet</DialogTitle>
           <DialogDescription>
-            Un espace regroupe plusieurs utilisateurs. Idéal pour un projet, une
-            équipe ou un partage entre amis.
+            Créez un espace indépendant de votre stockage personnel, réservé aux
+            membres que vous invitez.
           </DialogDescription>
         </DialogHeader>
 
@@ -69,7 +69,7 @@ export default function CreateSpaceDialog({
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setName(e.target.value)
               }
-              placeholder="Projet Alpha, Famille, Équipe dev…"
+              placeholder="Projet Alpha, équipe produit…"
               autoFocus
               maxLength={60}
             />
@@ -99,7 +99,7 @@ export default function CreateSpaceDialog({
               disabled={busy}
               className="flex-1 bg-ov-primary hover:bg-ov-primaryHover"
             >
-              {busy ? "Création…" : "Créer"}
+              {busy ? "Création…" : "Créer le projet"}
             </Button>
           </div>
         </div>

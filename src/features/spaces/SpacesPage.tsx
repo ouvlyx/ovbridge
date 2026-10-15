@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Users, Shield, ChevronRight, Globe, Clipboard, MessageSquare } from "lucide-react";
+import { Plus, Users, Shield, ChevronRight, Globe, Clipboard, MessageSquare, UserPlus } from "lucide-react";
 import { useSpaces } from "./useSpaces";
 import CreateSpaceDialog from "./CreateSpaceDialog";
 import { Button } from "@/components/ui/button";
@@ -16,18 +16,28 @@ export default function SpacesPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-bold">Espaces Collaboratifs</h2>
+          <h2 className="text-lg font-bold">Projets partagés</h2>
           <p className="text-xs text-ov-muted">
-            Partagez fichiers, conversations et presse-papiers avec vos collaborateurs
+            Des fichiers, conversations et outils réservés aux membres du projet
           </p>
         </div>
-        <Button
-          size="sm"
-          onClick={() => setCreating(true)}
-          className="bg-ov-primary hover:bg-ov-primaryHover text-xs"
-        >
-          <Plus className="w-4 h-4 mr-1" /> Nouvel espace
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => navigate("/join-space")}
+            className="text-xs"
+          >
+            <UserPlus className="w-4 h-4 mr-1" /> Rejoindre un projet
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => setCreating(true)}
+            className="bg-ov-primary hover:bg-ov-primaryHover text-xs"
+          >
+            <Plus className="w-4 h-4 mr-1" /> Nouveau projet
+          </Button>
+        </div>
       </div>
 
       {/* BANNIÈRE ESPACE COMMUN */}
@@ -76,7 +86,7 @@ export default function SpacesPage() {
         <Card className="p-8 border-ov-border text-center space-y-3 bg-ov-surface">
           <Users className="w-8 h-8 mx-auto text-ov-muted" />
           <p className="text-sm text-ov-muted">
-            Aucun groupe collaboratif spécifique pour l'instant.
+            Aucun projet collaboratif pour l'instant.
           </p>
           <Button
             variant="outline"
@@ -84,7 +94,7 @@ export default function SpacesPage() {
             onClick={() => navigate("/join-space")}
             className="text-xs"
           >
-            J'ai un code d'invitation
+            <UserPlus className="w-4 h-4 mr-2" /> Rejoindre un projet
           </Button>
         </Card>
       ) : (

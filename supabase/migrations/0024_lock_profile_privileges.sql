@@ -104,6 +104,7 @@ grant execute on function ovbridge.ovbridge_list_space_member_profiles(uuid)
   to authenticated;
 
 drop policy if exists "call_rooms: insert own" on ovbridge.ovbridge_call_rooms;
+drop policy if exists "call_rooms: insert own member" on ovbridge.ovbridge_call_rooms;
 create policy "call_rooms: insert own member"
   on ovbridge.ovbridge_call_rooms for insert
   with check (
@@ -115,6 +116,7 @@ create policy "call_rooms: insert own member"
   );
 
 drop policy if exists "call_rooms: select members" on ovbridge.ovbridge_call_rooms;
+drop policy if exists "call_rooms: select current members" on ovbridge.ovbridge_call_rooms;
 create policy "call_rooms: select current members"
   on ovbridge.ovbridge_call_rooms for select
   using (
@@ -124,6 +126,7 @@ create policy "call_rooms: select current members"
   );
 
 drop policy if exists "call_rooms: update host" on ovbridge.ovbridge_call_rooms;
+drop policy if exists "call_rooms: update host member" on ovbridge.ovbridge_call_rooms;
 create policy "call_rooms: update host member"
   on ovbridge.ovbridge_call_rooms for update
   using (auth.uid() = host_id)
@@ -136,6 +139,8 @@ create policy "call_rooms: update host member"
   );
 
 drop policy if exists "call_participants: insert self"
+  on ovbridge.ovbridge_call_participants;
+drop policy if exists "call_participants: insert self active device"
   on ovbridge.ovbridge_call_participants;
 create policy "call_participants: insert self active device"
   on ovbridge.ovbridge_call_participants for insert
@@ -162,6 +167,8 @@ create policy "call_participants: insert self active device"
 
 drop policy if exists "call_participants: select same room"
   on ovbridge.ovbridge_call_participants;
+drop policy if exists "call_participants: select current room members"
+  on ovbridge.ovbridge_call_participants;
 create policy "call_participants: select current room members"
   on ovbridge.ovbridge_call_participants for select
   using (
@@ -178,6 +185,8 @@ create policy "call_participants: select current room members"
   );
 
 drop policy if exists "call_participants: update self"
+  on ovbridge.ovbridge_call_participants;
+drop policy if exists "call_participants: update self active device"
   on ovbridge.ovbridge_call_participants;
 create policy "call_participants: update self active device"
   on ovbridge.ovbridge_call_participants for update
@@ -215,10 +224,14 @@ create policy "call_participants: update self active device"
 drop policy if exists "ovbridge_admin_logs: sss admins access"
   on ovbridge.ovbridge_admin_logs;
 
+drop policy if exists "ovbridge_admin_logs: select sss admins"
+  on ovbridge.ovbridge_admin_logs;
 create policy "ovbridge_admin_logs: select sss admins"
   on ovbridge.ovbridge_admin_logs for select
   using (ovbridge.ovbridge_get_admin_role(auth.uid()) = 'sss_admin');
 
+drop policy if exists "ovbridge_admin_logs: insert own sss admin action"
+  on ovbridge.ovbridge_admin_logs;
 create policy "ovbridge_admin_logs: insert own sss admin action"
   on ovbridge.ovbridge_admin_logs for insert
   with check (

@@ -18,32 +18,21 @@ export async function getOrCreateWorkspaceKey(
   // 1. Cherche ma clé existante pour ce workspace
   const { data: existing, error: existingError } = await supabase
     .from("ovbridge_workspace_keys")
-    .select("encrypted_key, nonce, wrapped_by_device_id")
+    .select("wrapped_key, nonce, wrapped_by_public_key")
     .eq("workspace_id", workspaceId)
     .eq("device_id", me.deviceId)
     .maybeSingle();
 
   if (existingError) throw existingError;
 
-  if (existing?.encrypted_key && existing.wrapped_by_device_id) {
+  if (existing?.wrapped_key && existing.wrapped_by_public_key) {
     try {
-      // Récupère la clé publique du device qui a chiffré pour moi
-      const { data: senderDevice, error: senderError } = await supabase
-        .from("ovbridge_devices")
-        .select("public_key")
-        .eq("id", existing.wrapped_by_device_id)
-        .maybeSingle();
-
-      if (senderError) throw senderError;
-
-      if (senderDevice?.public_key) {
-        return await decryptSymKey(
-          existing.encrypted_key,
-          existing.nonce,
-          senderDevice.public_key,
-          me.privateKey
-        );
-      }
+      return await decryptSymKey(
+        existing.wrapped_key,
+        existing.nonce,
+        existing.wrapped_by_public_key,
+        me.privateKey
+      );
     } catch (err) {
       console.warn(
         "[getOrCreateWorkspaceKey] Déchiffrement échoué pour la clé existante",
@@ -55,7 +44,7 @@ export async function getOrCreateWorkspaceKey(
   // 2. Cherche si une clé existe déjà pour ce workspace sur un autre appareil
   const { data: allWorkspaceKeys, error: allKeysError } = await supabase
     .from("ovbridge_workspace_keys")
-    .select("workspace_id, device_id, encrypted_key, nonce, wrapped_by_device_id")
+    .select("workspace_id, device_id, wrapped_key, nonce, wrapped_by_public_key")
     .eq("workspace_id", workspaceId);
 
   if (allKeysError) throw allKeysError;
@@ -84,6 +73,7 @@ async function createAndShareSymKey(
     .from("ovbridge_devices")
     .select("id, public_key")
     .eq("user_id", userId)
+    .eq("approved", true)
     .eq("revoked", false);
 
   if (devicesError) throw devicesError;
@@ -92,7 +82,7 @@ async function createAndShareSymKey(
   }
 
   const rows = await Promise.all(
-    devices.map(async (d: any) => {
+    devices.map(async (d) => {
       const { encryptedKey, nonce } = await encryptSymKey(
         symKey,
         d.public_key,
@@ -101,9 +91,9 @@ async function createAndShareSymKey(
       return {
         workspace_id: workspaceId,
         device_id: d.id,
-        encrypted_key: encryptedKey,
+        wrapped_key: encryptedKey,
         nonce,
-        wrapped_by_device_id: me.deviceId,
+        wrapped_by_public_key: me.publicKey,
       };
     })
   );
@@ -157,9 +147,9 @@ export async function shareWorkspaceKeyWithNewDevice(
     .insert({
       workspace_id: workspaceId,
       device_id: newDeviceId,
-      encrypted_key: encryptedKey,
+      wrapped_key: encryptedKey,
       nonce,
-      wrapped_by_device_id: me.deviceId,
+      wrapped_by_public_key: me.publicKey,
     });
 
   if (error) throw error;

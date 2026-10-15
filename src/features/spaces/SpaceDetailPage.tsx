@@ -11,6 +11,7 @@ import {
   Users,
   Phone,
   Video,
+  Folder,
 } from "lucide-react";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/errors";
@@ -152,6 +153,14 @@ export default function SpaceDetailPage() {
           </Button>
           <Button
             size="sm"
+            variant="outline"
+            onClick={() => navigate(`/spaces/${space.id}/storage`)}
+            className="border-ov-border text-xs"
+          >
+            <Folder className="w-3.5 h-3.5 mr-1" /> Fichiers
+          </Button>
+          <Button
+            size="sm"
             onClick={() => navigate(`/messages/space/${space.id}`)}
             className="bg-ov-primary hover:bg-ov-primaryHover text-xs"
           >
@@ -213,7 +222,7 @@ export default function SpaceDetailPage() {
 
           <section className="space-y-3">
             <h2 className="text-xs uppercase tracking-wide text-ov-muted font-semibold">
-              Membres de cet Espace
+              Membres du projet
             </h2>
 
             <ul className="space-y-2">

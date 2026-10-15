@@ -6,6 +6,8 @@ export type Space = {
   name: string;
   description: string | null;
   created_at: string;
+  storage_quota_bytes?: number;
+  storage_used_bytes?: number;
 };
 
 export type SpaceMember = {

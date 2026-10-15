@@ -66,9 +66,9 @@ export default function InviteToSpaceDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Inviter dans « {spaceName} »</DialogTitle>
+          <DialogTitle>Inviter dans le projet « {spaceName} »</DialogTitle>
           <DialogDescription>
-            Partagez ce lien ou ce code. Valable 24h, une seule utilisation.
+            Partagez ce lien ou ce code pour inviter un membre. Valable 24h, une seule utilisation.
           </DialogDescription>
         </DialogHeader>
 

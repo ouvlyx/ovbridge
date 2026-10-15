@@ -16,6 +16,7 @@ const SendPage = lazy(() => loadRouteModule(() => import("@/features/transfers/S
 const InboxPage = lazy(() => loadRouteModule(() => import("@/features/transfers/InboxPage")));
 const ProfilePage = lazy(() => loadRouteModule(() => import("@/features/profile/ProfilePage")));
 const SpaceDetailPage = lazy(() => loadRouteModule(() => import("@/features/spaces/SpaceDetailPage")));
+const ProjectStoragePage = lazy(() => loadRouteModule(() => import("@/features/spaces/ProjectStoragePage")));
 const JoinSpacePage = lazy(() => loadRouteModule(() => import("@/features/spaces/JoinSpacePage")));
 const MessagesPage = lazy(() => loadRouteModule(() => import("@/features/transfers/MessagesPage")));
 const ChatPage = lazy(() => loadRouteModule(() => import("@/features/transfers/ChatPage")));
@@ -73,6 +74,7 @@ export default function AppRouter() {
               <Route path="/inbox" element={<InboxPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/spaces/:id" element={<SpaceDetailPage />} />
+              <Route path="/spaces/:id/storage" element={<ProjectStoragePage />} />
               <Route path="/messages" element={<MessagesPage />} />
               <Route path="/messages/:kind/:id" element={<ChatPage />} />
               <Route path="/workspace" element={<WorkspacePage />} />

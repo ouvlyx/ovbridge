@@ -14,6 +14,8 @@ This folder contains foundational services, Libsodium encryption wrappers, Supab
 | `transfers.ts` | Encrypted text/file sending, fanout transfer to spaces, conversation fetching, and in-memory sent item caching |
 | `clipboard.ts` | Multi-device end-to-end encrypted clipboard sync with per-device wrapped content keys and sensitivity detection |
 | `workspace.ts` | Personal storage workspace creation, E2E encrypted file uploads, downloads, and storage usage tracking |
+| `projectWorkspace.ts` | Separate encrypted project file storage, project key sharing to approved member devices, and member-only file operations |
+| `workspaceKey.ts` | Personal workspace keys wrapped for the account's devices |
 | `spaces.ts` | Collaborative space management and recipient device resolution for space fanout transfers |
 | `admin.ts` | Service functions wrapping Supabase RPCs for user bans, admin role changes, error logs, and audit logs |
 | `errors.ts` | 3-tier error severity classification system (`neutre`, `moyen`, `alerte`) and `friendlyError` French translator |
