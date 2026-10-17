@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Link2 } from "lucide-react";
+import { Link2, Sparkles, Key } from "lucide-react";
 
 const schema = z.object({
   email: z.string().email("Email invalide"),
@@ -80,8 +80,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
-      <Card className="w-full max-w-md p-6 bg-ov-surface border-ov-border space-y-6">
+    <div className="min-h-screen flex items-center justify-center p-6 bg-ov-bg text-ov-text">
+      <Card className="w-full max-w-md p-6 bg-ov-surface border-ov-border space-y-6 shadow-2xl">
         <div className="space-y-2 text-center">
           <img
             src="/brandmark-bg.png"
@@ -90,6 +90,27 @@ export default function LoginPage() {
           />
           <h1 className="text-2xl font-bold text-ov-primary">OvBridge</h1>
           <p className="text-sm text-ov-muted">Connexion à votre pont</p>
+        </div>
+
+        {/* Quick Pseudo Signup Banner */}
+        <div className="p-3.5 rounded-xl bg-gradient-to-r from-violet-600/15 via-indigo-600/15 to-purple-600/15 border border-violet-500/30 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-lg bg-violet-500/20 text-violet-400">
+              <Sparkles className="w-4 h-4" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-white">Nouveau sur OvBridge ?</p>
+              <p className="text-[11px] text-ov-muted">Crée ton espace en 1 clic sans mot de passe</p>
+            </div>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => navigate("/quick-signup")}
+            className="bg-ov-primary hover:bg-ov-primaryHover text-white text-xs font-semibold shrink-0"
+          >
+            S'inscrire
+          </Button>
         </div>
 
         <Button
@@ -109,17 +130,18 @@ export default function LoginPage() {
             <span className="w-full border-t border-ov-border" />
           </div>
           <div className="relative flex justify-center text-xs">
-            <span className="bg-ov-surface px-2 text-ov-muted">ou par email</span>
+            <span className="bg-ov-surface px-2 text-ov-muted">ou par email / identifiant</span>
           </div>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">Email ou Identifiant</Label>
             <Input
               id="email"
-              type="email"
-              autoComplete="email"
+              type="text"
+              placeholder="ex: nova-xyl.12345@guest.ouvlyx.com"
+              autoComplete="username"
               {...register("email")}
             />
             {errors.email && (
@@ -134,7 +156,7 @@ export default function LoginPage() {
                 to="/forgot-password"
                 className="text-xs text-ov-primary hover:underline"
               >
-                Mot de passe oublié ?
+                Oublié ?
               </Link>
             </div>
             <Input
@@ -162,19 +184,22 @@ export default function LoginPage() {
         <Button
           type="button"
           variant="outline"
-          className="w-full border-ov-border hover:bg-ov-bg hover:border-ov-primary/50"
+          className="w-full border-ov-border hover:bg-ov-bg hover:border-ov-primary/50 text-xs"
           onClick={() => navigate("/join")}
         >
-          <Link2 className="w-4 h-4 mr-2" />
+          <Link2 className="w-4 h-4 mr-2 text-ov-accent" />
           J'ai un code d'appairage
         </Button>
 
-        <p className="text-sm text-center text-ov-muted">
-          Pas de compte ?{" "}
-          <Link to="/signup" className="text-ov-accent hover:underline">
-            Créer un compte
+        <div className="flex items-center justify-between text-xs pt-2 border-t border-ov-border/50">
+          <Link to="/quick-signup" className="text-ov-accent hover:underline font-medium">
+            Créer un compte instantané
           </Link>
-        </p>
+          <Link to="/recover" className="text-ov-muted hover:text-white hover:underline flex items-center gap-1">
+            <Key className="w-3.5 h-3.5" />
+            <span>Récupérer mon compte</span>
+          </Link>
+        </div>
       </Card>
     </div>
   );
