@@ -5,9 +5,11 @@ import ProtectedRoute from "./ProtectedRoute";
 import AdminRoute from "./AdminRoute";
 import AppLayout from "@/components/AppLayout";
 import { loadRouteModule } from "@/lib/chunkLoadRecovery";
+import QuickOnboardingModal from "@/features/auth/QuickOnboardingModal";
 
 const LoginPage = lazy(() => loadRouteModule(() => import("@/features/auth/LoginPage")));
-const SignupPage = lazy(() => loadRouteModule(() => import("@/features/auth/SignupPage")));
+const QuickSignupPage = lazy(() => loadRouteModule(() => import("@/features/auth/QuickSignupPage")));
+const RecoverAccountPage = lazy(() => loadRouteModule(() => import("@/features/auth/RecoverAccountPage")));
 const DevicesPage = lazy(() => loadRouteModule(() => import("@/features/devices/DevicesPage")));
 const PairingPage = lazy(() => loadRouteModule(() => import("@/features/pairing/PairingPage")));
 const JoinPage = lazy(() => loadRouteModule(() => import("@/features/pairing/JoinPage")));
@@ -33,7 +35,6 @@ const NotFoundPage = lazy(() => loadRouteModule(() => import("@/components/NotFo
 
 const SpacesPage = lazy(() => loadRouteModule(() => import("@/features/spaces/SpacesPage")));
 
-
 function Loading() {
   return (
     <div
@@ -51,10 +52,13 @@ export default function AppRouter() {
   return (
     <BrowserRouter>
       <Suspense fallback={<Loading />}>
+        <QuickOnboardingModal />
         <Routes>
           {/* --- Publiques --- */}
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/quick-signup" element={<QuickSignupPage />} />
+          <Route path="/signup" element={<Navigate to="/quick-signup" replace />} />
+          <Route path="/recover" element={<RecoverAccountPage />} />
           <Route path="/join" element={<JoinPage />} />
           <Route path="/join-space" element={<JoinSpacePage />} />
           <Route path="/scan" element={<ScanPage />} />
@@ -82,7 +86,6 @@ export default function AppRouter() {
 
               {/* Route protégée */}
               <Route path="/spaces" element={<SpacesPage />} />
-
 
               {/* --- Console Admin (Niveau min 10) --- */}
               <Route element={<AdminRoute minLevel={10} />}>
